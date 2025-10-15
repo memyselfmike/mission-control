@@ -9,8 +9,8 @@
 ## Current State
 
 **Current Phase:** 4-Implementation (Sprint 1)
-**Current Workflow:** Sprint 0 Complete → Sprint 1 Ready
-**Overall Progress:** 52% (Sprint 0: 31/218 points delivered)
+**Current Workflow:** Sprint 1 In Progress (Story 2.1 Complete)
+**Overall Progress:** 54% (36/218 points delivered)
 **Project Level:** 4 (Enterprise scale - multiple products/systems)
 **Project Type:** Custom/Hybrid (BMAD Method + Claude Agent SDK) → CLI Tool
 **Greenfield/Brownfield:** Greenfield (fresh implementation, old v0.1 deleted)
@@ -79,13 +79,13 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 
 ## Next Action
 
-**What to do next:** Review Story 2.1 implementation and approve
+**What to do next:** Begin Story 2.2 implementation (Conversation History Logging)
 
-**Current Step:** Story 2.1 implemented, tests passing, ready for review
+**Current Step:** Story 2.1 approved and complete
 
-**Agent:** User (Mike)
+**Agent:** User (Mike) ready to assign next story to DEV
 
-**Why this step:** Story 2.1 fully implemented with all acceptance criteria met. 58 tests passing. Memory system operational with context loading, storage, and hook detection. Ready for user review and `story-approved` workflow.
+**Why this step:** Story 2.1 delivered successfully with all 6 acceptance criteria met, 58 tests passing, and full implementation complete. Memory system foundation ready for next stories in EPIC-2.
 
 **Sprint 0 Delivered:**
 - ✅ 31/31 story points completed (100%)
@@ -95,12 +95,12 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 - ✅ Application working on Windows
 - ✅ All acceptance criteria met
 
-**Ready for Sprint 1:**
-- ✅ Agent system working (Chief of Staff + 5 specialists)
-- ✅ Conversation loop functional
-- ✅ Hooks system operational
-- ✅ Test suite in place
-- ✅ EPIC-2 stories ready in backlog
+**Sprint 1 Progress:**
+- ✅ Story 2.1: Complete (5 points)
+- 🔄 Story 2.2: Ready to start (5 points)
+- ⏸️ Story 2.3-2.5: Queued (15 points)
+- **Delivered:** 5/25 points (20%)
+- **Remaining:** 20 points
 
 ---
 
@@ -127,15 +127,19 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 | 1.6 | ✅ DONE | 5 | Alex persona documented |
 | **BONUS** | ✅ DONE | - | Test suite: 31 tests passing |
 
-### Sprint 1 Queue (NEXT)
+### Sprint 1 Stories
 
 **EPIC-2: Persistent Memory System (25 points)**
 
-**IN PROGRESS:**
-- **Story 2.1:** Business Context Storage (5 points) - READY FOR DEV ✅ (docs/stories/story-2.1.md)
+**COMPLETED:**
+- **Story 2.1:** Business Context Storage (5 points) - ✅ DONE (2025-10-15)
+  - memory.py module (308 lines, 5 functions)
+  - test_memory.py (466 lines, 28 tests)
+  - context_detector.py hook (210 lines)
+  - All 6 ACs met, 58 tests passing
 
 **NEXT UP:**
-- **Story 2.2:** Conversation History Logging (5 points) - JSONL logs with metadata
+- **Story 2.2:** Conversation History Logging (5 points) - READY FOR DEV 🔄
 - **Story 2.3:** Preference Learning System (6 points) - Capture user preferences
 - **Story 2.4:** Memory Loading on Startup (4 points) - Load memory at app start
 - **Story 2.5:** Memory Pruning Strategy (5 points) - Manage memory growth
@@ -162,6 +166,7 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 - **2025-10-15**: Story 2.1 (Business Context Storage) marked ready for development by SM agent. Status updated from Draft → Ready. Story moved to IN PROGRESS in Sprint 1 queue. Ready for dev-story workflow implementation.
 - **2025-10-15**: Completed story-context for Story 2.1 (Business Context Storage). Context file: docs/stories/story-context-EPIC-2.2.1.xml. Assembled comprehensive implementation context with 6 acceptance criteria, 4 documentation references, 5 code artifacts, dependency specifications, 10 development constraints, 6 API interfaces, and 15 test ideas. Next: DEV agent should run dev-story to implement.
 - **2025-10-15**: Completed dev-story for Story 2.1 (Business Context Storage). All tasks complete, tests passing (58 passed, 1 skipped - 100% pass rate). Created src/memory.py (4 functions), tests/test_memory.py (28 test cases), .claude/hooks/context_detector.py. Modified main.py for context loading, updated settings.json for hook registration. All 6 acceptance criteria validated. Story status: Ready for Review. Next: User reviews and runs story-approved when satisfied with implementation.
+- **2025-10-15**: Completed story-approved for Story 2.1 (Business Context Storage). User (Mike) approved story completion. Status updated to DONE. Sprint 1 progress: 5/25 points delivered (20%). Overall project progress: 36/218 points (54% considering Sprint 0 baseline). Next: Begin Story 2.2 (Conversation History Logging) - ready for create-story workflow to draft full story specification from epic description.
 
 ---
 
