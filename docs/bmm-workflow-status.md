@@ -79,13 +79,13 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 
 ## Next Action
 
-**What to do next:** Begin Sprint 1 - Story 2.1 (Business Context Storage)
+**What to do next:** Review and approve Story 2.1 for development
 
-**Current Step:** Sprint 1 Planning
+**Current Step:** Story 2.1 drafted, ready for `story-ready` workflow
 
-**Agent:** SM (Scrum Master) → DEV (Developer)
+**Agent:** SM (Scrum Master)
 
-**Why this step:** Sprint 0 foundation complete. EPIC-2 (Memory System) next in backlog.
+**Why this step:** Story 2.1 created with complete acceptance criteria, technical notes, and testing scenarios. Ready for validation before DEV picks it up.
 
 **Sprint 0 Delivered:**
 - ✅ 31/31 story points completed (100%)
@@ -132,11 +132,11 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 **EPIC-2: Persistent Memory System (25 points)**
 
 **NEXT UP:**
-- **Story 2.1:** Business Context Storage (5 points) - Store company info, values, vision
-- **Story 2.2:** Conversation History Logging (3 points) - JSONL logs with metadata
-- **Story 2.3:** Context Loading on Startup (5 points) - Load memory at app start
-- **Story 2.4:** Preference Learning System (5 points) - Capture user preferences
-- **Story 2.5:** Memory Pruning Strategy (7 points) - Manage memory growth
+- **Story 2.1:** Business Context Storage (5 points) - DRAFTED ✏️ (docs/stories/story-2.1.md)
+- **Story 2.2:** Conversation History Logging (5 points) - JSONL logs with metadata
+- **Story 2.3:** Preference Learning System (6 points) - Capture user preferences
+- **Story 2.4:** Memory Loading on Startup (4 points) - Load memory at app start
+- **Story 2.5:** Memory Pruning Strategy (5 points) - Manage memory growth
 
 **Sprint Goal:** Complete memory persistence and context loading
 **Sprint Velocity Target:** 25 points (all of EPIC-2)
@@ -156,6 +156,7 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 - **2025-10-15**: Deleted deprecated ARCHITECTURE-V2.md (in-session approach never properly implemented). Reverting to original Python app architecture (V1). Analyzing big-3-super-agent repo for reference patterns: agent registry, observability hooks, specialized models, Rich UI, operator file pattern, ClaudeSDKClient usage.
 - **2025-10-15**: Completed solution-architecture workflow. Reviewed existing architecture (2,663 lines, comprehensive). Verified cohesion check report (96% readiness, 4 minor non-blocking gaps). Tech specs skipped (epics.md has sufficient detail). Deleted old mission-control-system v0.1 experimental code. Confirmed architecture decisions: native Python (Docker later), modular monolith, Windows primary with cross-platform support. Phase 3 (Solutioning) complete. Ready for Phase 4 (Implementation). Next: Begin Sprint 0, Story 1.1.
 - **2025-10-15**: Completed Sprint 0 (31 points). All 6 stories delivered: SDK installation, project structure, conversation loop, subagent definitions, hooks system, Alex persona. Added comprehensive test suite (31 unit tests, 100% passing). Fixed Windows command line length issues by shortening agent prompts and adding proper ClaudeAgentOptions configuration. Application tested and working. Ready for Sprint 1 (EPIC-2: Memory System).
+- **2025-10-15**: Started Sprint 1. Drafted Story 2.1 (Business Context Storage) with complete acceptance criteria (6 ACs), technical implementation notes, testing scenarios (5 scenarios), and definition of done. Story saved to docs/stories/story-2.1.md. Ready for story-ready validation workflow.
 
 ---
 
