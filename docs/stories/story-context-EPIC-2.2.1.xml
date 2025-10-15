@@ -1,0 +1,280 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>EPIC-2</epicId>
+    <storyId>2.1</storyId>
+    <title>Business Context Storage</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-15</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-2.1.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Chief of Staff agent (Alex)</asA>
+    <iWant>store and retrieve business context information persistently</iWant>
+    <soThat>I can remember company details, values, strategic direction, and current goals across sessions without asking redundant questions</soThat>
+    <tasks>
+      <task id="1">Create src/memory.py module with context storage functions</task>
+      <task id="2">Define business_context.json schema and structure</task>
+      <task id="3">Implement load_business_context() function</task>
+      <task id="4">Implement save_business_context() function</task>
+      <task id="5">Implement update_business_context() function</task>
+      <task id="6">Implement get_context_summary() function</task>
+      <task id="7">Create .claude/hooks/context_detector.py hook</task>
+      <task id="8">Integrate context loading into main.py startup</task>
+      <task id="9">Update Chief of Staff persona for context awareness</task>
+      <task id="10">Write unit tests for all memory.py functions</task>
+      <task id="11">Write integration tests for conversation flow</task>
+      <task id="12">Test manual JSON editing and reload</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC-1">
+      <title>Context Storage Module</title>
+      <description>System stores business context to data/memory/business_context.json with proper structure containing company_info, values, strategic_direction, and current_goals sections. Data persists across restarts and file is human-readable.</description>
+      <validation>
+        - JSON file created at correct path: mission-control/data/memory/business_context.json
+        - File structure matches defined schema
+        - Data persists after application restart
+        - JSON is properly formatted and human-readable
+      </validation>
+    </criterion>
+    <criterion id="AC-2">
+      <title>Context Capture via Conversation</title>
+      <description>When user provides business context in conversation, Alex detects it and offers to save to memory with user confirmation.</description>
+      <validation>
+        - Company name detected → saved to company_info.name
+        - Values statement detected → saved to values[] array
+        - Vision description detected → saved to strategic_direction
+        - Confirmation message shown after save
+      </validation>
+    </criterion>
+    <criterion id="AC-3">
+      <title>Manual Context Update</title>
+      <description>User can request to add or modify business context, system updates business_context.json and confirms changes.</description>
+      <validation>
+        - New company info can be added
+        - Existing values can be updated
+        - Strategic direction can be modified
+        - Changes persist immediately
+        - Confirmation shows what changed
+      </validation>
+    </criterion>
+    <criterion id="AC-4">
+      <title>Context Retrieval API</title>
+      <description>Python API provides load_business_context() function that returns context dict, handles missing files gracefully, and loads automatically on startup.</description>
+      <validation>
+        - load_business_context() exists in src/memory.py
+        - Returns dict with all sections
+        - Missing file returns empty structure (not error)
+        - Context loads on app startup automatically
+      </validation>
+    </criterion>
+    <criterion id="AC-5">
+      <title>Data Structure Validation</title>
+      <description>Business context conforms to defined JSON schema with company_info, values, strategic_direction, current_goals, and last_updated fields.</description>
+      <validation>
+        - Schema enforced: company_info (name, industry, size, mission, founded)
+        - values array format validated
+        - strategic_direction structure validated (vision_10_year, vision_3_year, vision_1_year, focus_areas)
+        - current_goals structure validated (quarter, rocks)
+        - last_updated ISO 8601 timestamp present
+      </validation>
+    </criterion>
+    <criterion id="AC-6">
+      <title>Privacy & Security</title>
+      <description>Sensitive business data stored in gitignored data/ directory with no external transmission and user consent required.</description>
+      <validation>
+        - File in data/ directory (gitignored)
+        - No external service transmission
+        - Unix file permissions owner-only
+        - User explicit consent before save
+      </validation>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Mission Control Product Requirements Document</title>
+        <section>FR-6: Business Context Storage</section>
+        <snippet>The system shall persist business context including company information, values, strategic direction, and learned preferences in data/memory/business_context.json. Context must be human-readable JSON and manually editable.</snippet>
+      </doc>
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Mission Control Solution Architecture</title>
+        <section>Section 7: Memory and Persistence</section>
+        <snippet>Memory system stores business context in JSON files within data/memory/ directory. Context loading happens at application startup. Files are human-editable and follow strict schema validation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Mission Control Epic Breakdown</title>
+        <section>EPIC-2: Persistent Memory System</section>
+        <snippet>Implement comprehensive memory storage, loading, and retrieval system enabling agents to maintain business context, learn user preferences, and persist conversation history across sessions. Story 2.1 focuses on business context storage foundation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/project-overview.md</path>
+        <title>Mission Control Project Overview</title>
+        <section>Technology Stack</section>
+        <snippet>Python 3.13+ with Claude Agent SDK, Rich CLI interface, local JSON persistence for memory, privacy-first architecture with no cloud sync.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>mission-control/src/main.py</path>
+        <kind>application entry point</kind>
+        <symbol>main()</symbol>
+        <lines>62-173</lines>
+        <reason>Main conversation loop where business context loading needs to be integrated at startup before conversation begins</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/agent_definitions.py</path>
+        <kind>agent configuration</kind>
+        <symbol>agents</symbol>
+        <lines>1-105</lines>
+        <reason>Defines 5 specialist agents. Strategist, Planner may consume business context for goals/vision alignment</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/.claude/hooks/log_agent_actions.py</path>
+        <kind>hook example</kind>
+        <symbol>N/A (file reference)</symbol>
+        <lines>all</lines>
+        <reason>Existing hook pattern to reference when creating context_detector.py hook</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/.claude/hooks/goal_monitor.py</path>
+        <kind>hook example</kind>
+        <symbol>N/A (file reference)</symbol>
+        <lines>all</lines>
+        <reason>Similar pattern: detects specific content (goals) - context_detector will detect business context mentions</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/.claude/settings.json</path>
+        <kind>configuration</kind>
+        <symbol>hooks</symbol>
+        <lines>2-11</lines>
+        <reason>Hook registration pattern - context_detector.py needs to be registered here on Stop event</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="python-dotenv" version=">=1.1.1" />
+        <package name="rich" version=">=14.2.0" />
+        <package name="pydantic" version=">=2.12.2" />
+        <package name="claude-agent-sdk" version=">=0.1.3" />
+      </python>
+      <python_dev>
+        <package name="pytest" version=">=8.4.2" />
+        <package name="pytest-asyncio" version=">=1.2.0" />
+      </python_dev>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="1">All file paths must use forward slashes for cross-platform compatibility (Windows/Unix)</constraint>
+    <constraint id="2">JSON files must be valid, human-readable, and properly indented (2 or 4 spaces)</constraint>
+    <constraint id="3">No external API calls for memory operations - 100% local file storage only</constraint>
+    <constraint id="4">data/ directory must be gitignored to prevent accidental commits of sensitive business info</constraint>
+    <constraint id="5">Memory module must handle missing files gracefully without crashes (return empty dict)</constraint>
+    <constraint id="6">All timestamps must use ISO 8601 format for consistency</constraint>
+    <constraint id="7">User consent required before saving any business context (no silent saves)</constraint>
+    <constraint id="8">Context detector hook must not block conversation loop (async/non-blocking execution)</constraint>
+    <constraint id="9">Follow existing project structure: src/ for modules, tests/ for unit tests, .claude/hooks/ for hooks</constraint>
+    <constraint id="10">Use Python 3.13+ type hints for all function signatures</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>load_business_context</name>
+      <kind>Python function</kind>
+      <signature>def load_business_context() -> dict</signature>
+      <path>mission-control/src/memory.py</path>
+      <description>Loads business context from data/memory/business_context.json. Returns empty structure if file missing. No exceptions raised on missing file.</description>
+    </interface>
+    <interface>
+      <name>save_business_context</name>
+      <kind>Python function</kind>
+      <signature>def save_business_context(context: dict) -> bool</signature>
+      <path>mission-control/src/memory.py</path>
+      <description>Saves business context dict to JSON file. Creates directories if needed. Returns True on success, False on failure. Updates last_updated timestamp.</description>
+    </interface>
+    <interface>
+      <name>update_business_context</name>
+      <kind>Python function</kind>
+      <signature>def update_business_context(section: str, data: dict) -> bool</signature>
+      <path>mission-control/src/memory.py</path>
+      <description>Updates a specific section (company_info, values, strategic_direction, current_goals) without overwriting entire file. Merges data into existing context.</description>
+    </interface>
+    <interface>
+      <name>get_context_summary</name>
+      <kind>Python function</kind>
+      <signature>def get_context_summary() -> str</signature>
+      <path>mission-control/src/memory.py</path>
+      <description>Returns human-readable summary of business context (company name, value count, goal count). Max 200 characters. Used for display and logging.</description>
+    </interface>
+    <interface>
+      <name>business_context.json schema</name>
+      <kind>JSON data structure</kind>
+      <signature>{
+  "company_info": {
+    "name": "string",
+    "industry": "string",
+    "size": "string",
+    "mission": "string",
+    "founded": "string (optional)"
+  },
+  "values": ["array of strings"],
+  "strategic_direction": {
+    "vision_10_year": "string (optional)",
+    "vision_3_year": "string (optional)",
+    "vision_1_year": "string (optional)",
+    "focus_areas": ["array of strings"]
+  },
+  "current_goals": {
+    "quarter": "string (e.g., '2025-Q4')",
+    "rocks": ["array of goal strings"]
+  },
+  "last_updated": "ISO 8601 timestamp"
+}</signature>
+      <path>mission-control/data/memory/business_context.json</path>
+      <description>Complete business context schema. All top-level fields required except optionals marked. File created on first save.</description>
+    </interface>
+    <interface>
+      <name>context_detector.py hook</name>
+      <kind>Claude Code hook script</kind>
+      <signature>Python script executed on Stop event</signature>
+      <path>mission-control/.claude/hooks/context_detector.py</path>
+      <description>Detects business context mentions in agent responses (company name, values, vision statements). Triggers save_business_context() when patterns matched. Registered in .claude/settings.json on Stop event.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest for all tests (already configured in pyproject.toml). Test files in tests/ directory with test_ prefix. Unit tests for src/memory.py functions with 100% coverage target. Integration tests for full conversation flows. Use pytest-asyncio for async test support. Follow existing test patterns from tests/test_main.py and tests/test_agent_definitions.py.
+    </standards>
+    <locations>
+      mission-control/tests/test_memory.py (create new)
+      mission-control/tests/test_hooks.py (extend for context_detector)
+      mission-control/tests/integration/ (create for conversation flows)
+    </locations>
+    <ideas>
+      <idea criterion="AC-1">Test load_business_context() with missing file returns empty dict</idea>
+      <idea criterion="AC-1">Test save_business_context() creates JSON file with proper schema</idea>
+      <idea criterion="AC-1">Test data persists across multiple save/load cycles</idea>
+      <idea criterion="AC-2">Test context detector hook recognizes company name mentions</idea>
+      <idea criterion="AC-2">Test context detector hook recognizes values statements</idea>
+      <idea criterion="AC-3">Test update_business_context() merges new data without overwriting</idea>
+      <idea criterion="AC-3">Test update_business_context() for each section independently</idea>
+      <idea criterion="AC-4">Test load_business_context() returns all expected sections</idea>
+      <idea criterion="AC-4">Test startup integration loads context automatically</idea>
+      <idea criterion="AC-5">Test schema validation rejects invalid JSON structures</idea>
+      <idea criterion="AC-5">Test last_updated timestamp updates on every save</idea>
+      <idea criterion="AC-6">Test data/ directory is gitignored</idea>
+      <idea criterion="AC-6">Test file permissions on Unix systems</idea>
+      <idea criterion="all">Integration test: User provides company info → saved → restart → context remembered</idea>
+      <idea criterion="all">Integration test: User manually edits JSON → app reloads → changes reflected</idea>
+    </ideas>
+  </tests>
+</story-context>
