@@ -1,0 +1,838 @@
+0:00
+Hey everyone, it's Kenny. Today I'm really excited to share with you and hopefully expand
+0:06
+your view of what's possible with the current state of AI agents. I'm going to show you
+0:13
+a personal AI assistant that I built using the CloudAgent SDK and this is a simplified
+0:21
+but still super powerful version of an actual personal assistant that I use every single
+0:28
+day for my day to day tasks, whether it's personal for work or for my business.
+0:34
+I'm going to save that for the next video. In the next video, I'm going to do a full walkthrough of that full system, which is
+0:40
+at least 100x more powerful than what I'm going to show you today. But for the purpose of giving you an intro and teaching you how to build this yourself
+0:49
+using the CloudAge and SDK, we're going to use a simplified version of it. So let's see this in action.
+Demo
+0:55
+I'm going to ask Kaya to do some tasks that I would normally do in my day-to-day work.
+1:04
+Hey, Kaya. Can you look through my YouTube analytics and tell me how my latest video is
+1:11
+performing? Look through the comments as well. I want to understand what people are saying.
+1:18
+And then can you research what the best AI tools for content creators are?
+1:27
+I want to know what tools I can be using to improve my content creation process for YouTube.
+1:33
+And then finally, can you write a practical guide on how to implement hooks in the Cloud
+1:41
+agent SDK, make sure to look at the official documentation.
+1:49
+So we'll send that off right away. You're going to see the assistant messages coming through as well as tool
+1:57
+calls and tool responses as they get streamed in. And here you'll notice several sub agents are being called.
+2:05
+And this is all going to be happening in parallel. So the beauty of the cloud agent SDK is that it is built on top of cloud code and cloud
+2:19
+code has access to sub agents, which allows your main agent to spawn a bunch of different
+2:26
+sub agents that can do a bunch of work in parallel, which just exponentially increases
+2:32
+your output and productivity. Right. So that's what you're seeing right now.
+2:38
+We have a specialized YouTube analyst that has access to playwrights so it can open up
+2:46
+a browser, control the browser itself. And that's what you're seeing on the right here. I'm not doing anything.
+2:53
+The analyst is navigating this browser to look through my analytics and figure out how
+2:59
+my video was performing. And you'll see other, the other outputs like here where you see web fetch, these are search
+3:08
+results that are coming back from the researcher who is now searching the web.
+3:14
+So all of these agents are working in parallel and it makes everything so much faster,
+3:20
+which is just a really awesome part of cloud code. So if you think about what is the most powerful, most capable AI agent that you know,
+3:32
+it's probably cloud code, right? And so that's kind of the motivation behind using the agent SDK.
+3:40
+I was a little bit skeptical at first on what exactly the utility was.
+3:46
+But when you think about it, a lot of us that are building AI agents, especially
+3:51
+for use cases like this, where I want to build something really powerful and quick
+3:57
+for my own personal use, it makes a ton of sense that you would do it on
+4:03
+top of something like cloud code, which again, is going to be the most powerful AI agent
+4:09
+that we have access to. So what the library does, what the agent SDK essentially does
+4:15
+is it abstracts just enough so that, you know, you don't have to build the agent loop yourself.
+4:23
+You let the professionals, the goats, at Anthropic, take care of that for you. They have built
+4:31
+the best agent loop. And what ends up happening is you're using cloud code as a building block
+4:40
+to just customize and build a more advanced powerful system. So that's really what the
+4:47
+agent SDK allows you to do. It allows you to take cloud code and make it highly specialized for
+4:53
+specific tasks. But again, you still get the beauty of all of the harness and architecture that they
+5:01
+put around cloud code to make it so powerful. So we're going to see exactly how you create this kind of system.
+5:08
+I'm just going to let this continue running and maybe we'll fast forward to the end result where we can see
+5:15
+how this personal assistant did.
+5:25
+Okay, it looks like it just finished and we got our final assistant message here.
+5:32
+So let's check this out. The three tasks are complete. We have our YouTube analytics report,
+5:37
+which we'll take a look at in a bit. Here's a high level summary,
+5:43
+specifically calling out the comments and that's what we asked it to do, so that's good.
+5:50
+We have our AI tools research report. This was the second task that we asked for
+5:56
+And you can see we have a full report in a markdown file. And then finally, a guide on implementing hooks
+6:05
+in the Cloud Agent SDK with a full guide here. So let's hop over to the directory for the project.
+6:14
+And we can just look through these really quick to see how the output is. So here's the YouTube analysis.
+6:22
+We have a ton of metrics that it pulled from the YouTube analytics dashboard.
+6:27
+And it's specifically going into the details for this one video.
+6:33
+We have the subscriber growth, a breakdown of different source analysis. So pretty detailed on the metrics that it pulled.
+6:41
+And then here's a specific analysis of the comments. And that's really awesome because going through,
+6:51
+when you have like many videos and looking through all of the comments and trying to
+6:56
+get an idea of what the overall trend is, is sometimes really hard, especially if it's a video with a lot more comments.
+7:03
+So getting this kind of sentiment analysis is huge. Okay, so shout out to all of you guys, Alex, BigSamosa, all of you guys watching and commenting.
+7:16
+Really appreciate the feedback. So we have some insights from the comments.
+7:23
+Viewers are highly, viewers highly value from scratch approach.
+7:28
+Yeah, so a bunch of interesting insights here and even some proposals for the content that
+7:37
+I should be making next, which is really nice. So let's take a look at the AI tools.
+7:43
+So we have a report here from the researcher. have a table of contents for the different sections. Here are a breakdown of
+7:54
+the top tools that we should be using. If I scroll all the way down it's nice
+8:00
+that there's also links to a lot of these sources. Wow this is really long. This is
+8:06
+a huge breakdown. We have a final recommendation section including on ROI
+8:12
+by calculation. And then we have all of our citations on the bottom, which of course we put into the system prompt
+8:19
+for this specific sub agent. So you can see they looked at a ton of different websites
+8:25
+to pull all this information. So your own deep research agent in the clod code agent SDK.
+8:32
+So here is the guide for implementing hooks using the agent SDK, post tool use.
+8:39
+And I can tell you from the official documentation that all of this is exactly right.
+8:45
+So to implement hooks, there are specific commands. So you have the post tool use user prompts a minute.
+8:53
+So this is all grounded exactly in the documentation. And then once we get this into it, oh, and it even has the code examples from the documentation,
+9:02
+which is super nice. So once you have this guide in here extracting specifically the hooks from the online official
+9:12
+documentation, we can go ahead and implement just this specific feature and have it completely
+9:18
+grounded in real code examples from the source itself, from the developers, which is a very
+9:25
+powerful way to implement new features without letting your models hallucinate.
+9:32
+That was just a simple example of executing three tasks in parallel, being able to walk away,
+9:38
+just let the personal assistant handle these things. And again, it's three tasks that were handled by this,
+9:44
+but this is just the drop in a bucket. As I mentioned, you can add so much more functionality
+9:51
+to your personal assistant using MCP servers, which we're gonna show you exactly how to do in a bit
+9:58
+and really leveraging sub agents for those specialized workflows. I will quickly say that there are trade-offs
+10:06
+for using a very high-level library like the Cloud Agent SDK,
+10:12
+versus building with a lower-level framework. For example, if you're building AI agents from scratch,
+10:18
+directly with the APIs, you have full control over the agent loop,
+10:23
+over how you call tools, the way you orchestrate agents,
+10:28
+So how you pass state or data between your agents, if it's a multi agent system,
+10:35
+when you go to a framework like the agent SDK, you lose all of that control, right?
+10:41
+Because it's a much higher level library. You let the best of the best handle all of that for you.
+10:48
+And really what you're focusing on when using the agent SDK is building the business logic
+10:56
+on top of a really strong agent in Claude Code,
+11:01
+which for a lot of use cases like this, where I mentioned I want to get something up and running
+11:07
+and have it be super powerful out of the box without spending a ton of time to build it from scratch.
+11:14
+This is a really great solution for that. And the more I've worked on this project
+11:20
+to build my own personal agent, the more I've fallen in love with this library
+11:26
+And if you're already using cloud code, then I'm sure you're gonna really enjoy using the SDK,
+11:33
+but no worries if you're completely new to the agent SDK or even cloud code,
+11:39
+I'm gonna walk you through step-by-step from beginning to the end of how we can build
+11:44
+this kind of really powerful personal AI agent for you. To get started, head over to the repo.
+Project Setup
+11:50
+It's called cloud agent SDK intro, and you're going to want to clone that to your local system.
+11:57
+You're going to need to install UV, which is what we use to manage our Python projects. You will need cloud code installed as well.
+12:05
+You can use this NPM install command and you should authenticate
+12:10
+through the cloud code CLI. Once you've installed it, you're also going to need Chrome,
+12:16
+which is necessary for the playwright MCP to be able to use your browser. And then finally, you're going to need no JS for both the playwright, but also
+12:26
+cloud code. So if you do authenticate through the cloud code CLI, then you don't need to
+12:32
+set up an anthropic API key unless you want to use the API key, then you want to go to
+12:38
+the cloud console and set up a new API key. So that's up to you. Once you have all of
+12:45
+that installed, and you've cloned the repository, you're going to CD into the folder and then
+12:50
+run the command UV sync, which is going to set up the virtual environment and install the dependencies. And again, if you're going to use the API key, you're going to want to
+12:58
+set that in a dot EMV file in the root. And then we can start running the code. All right,
+Querying Claude Code
+13:04
+so we're going to walk through all of the core concepts step by step, we have these seven different modules. And once we cover sub agents in module six, then you'll have
+13:15
+the full on personal assistant that you can customize for yourself.
+13:20
+There are two ways to interact with the Cloud Code agent,
+13:25
+which remember conceptually what's happening is the agent loop itself is being ran by the SDK.
+13:34
+So if you think about the agent loop being, receive a query from the user,
+13:39
+make a plan on what it wants to do, maybe call a tool, get a tool response,
+13:45
+if it wants to reply back to the user, etc. All of that is happening behind the scenes.
+13:51
+And that's taken care of by cloud code. Once all of that finishes, once the agent loop
+13:57
+finishes, that is when we get a response back. So there's two ways to interact with that
+14:03
+cloud code agent in the SDK. We have the query method, and we have the cloud SDK client.
+14:11
+And the difference between these two is query is you can think about it as a stateless query
+14:18
+where in between queries, there's going to be no persistence of the previous conversation.
+14:25
+Whereas with the cloud SDK client, we're going to connect to this client that we can send
+14:31
+multiple queries and go back and forth with the agent continuing the conversation within the same session.
+14:37
+So that's the difference between those two methods. So what we're doing up here is just defining a constant for the model that we want to use,
+14:47
+which is going to be Haiku, the cheaper model. And we're going to configure it in this cloud agent options class.
+14:55
+We're going to go into a lot more detail in using this cloud agent options. But basically this is what allows you to configure a cloud code for your specific agent for your
+15:05
+use case. But here's an example where we're just going to run a simple query and get a response.
+15:12
+So we're saying hi, we're going to send that as the prompt, and we're going to pass in
+15:20
+our options object, which we defined above. What we get back from this is this async iterator, which is going to yield messages.
+15:30
+And so we can just iterate through each of those messages and print out the raw message.
+15:35
+So it's very similar with the client. The only difference is that we're gonna set up
+15:42
+the client as a context manager. So we're going to follow this pattern
+15:47
+with the Cloud SDA client as client, also passing in the options. And then within that context,
+15:54
+we can go ahead and fire off a query. And in a similar way, we're gonna iterate through the messages
+16:01
+that we get back by calling receive response. So this is gonna yield all of the messages
+16:10
+back from the client as they stream in. And again, we're just gonna print those raw messages.
+16:16
+So it's pretty straightforward. For most purposes, you're just going to always want to use the client.
+16:22
+The query is really only for one-off situations where you just wanna get a single response.
+16:29
+So let's go ahead and run this file. Let's look at the printout here. Here's our user query, hi.
+16:35
+This is the example using query. And what we get back is the raw message objects,
+16:42
+which we're gonna have different types of messages. This is a system message. We have the data for the message,
+16:50
+and this system message is always going to be sent back at the beginning of the response.
+16:57
+So it's going to be the first message that you receive every single time you send a query. And it's really useful because it shows you the full configuration for this agent.
+17:09
+And again, this is going to be defined as we'll see later by the options that you pass
+17:15
+in. Here, we can see all of the tools that are available to our agent. So by default, our agent is going to have access to all of these cloud code tools.
+17:26
+You can also see what MCP servers are connected, which we haven't connected any yet.
+17:31
+Here's the model that we chose, our permission mode slash commands that come by default.
+17:38
+So compact context, if you've used cloud code, these are all the slash commands that you get out of the box.
+17:44
+And then finally, you can see the sub agents in this agents key here. So by default, even if you don't create any sub agents, cloud code comes with some predefined
+17:56
+that it can use. So after the system message, we'll have a sequence of our
+18:01
+assistant messages, user messages, tool messages, etc. So here's the response from
+18:08
+the assistant. And then finally, you get a result message. So just like the system message, this is always going to be the last message that you receive whenever
+18:18
+you send a query. And this is going to tell you the results of this specific
+18:24
+run. So we have our session ID, which we can use to track the conversation. And as we have
+18:30
+additional turns with our agent, we'll be able to track that full conversation in logs
+18:36
+by keeping track of this session ID. And then finally, we're also going to have the usage
+18:42
+and total cost associated with this session up to this point. So let's keep going after
+18:49
+of that we have the example of using the client and it's the exact same thing. Since we only
+18:55
+ran one query with a client that wasn't a back and forth with multiple queries, you get the same
+19:00
+thing. So we have our system message, the assistant response, and then our result message. And if
+19:08
+you're paying close attention, remember that we're sending the exact same input prompt here,
+19:14
+which is just high to both of these query methods. But the cost here in this second result message
+19:21
+when we called the query in the client is about an order of magnitude less than what we had up
+19:29
+here in our initial query. And that's because we created a cache of these input tokens. And then
+19:38
+down here we ended up using the cached tokens.
+19:43
+And so that's why this is so much cheaper. So by default caching is always turned on in the API
+19:49
+and cloud code. So that's querying. Going forward, we're always gonna be using this client
+19:55
+'cause like I said, it has statefulness which is gonna be a lot more useful for us
+20:00
+for building agents that we want to continuously converse with and do work.
+Receiving Messages
+20:06
+Moving on to the messages module. This isn't really core to the functionality of the SDK.
+20:12
+I just wanted to show you how you can parse the messages that we get back from the client.
+20:18
+And that's going to simplify our actual agent file significantly. So we have this file here called CLI tools.
+20:27
+This is just going to have some convenience functions for printing out really nice messages.
+20:32
+Later, as we'll see, we're also going to parse arguments from the terminal.
+20:37
+So when we run these files, we can at runtime specify whether we want to use a different
+20:43
+model or print the raw messages, for example. So here you can see we're specifying what styles we want for printing out different types
+20:53
+of messages. And then down here we have a parse and print message method, which is going to parse out
+21:02
+different types of messages. So we have the system message, assistant message, text blocks,
+21:08
+tool use blocks, thinking blocks, etc. And these objects are coming from the cloud agent
+21:14
+SDK. So these are specific message types. So going back to the messages module, you can
+21:21
+see we're leveraging just these two messages here to print a rich message and parse and
+21:27
+print message. Everything else is going to be the same, but that allows us to simplify
+21:32
+this file significantly. And now we have this entire agent interaction in less than 50 lines
+21:40
+of code. So if we open up a terminal, we can do UV run one underscore messages dot pi. And now you
+21:49
+get these really nice rich panels printed out. So that's it's a little bit easier to read and
+21:56
+distinguish which messages are coming from what source. Next we have tools or custom
+Custom Tools
+22:02
+tools as they refer to them in the docs and the way you define tools with the SDK is really
+22:08
+similar to other frameworks like LangChain or LangGraph or the OpenAI SDK. We have this
+22:15
+tool decorator function which you can use on any Python function to convert it into
+22:22
+a tool for the SDK. The other thing that we have is this method create SDK MCP server. So the
+22:30
+interesting thing about using tools with the agent SDK is that for all tools, we have to implement
+22:37
+them in an in process SDK server, but it's really straightforward. You'll see how simple it is in a
+22:44
+bit. First, we're going to define our tool. So for this example, I created this DB folder with a
+22:52
+products.json to simulate a database. And the way you define the tool is here's our normal
+22:59
+function here, which we want to make tools async, of course, so that agents can use them in parallel.
+23:05
+They can call them multiple times at the same time, which is just going to make your agent work a lot faster. This search products tool takes in an args parameter, which is going to be a
+23:16
+dictionary with our input arguments, and then it's going to return a dictionary as well.
+23:22
+And this is just the convention of how it's done with the agent SDK. You always want to
+23:28
+follow this pattern where you're just specifying a general args dictionary where you're going
+23:34
+to actually specify the input parameter is up here in the tool decorator. So we have the name
+23:41
+of the tool, which can just be the same as the method, a description of the tool, and
+23:46
+then a dictionary of your input arguments with the name and then the type of that input
+23:53
+parameter. So if you had more, you would just continue to add them to this dictionary here.
+23:58
+We only have one. And so we're going to be parsing that out in our function to get the
+24:04
+input query. And then we're going to do a simple search on the product JSON or the product
+24:11
+database to get that out. So pretty straightforward. Once you've defined the tool, we could have
+24:16
+other tools in here if we wanted to, for example, create new products or remove them, we're
+24:22
+going to use that create SDK MCP server method to define a server here. And again, this is
+24:29
+going to run in process. So it's going to run with our Python script. We define it very
+24:35
+simply by passing in a name. You can specify a version and then you're going to have the
+24:42
+list of tools which we just defined above with the decorator. Now once you have your
+24:48
+tools defined and your server created, the next thing you have to do is pass it in using
+24:55
+the cloud agent options. So remember we mentioned that the options is how you configure your
+25:01
+agent here, you just want to pass in a dictionary with the name of this server, and then the
+25:08
+server as you defined it up here. So if you had multiple mcp servers, let's say we had
+25:14
+two or three, you would just add them in this dictionary and pass it like this. Now it's really important to know that when you add mcp servers, the tools in those mcp servers
+25:24
+are not allowed by default. So the agent can't necessarily run them. Your agent might be
+25:30
+able to see that it has these MCPs configured. But if it tries to run a tool from those MCP servers,
+25:37
+it will get a permission error. So to actually be able to use the tools in the MCP servers,
+25:43
+you have to explicitly add them to this allowed tools list. And there's a very specific convention
+25:51
+for the tool names. So for any MCP tool, you need the prefix MCP. And then this is two underscores
+25:59
+the name of the MCP server, and then another double underscore, and then the name of the tool.
+26:07
+So if we scroll up here, we had search products. Notice that we're using an underscore, we could
+26:14
+have made this, let's say a dash. And so down here in the name here, you would just change that to
+26:22
+the dash. So this should match exactly what you define up here. So just make sure that when you
+26:28
+are using MCP servers, you are explicitly allowing those MCP tools that you want to use here.
+26:35
+Everything else is exactly the same. And again, that's the beauty of having the agent loop
+26:41
+abstracted. It really simplifies things where essentially as we move through these modules
+26:46
+and add all of these new capabilities, it's all going to be done through the agent options.
+26:52
+The code down here won't really change for the most part except for a while loop that
+26:58
+add later to have that back and forth. So again, we're printing a system message.
+27:03
+And for this example, since we're using the products catalog, it has toys for kids related to space.
+27:11
+So I'm asking here to find me a telescope for kids. So let's open the terminal again and run this example.
+27:19
+UV run to underscore tools.
+27:29
+So I called the MCP search products tool. This was the query it passed, telescope for kids.
+27:36
+And then it got back one result here. So then it summarized that information for us.
+27:43
+So again, to add our own custom tools, we're gonna use that in-process MCP server.
+Claude Agent Options
+27:50
+So we mentioned that the cloud agent options is how we configure the agent's behavior.
+27:56
+And there's a ton of settings that you can customize here. I encourage you to check out the official docs
+28:03
+on the options. I'm gonna cover the ones that I think are most important for you.
+28:08
+We saw that we can configure the specific model that we wanna use for this agent.
+28:13
+We also saw that we can allow tools and we can also specifically block certain tools
+28:20
+the disallowed tools list. So here we're not allowing this agent to be able to search the web
+28:28
+or retrieve data from web pages. There's a setting called permission mode. And you might be familiar
+28:34
+with this. If you use cloud code, the default here is default. But there are other preset options.
+28:42
+you can set this to either accept edits, which will automatically accept edits.
+28:49
+So this allows you to pre-approve to calls like edit or delete things that would change your files.
+28:59
+If you have it on default, then it's going to ask you for the first time you run any tools that
+29:05
+would modify your system, but read tools will automatically be approved. You also have a planning mode, which won't execute any tools.
+29:14
+And then you have bypass permissions, which is basically a YOLO mode, which will not ask you for permission to run any tool.
+29:23
+So like I said, default is the default settings. I typically run this on except edits like that.
+29:31
+Again, you can customize it however you want. And just know that these allowed tools and disallowed tool settings
+29:39
+run on top of this permission mode. What I mean by that is, let's say for example, you have the edit tool up here, like that,
+29:51
+and you're using the accept edits permission mode. This edit tool would automatically be allowed.
+29:57
+But if I move this down here to the disallowed, even though I have accept edits, obviously
+30:04
+this tool would still be blocked. So these will run on top of whatever permission mode you set, if that makes sense.
+30:13
+We also have a setting sources argument which specifies where we want to load settings from.
+30:20
+And this can be either project or it can be user.
+30:25
+This is just going to specify if and where you want to load your dot cloud settings from.
+30:32
+So if it's set to project like I had it here, then it's automatically going to load these
+30:38
+cloud.md files. So if you have one in the root, this will be loaded. And here you can put rules that you want cloud to follow every time or any context that you
+30:48
+want it to always have for this project. It will also look in dot cloud folders.
+30:55
+And then if you have a settings JSON in here like I do, then it will automatically load
+31:02
+settings from your project. Here you can see I've set an output style, which I'll talk about in a minute.
+31:08
+And you also have some hooks. So by setting this to project, it's automatically going to load those settings.
+31:15
+If you set this to user, then it's going to look inside of your user root directory where you have
+31:21
+another dot cloud hidden folder. And in there, there is a settings file just like this with different settings.
+31:29
+So instead of loading the settings from here, it would load it from that root directory.
+31:36
+So we're gonna keep this as project. We can also set the settings within the code.
+31:41
+So if we didn't want to load them from here, we can use this settings parameter where we specify a JSON string.
+31:50
+So you can see this is also setting an output style, just like we had in this settings file.
+31:56
+But instead of using the personal assistant, we're using just the default output style.
+32:01
+And it's important to know that any settings you set here will take precedence over settings
+32:07
+that are loaded from files. So let's say we still have this line set here
+32:12
+where we wanna load our settings from project, this settings.json will be loaded
+32:18
+and we have an output style defined here. But if we're specifying an output style
+32:24
+in this settings.json string as well, This will take precedence over what we set
+32:29
+in the settings JSON file. And this is a good place to talk about output styles.
+32:34
+So Cloud Code has several ways of allowing you to control the system prompt.
+32:41
+There's this really nice guide on modifying system prompts and this table that summarizes things pretty well.
+32:47
+There's basically four ways that you can modify the system prompt. We already talked about loading a Cloud MD file.
+32:55
+So if you have this in your project and you're passing in the setting sources, then this
+33:01
+will automatically be loaded. This just gets appended to the system prompts.
+33:06
+Similarly, you can pass a system prompt in append mode. And that again, will just add your prompt to the existing system prompt.
+33:16
+If you pass in a custom system prompt, this will completely replace the cloud code system
+33:23
+prompt. wanted to write your own system prompt from scratch. So if we hop back over to the code,
+33:29
+if I just comment out this settings file and I was to pass in this system prompt like this,
+33:38
+this would completely replace the clod code system prompt, which of course would mean you're replacing
+33:44
+all of the instructions on tool usage, on how to modify files, on tone.
+33:52
+In this case, the only instructions the agent are you are a pirate and you must respond like a pirate. So again, that's going to completely
+33:59
+override it. And then finally, output styles is kind of a nice in between where all of the
+34:07
+instructions in the cloud code system prompt that tell cloud how to use its tools, how to interact
+34:15
+with its environment, etc. All of that gets preserved. But what changes when you specify an
+34:22
+output style, you're only replacing the part of Claude's system prompt where it's told that
+34:29
+it is a software developer that it gives it all of the instructions on its role as a coding assistant.
+34:39
+And so you have control over defining its role and how it should think about serving you.
+34:46
+So I think the output style is the perfect way to modify the system prompt for customizing an agent like we are where we still want it to understand its environment, how to use all of these tools.
+35:01
+And so we just let the original cloud code instructions take care of all of that.
+35:07
+And we're just adding in the details of how we want cloud to act and think about its own role.
+35:14
+So let's reverse this system prompt and then bring back this settings.
+35:21
+So again, we're loading the settings from our project. Remember that we're defining our output style here as personal assistant.
+35:31
+This is actually going to load a output style file from this output styles directory here.
+35:38
+And again, you just need to follow this structure because this is just how it works in cloud code. So if we go into the output styles, you can see I have a personal assistant.
+35:47
+M.D. This is where we define the system prompt that we want to use to replace
+35:53
+Claude's kind of identity and role with our own instructions.
+35:59
+So this is where we're telling the assistant that their name is Kaya, specifying a communication style, and then letting it know about the specific
+36:08
+subagents that we're creating, also with some instructions on how it should use
+36:14
+those subagents. Of course we can customize this and make it a lot more complicated, but for this example this is totally enough to get it to act like
+36:24
+our personal assistant. Then finally the last option I wanted to mention is this
+36:31
+add directories argument where you can specify other directories that this
+36:37
+agent would have access to. So by default the agent is only going to have access to the files
+36:44
+within this current project and you can even set it if you wanted to for example run it in a
+36:51
+subdirectory or something. You can specify the current working directory with this command CWD
+36:57
+and set this to whatever folder that you want. By default it's going to have access to the current
+37:02
+working directory. And if you wanted to add other directories, let's say you have a separate
+37:10
+projects directory, or maybe you want it to have access to some content that you have in a different
+37:17
+folder on your system, you can just add it here, and it will specifically only have access to what
+37:24
+you define in this list. One other thing, actually, you can also specify hooks here. I omitted it since
+37:31
+I'm actually setting the hooks that I want in my settings.json. But anything that you can set in
+37:37
+your settings.json, you can also just program it directly in code here. So we could do something
+37:43
+like hooks equal to and then add a list of JSON objects with our hook. So the structure of the
+37:51
+hooks look like this, where you have these different events. And you'll see a list of events down here.
+38:00
+So you can have hooks before a tool is used, after a tool is used, when Claude sends a notification,
+38:08
+when it stops responding, for example. And hooks are super useful for just triggering
+38:15
+different functionality in your app. So again, you can define it programmatically here. Or if we
+38:21
+go to the settings.json, you can see I have two setup here, one for stop and one for notification.
+38:30
+And remember that every turn of a conversation, every time we send a query, we're going to
+38:36
+have the starting system message, all of the back and forth messages with the assistant
+38:42
+and tool calls, et cetera. And then you're going to have a result message. So when you get the result message, these hooks are automatically going to trigger.
+38:52
+I have two here. One is just playing a system from my sound. So that's really convenient and nice to know when the agent is done.
+39:00
+For example, if you have it minimized or you've stepped away from your computer. The other one I have here is a file.
+39:07
+And so you can specify these run commands like I'm using UV run to execute this Python
+39:14
+file. So we can take a look. It's in this hooks directory. And it's called log agent actions.
+39:21
+All this does is parse the transcript of the conversation that we had with the agent until
+39:26
+it hit that result condition. And it's just going to save it to this logs folder here.
+39:33
+So you can see from all of the examples that we've ran, we've generated these logs. And this log is essentially dumping all of the actions that the agent is taking.
+39:42
+So every time it calls a tool, we're going to log the tool call along with the inputs. This is just makes it easier for debugging and understanding what's going on.
+39:52
+So the annoying thing about using the agent SDK and cloud code is that you don't have a ton of observability.
+40:00
+There are no traces, so you can't see the actual system prompt or the context
+40:05
+engineering that's happening behind the scenes. So this type of logging using hooks is really convenient to be able to
+40:12
+understand what's going on under the hood. Alright, this next one is super simple.
+Conversation Loop
+40:17
+It's just creating the conversation loop by doing everything we did, but throwing it
+40:22
+in a while loop. If we scroll down, everything here should look exactly the same.
+40:29
+Now in the context manager, once we've defined the client, all we're going to do is wrap
+40:34
+everything that was in here underneath this while true loop.
+40:39
+And so once we get the messages back from running the query, we're just going to go
+40:45
+loop back to getting the input prompt again. That's it. So if we run this, so now you can see we're getting the user input here instead of having
+40:58
+the hard coded value. So we can say hi, we get that system message print out for debugging the sound.
+41:08
+Once we hit stop and say what tools do you have?
+41:14
+So this system message gets printed every time for debugging, but you can definitely disable that.
+41:21
+And there you go. So now we have a back and forth with our agent.
+MCP
+41:27
+Next we have MCP servers. And we saw how if you want to implement custom tools with your agents, you need to use the
+41:36
+in process MCP servers to serve those tools to the agent. To use external MCP servers, it's super straightforward.
+41:44
+We can just pass in a valid MCP configuration directly into the options.
+41:51
+So let's take a look at this example. We have our cloud agent options here. We're allowing these tools,
+41:58
+and I specifically didn't add the tools from the MCP server because I wanted to show you what I mentioned before
+42:04
+where if you add an MCP server, the agent might be able to see those tools,
+42:09
+but it won't have permissions to execute them by default. So here we're adding a Playwright MCP server, and we have it accept edits mode on.
+42:21
+So technically it can execute any of these tools without permission, but notice how we haven't specified the MCP tools.
+42:29
+So let's run this example. I'm going to specifically ask it to open up a web page.
+42:38
+So I asked it to use playwright to go to YouTube.com. You can see it knows about the tool.
+42:43
+It calls it, but we have a permissions issue and it's saying I didn't grant it permission
+42:50
+to use that tool. So we'll go ahead and hit exit here. And if we just copy this tool name and then paste it in there, and then rerun this example.
+43:12
+So now you can see that that works. So again, whenever you add tools with the MCP server, just be sure to add them explicitly
+43:22
+to the allowed tools list. And that's literally it. So you can see how powerful and easy it is to now scale this and add any number of tools
+43:35
+to your agent to really unlock its capabilities. And again, if we just scroll down here, right, this is all being done in the cloud agent
+43:43
+options. So all of the additional capabilities and complexity is just in configuring these agent
+43:51
+options. else down here hasn't changed at all. Finally, we have sub agents, which will just exponentially
+Subagents
+44:00
+increase the capability and functionality of any agent, right? This is what allows your
+44:07
+agent to really scale. And there's tons of advantages for using sub agents like context
+44:13
+isolation, keeping separate tool permissions, etc. parallelization, which helps improve
+44:20
+performance. And surprise surprise, it's all just configured again in the cloud agent options.
+44:28
+So let's look through this. Here we've got our options and you can see I'm allowing a bunch of the default tools for cloud code, and then also these mcp tools. So let's look
+44:41
+at how we define our agents. We can do it within the code by just passing a dictionary
+44:48
+to this agents key. And here we have our YouTube analyst, we can use the agent definition
+44:56
+object, which just makes it convenient to define the four specific parameters that we
+45:01
+need to define an agent. We have the description of the agent. Here we're saying an expert
+45:08
+analyzing a user's YouTube channel performance. So this is what our main agent or our personal
+45:16
+assistant is going to look at when deciding when to use this agent. So you want to make this very clear on what this agent is for and when it should be used.
+45:27
+And then we have the actual prompt. So this is the system prompt for the sub agent.
+45:33
+We can also specify the model that we want to use with the sub agent and then all of the tools that it's going to have access to.
+45:42
+And this tools list is really like the allowed tools for this sub agent. Now one really important detail here is any tool that you add here has to be an allowed
+45:55
+tool on this parent agent. And that's because sub agents inherit the tools from their parent agent that spawns them.
+46:03
+So if you didn't have certain tools available here, then there's no way that your sub agent
+46:09
+would have access to those tools. down we have our researcher which was the second agent that you saw in the demo. And again here
+46:17
+we're defining it with a nice system prompt and this one only has access to subset of tools. It
+46:24
+doesn't need playwright. It just needs to be able to search the web and then write to files to create
+46:30
+those reports. But notice that we don't have our third agent here which was to create documentation.
+46:38
+And that's because if we scroll back up in these options, we have our setting sources equal to
+46:44
+project. So again, we're loading the cloud settings from this project. That includes the cloud.md.
+46:51
+And then also the settings that we've defined up here in dot cloud. And notice that we have a
+46:58
+sub folder called agents. So here we've defined another agent called the document writer,
+47:05
+Just like almost any of the cloud agent options, which you can define in the code or in a file in
+47:12
+this dot cloud folder. Similarly, you can define agents either way. So you saw the other two that
+47:18
+we defined in the code. But you can also have them loaded from markdown files in this sub directory.
+47:25
+So it is important to note, just like some of the other settings, if we had multiple agents
+47:32
+defined, let's say we have some defined in files, and then we have an overlapping name
+47:37
+here for an agent that we're defining in code. The agent that we've defined in code is going
+47:43
+to overwrite any agent that you're loading from files. So that's generally true for any
+47:48
+option that you're specifying here. These in code options are always going to override
+47:54
+whatever you have loaded from the files. And at the bottom here, of course, we're adding our Playwright MCP server. The rest of this is again exactly the same. So actually, if
+48:06
+we scroll up, this file is kind of big, and we just collapse the cloud agent options here,
+48:13
+you can see that this shrinks down to exactly what we've been seeing before. So nothing's changed about the code, we're just expanding the capabilities of this agent by adding more
+48:24
+options and settings. And that's it. This is literally the file that I ran to demo at the start.
+48:32
+So hopefully you can see the power of the Codd agent SDK and how easy it is to get started and
+48:40
+really build something super powerful in just a few lines of code. I encourage you to take this
+48:47
+file and customize it, add more mcp servers and really make it your own and see how far you can
+48:54
+personal assistant and if you are able to extend the functionality and build something really cool then I would love if you guys shared that with me and the
+49:02
+rest of the community in the comments I would love to see what you guys build with it. That is gonna do it for today's video I want to thank you guys so much
+49:11
+for watching the video until the end and make sure if you are new here to
+49:16
+subscribe so that you can catch all of my future videos including the next one where I'm going to show you the full version of this personal agent that I
+49:26
+use every day. And with that, thanks again and I hope to see you in the next one. [Music]
+✖
