@@ -79,13 +79,13 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 
 ## Next Action
 
-**What to do next:** Begin Story 2.2 implementation (Conversation History Logging)
+**What to do next:** Validate Story 2.2 specification and mark ready for development
 
-**Current Step:** Story 2.1 approved and complete
+**Current Step:** Story 2.2 drafted, ready for story-ready validation
 
-**Agent:** User (Mike) ready to assign next story to DEV
+**Agent:** SM (Bob) or User (Mike)
 
-**Why this step:** Story 2.1 delivered successfully with all 6 acceptance criteria met, 58 tests passing, and full implementation complete. Memory system foundation ready for next stories in EPIC-2.
+**Why this step:** Story 2.2 specification complete with 7 acceptance criteria, technical implementation plan, and testing strategy. Ready for SM review to validate completeness and approve for development.
 
 **Sprint 0 Delivered:**
 - ✅ 31/31 story points completed (100%)
@@ -167,6 +167,7 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 - **2025-10-15**: Completed story-context for Story 2.1 (Business Context Storage). Context file: docs/stories/story-context-EPIC-2.2.1.xml. Assembled comprehensive implementation context with 6 acceptance criteria, 4 documentation references, 5 code artifacts, dependency specifications, 10 development constraints, 6 API interfaces, and 15 test ideas. Next: DEV agent should run dev-story to implement.
 - **2025-10-15**: Completed dev-story for Story 2.1 (Business Context Storage). All tasks complete, tests passing (58 passed, 1 skipped - 100% pass rate). Created src/memory.py (4 functions), tests/test_memory.py (28 test cases), .claude/hooks/context_detector.py. Modified main.py for context loading, updated settings.json for hook registration. All 6 acceptance criteria validated. Story status: Ready for Review. Next: User reviews and runs story-approved when satisfied with implementation.
 - **2025-10-15**: Completed story-approved for Story 2.1 (Business Context Storage). User (Mike) approved story completion. Status updated to DONE. Sprint 1 progress: 5/25 points delivered (20%). Overall project progress: 36/218 points (54% considering Sprint 0 baseline). Next: Begin Story 2.2 (Conversation History Logging) - ready for create-story workflow to draft full story specification from epic description.
+- **2025-10-15**: Completed create-story for Story 2.2 (Conversation History Logging). Drafted comprehensive story specification with 7 acceptance criteria (JSONL log creation, entry structure, user/agent logging, history API, hook integration, privacy/performance). Technical plan: Extend memory.py with 5 functions, update log_agent_actions.py hook, add session ID tracking. Testing strategy: 15+ unit tests, 6 integration scenarios. Story saved to docs/stories/story-2.2.md. Status: Draft. Next: Run story-ready workflow for SM validation.
 
 ---
 
