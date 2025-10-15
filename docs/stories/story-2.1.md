@@ -4,7 +4,7 @@
 **Story Points:** 5
 **Priority:** P0 (Must Have - MVP Blocker)
 **Sprint:** Sprint 1
-**Status:** Draft
+**Status:** Ready
 **Created:** 2025-10-15
 **Author:** Bob (Scrum Master)
 
