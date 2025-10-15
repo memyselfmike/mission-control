@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+
+  <metadata>
+    <epicId>EPIC-2</epicId>
+    <storyId>2.2</storyId>
+    <title>Conversation History Logging</title>
+    <points>5</points>
+    <priority>P0</priority>
+    <status>Ready</status>
+    <created>2025-10-15</created>
+    <approved>2025-10-15</approved>
+    <qualityScore>9.5</qualityScore>
+  </metadata>
+
+  <story>
+    <userStory>
+      As a Chief of Staff agent (Alex), I want to log all conversation interactions to structured history files, so that I can reference past conversations, track interaction patterns, and provide context-aware responses across sessions.
+    </userStory>
+
+    <description>
+      Implement conversation history logging system that captures all agent interactions (user messages and agent responses) in timestamped JSONL (JSON Lines) format. Each entry includes metadata (timestamp, agent name, message role, content), enabling conversation replay, pattern analysis, and context loading for future sessions.
+    </description>
+  </story>
+
+  <acceptanceCriteria count="7">
+    <criterion id="AC-1" priority="critical">
+      <title>JSONL Log File Creation</title>
+      <description>System logs each interaction to data/memory/interaction_logs/{YYYY-MM-DD}.jsonl</description>
+      <validation>
+        - JSONL file created with current date in filename
+        - Each line is valid JSON (parseable independently)
+        - File organized by date (one file per day)
+        - Directory created automatically
+        - File is append-only (never overwrites)
+      </validation>
+    </criterion>
+
+    <criterion id="AC-2" priority="critical">
+      <title>Log Entry Structure</title>
+      <description>Log entries conform to defined JSONL schema with all required fields</description>
+      <schema>
+        {
+          "timestamp": "ISO 8601 with microseconds",
+          "session_id": "UUID string",
+          "agent": "Agent name (Alex, Jordan, Quinn, etc.)",
+          "role": "user | assistant",
+          "content": "Full message text",
+          "metadata": {
+            "model": "string",
+            "turn_number": int,
+            "tokens": int (optional)
+          }
+        }
+      </schema>
+    </criterion>
+
+    <criterion id="AC-3" priority="high">
+      <title>User Message Logging</title>
+      <description>User messages logged with role="user" before agent response</description>
+      <validation>
+        - User messages logged before agent response
+        - agent field set to "User"
+        - role field set to "user"
+        - Full content captured
+        - Timestamp reflects send time
+      </validation>
+    </criterion>
+
+    <criterion id="AC-4" priority="high">
+      <title>Agent Response Logging</title>
+      <description>Agent responses logged with role="assistant" and correct agent name</description>
+      <validation>
+        - Agent name captured (Alex, Jordan, Quinn, Taylor, Sam, Morgan)
+        - role field set to "assistant"
+        - Full response captured
+        - Timestamp reflects completion time
+        - Turn number increments correctly
+      </validation>
+    </criterion>
+
+    <criterion id="AC-5" priority="critical">
+      <title>History Retrieval API</title>
+      <description>Python API functions to query conversation history</description>
+      <functions>
+        - load_conversation_history(date=None, limit=None) → List[dict]
+        - get_recent_interactions(hours=24, limit=50) → List[dict]
+        - search_conversations(query: str, days=7) → List[dict]
+        - get_session_history(session_id: str) → List[dict]
+        - All handle missing files gracefully (return empty list)
+      </functions>
+    </criterion>
+
+    <criterion id="AC-6" priority="high">
+      <title>Hook Integration</title>
+      <description>log_agent_actions.py hook appends JSONL entries on Stop event</description>
+      <validation>
+        - Hook receives agent response via stdin/argv
+        - Extracts agent name, timestamp, content
+        - Appends to JSONL without blocking
+        - Execution completes in &lt;200ms
+        - Errors logged but don't crash app
+      </validation>
+    </criterion>
+
+    <criterion id="AC-7" priority="medium">
+      <title>Privacy &amp; Performance</title>
+      <description>Privacy measures and performance targets enforced</description>
+      <validation>
+        - Files in gitignored data/memory/interaction_logs/
+        - Owner-only permissions on Unix (0o600)
+        - JSONL enables streaming (low memory)
+        - Old logs retained (no auto-delete)
+        - No external data transmission
+      </validation>
+    </criterion>
+  </acceptanceCriteria>
+
+  <documentation>
+    <doc id="PRD" section="FR-7">
+      <path>D:\Mission Control\docs\PRD.md</path>
+      <relevance>Conversation History Persistence functional requirement</relevance>
+    </doc>
+
+    <doc id="Architecture" section="7">
+      <path>D:\Mission Control\docs\ARCHITECTURE.md</path>
+      <relevance>Memory and Persistence architecture patterns</relevance>
+    </doc>
+
+    <doc id="Epics" section="EPIC-2">
+      <path>D:\Mission Control\docs\epics.md</path>
+      <relevance>EPIC-2 Persistent Memory System context</relevance>
+    </doc>
+
+    <doc id="Story-2.1" section="Business Context">
+      <path>D:\Mission Control\docs\stories\story-2.1.md</path>
+      <relevance>Completed Story 2.1 provides memory.py module to extend</relevance>
+    </doc>
+  </documentation>
+
+  <codeArtifacts>
+    <artifact id="memory-module" status="exists">
+      <path>mission-control/src/memory.py</path>
+      <lines>285</lines>
+      <description>Existing memory module from Story 2.1 with business context functions</description>
+      <functions>
+        - load_business_context() → dict
+        - save_business_context(context) → bool
+        - update_business_context(section, data) → bool
+        - get_context_summary() → str
+        - get_context_for_prompt() → str
+        - _ensure_memory_directory() → None (helper)
+        - _get_empty_context() → dict (helper)
+      </functions>
+      <constants>
+        - MEMORY_DIR = Path("data/memory")
+        - BUSINESS_CONTEXT_FILE = MEMORY_DIR / "business_context.json"
+      </constants>
+      <imports>
+        - json, os, datetime.datetime, pathlib.Path, typing.Dict/Any/Optional
+      </imports>
+      <notes>
+        Story 2.2 will ADD 5 new history functions to this existing module.
+        Pattern: Similar error handling, Path usage, graceful degradation.
+      </notes>
+    </artifact>
+
+    <artifact id="hook-log-actions" status="exists">
+      <path>mission-control/.claude/hooks/log_agent_actions.py</path>
+      <description>Existing hook that logs agent actions - needs JSONL conversion</description>
+      <notes>
+        Current implementation logs to files but not in JSONL format.
+        Story 2.2 will UPDATE this hook to write JSONL entries.
+        Hook executes on Stop event when agent completes response.
+      </notes>
+    </artifact>
+
+    <artifact id="main-loop" status="exists">
+      <path>mission-control/src/main.py</path>
+      <description>Main conversation loop - needs session ID tracking and user logging</description>
+      <notes>
+        Story 2.2 will ADD:
+        - Session ID generation (UUID) at conversation start
+        - User message logging before sending to agent
+        - Session ID passed to hooks via environment variable
+      </notes>
+    </artifact>
+
+    <artifact id="test-memory" status="exists">
+      <path>mission-control/tests/test_memory.py</path>
+      <lines>466</lines>
+      <description>Existing test suite for memory.py from Story 2.1</description>
+      <testCount>28</testCount>
+      <notes>
+        Story 2.2 will ADD 15+ new tests for history functions.
+        Pattern: Use pytest fixtures, temp directories, comprehensive scenarios.
+      </notes>
+    </artifact>
+
+    <artifact id="settings" status="exists">
+      <path>mission-control/.claude/settings.json</path>
+      <description>Hook configuration - log_agent_actions already registered</description>
+      <notes>
+        Hook already registered on Stop event.
+        No changes needed unless hook signature changes.
+      </notes>
+    </artifact>
+  </codeArtifacts>
+
+  <dependencies>
+    <dependency id="python" version="3.13+">
+      <package>Python runtime</package>
+      <usage>Core language - async/await, pathlib, typing</usage>
+    </dependency>
+
+    <dependency id="pytest" version="latest">
+      <package>pytest</package>
+      <usage>Test framework - unit and integration tests</usage>
+    </dependency>
+
+    <dependency id="stdlib">
+      <packages>json, os, uuid, datetime, pathlib, typing, re</packages>
+      <usage>Standard library - no external dependencies needed</usage>
+    </dependency>
+  </dependencies>
+
+  <constraints>
+    <constraint id="C1" type="technical" priority="high">
+      <title>JSONL Format Required</title>
+      <description>Must use JSON Lines format (one JSON object per line) for log files</description>
+      <rationale>Enables streaming reads, human-readable, industry standard for logs</rationale>
+    </constraint>
+
+    <constraint id="C2" type="performance" priority="high">
+      <title>Hook Execution Time</title>
+      <description>Hook must execute in &lt;200ms to avoid conversation latency</description>
+      <rationale>Logging must be transparent to user experience</rationale>
+    </constraint>
+
+    <constraint id="C3" type="performance" priority="medium">
+      <title>Log Write Performance</title>
+      <description>Individual log writes must complete in &lt;50ms</description>
+      <rationale>Append-only writes are fast, but measure to ensure no bottlenecks</rationale>
+    </constraint>
+
+    <constraint id="C4" type="technical" priority="high">
+      <title>Daily File Rotation</title>
+      <description>One JSONL file per day: {YYYY-MM-DD}.jsonl</description>
+      <rationale>Balances file size vs file count, easy to archive/prune</rationale>
+    </constraint>
+
+    <constraint id="C5" type="technical" priority="high">
+      <title>Append-Only Files</title>
+      <description>Log files must be append-only, never overwrite or delete entries</description>
+      <rationale>Prevents data loss, enables concurrent reads</rationale>
+    </constraint>
+
+    <constraint id="C6" type="security" priority="medium">
+      <title>File Permissions</title>
+      <description>Unix: Set file permissions to 0o600 (owner read+write only)</description>
+      <rationale>Conversation history may contain sensitive business data</rationale>
+    </constraint>
+
+    <constraint id="C7" type="technical" priority="high">
+      <title>Graceful Degradation</title>
+      <description>Logging errors must not crash main application</description>
+      <rationale>Logging is important but not critical - conversation must continue</rationale>
+    </constraint>
+
+    <constraint id="C8" type="technical" priority="medium">
+      <title>Streaming Reads</title>
+      <description>History loading must use streaming to avoid loading entire file into memory</description>
+      <rationale>Log files can grow large (thousands of entries)</rationale>
+    </constraint>
+
+    <constraint id="C9" type="technical" priority="medium">
+      <title>Session ID Uniqueness</title>
+      <description>Use UUID v4 for session IDs to ensure uniqueness</description>
+      <rationale>Enables multi-session analysis, extremely low collision probability</rationale>
+    </constraint>
+
+    <constraint id="C10" type="compatibility" priority="high">
+      <title>Windows Path Handling</title>
+      <description>Use Path() from pathlib for cross-platform path handling</description>
+      <rationale>Application runs on Windows, must handle Windows paths correctly</rationale>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface id="IF1" type="function">
+      <signature>log_interaction(agent: str, role: str, content: str, metadata: dict = None) → bool</signature>
+      <description>Log a single conversation interaction to JSONL file</description>
+      <parameters>
+        - agent: Agent name ("User", "Alex", "Jordan", etc.)
+        - role: "user" or "assistant"
+        - content: Full message text
+        - metadata: Optional dict with model, turn_number, tokens
+      </parameters>
+      <returns>True if logged successfully, False otherwise</returns>
+      <notes>
+        - Creates directory if missing
+        - Appends to current date's JSONL file
+        - Adds timestamp and session_id automatically
+        - Sets file permissions on Unix
+      </notes>
+    </interface>
+
+    <interface id="IF2" type="function">
+      <signature>load_conversation_history(date: str = None, limit: int = None) → List[dict]</signature>
+      <description>Load conversation history from JSONL files</description>
+      <parameters>
+        - date: Optional date string (YYYY-MM-DD), defaults to today
+        - limit: Optional max entries to return
+      </parameters>
+      <returns>List of conversation entry dicts, sorted by timestamp</returns>
+      <notes>
+        - Returns empty list if file missing
+        - Skips corrupted JSON lines with warning
+        - Streams file (doesn't load all into memory)
+        - Returns most recent entries if limit specified
+      </notes>
+    </interface>
+
+    <interface id="IF3" type="function">
+      <signature>get_recent_interactions(hours: int = 24, limit: int = 50) → List[dict]</signature>
+      <description>Get recent interactions within specified time range</description>
+      <parameters>
+        - hours: How many hours back to search (default 24)
+        - limit: Max entries to return (default 50)
+      </parameters>
+      <returns>List of conversation entries from last N hours</returns>
+      <notes>
+        - Searches across multiple day files if needed
+        - Filters by timestamp
+        - Returns newest entries first
+      </notes>
+    </interface>
+
+    <interface id="IF4" type="function">
+      <signature>search_conversations(query: str, days: int = 7) → List[dict]</signature>
+      <description>Search conversation history for matching content</description>
+      <parameters>
+        - query: Search string (case-insensitive substring match)
+        - days: How many days back to search (default 7)
+      </parameters>
+      <returns>List of matching conversation entries</returns>
+      <notes>
+        - Searches across multiple day files
+        - Case-insensitive substring matching
+        - Can optionally use regex for advanced search
+        - Returns newest matches first
+      </notes>
+    </interface>
+
+    <interface id="IF5" type="function">
+      <signature>get_session_history(session_id: str) → List[dict]</signature>
+      <description>Get all interactions from a specific session</description>
+      <parameters>
+        - session_id: UUID string identifying the session
+      </parameters>
+      <returns>List of all entries from that session, chronological order</returns>
+      <notes>
+        - Searches across all JSONL files (session may span multiple days)
+        - Returns entries in chronological order
+        - Empty list if session not found
+      </notes>
+    </interface>
+
+    <interface id="IF6" type="constant">
+      <signature>INTERACTION_LOGS_DIR = MEMORY_DIR / "interaction_logs"</signature>
+      <description>Directory constant for interaction log storage</description>
+      <notes>Add to memory.py module-level constants</notes>
+    </interface>
+  </interfaces>
+
+  <testIdeas count="18">
+    <test id="T1" category="unit" ac="AC-1">
+      <name>test_log_interaction_creates_jsonl_file</name>
+      <description>Verify log_interaction() creates JSONL file with correct date</description>
+      <scenario>Call log_interaction(), assert file exists at data/memory/interaction_logs/{today}.jsonl</scenario>
+    </test>
+
+    <test id="T2" category="unit" ac="AC-1">
+      <name>test_log_interaction_appends_not_overwrites</name>
+      <description>Verify multiple calls append to file, don't overwrite</description>
+      <scenario>Call log_interaction() twice, assert file has 2 lines</scenario>
+    </test>
+
+    <test id="T3" category="unit" ac="AC-2">
+      <name>test_log_entry_schema_valid</name>
+      <description>Verify logged entry conforms to JSONL schema</description>
+      <scenario>Log interaction, read file, parse JSON, assert all required fields present</scenario>
+    </test>
+
+    <test id="T4" category="unit" ac="AC-2">
+      <name>test_log_entry_timestamp_iso8601</name>
+      <description>Verify timestamp in ISO 8601 format with microseconds</description>
+      <scenario>Log interaction, parse timestamp, assert format matches ISO 8601</scenario>
+    </test>
+
+    <test id="T5" category="unit" ac="AC-3">
+      <name>test_user_message_logging</name>
+      <description>Verify user messages logged with role="user"</description>
+      <scenario>Call log_interaction(agent="User", role="user", ...), assert role field correct</scenario>
+    </test>
+
+    <test id="T6" category="unit" ac="AC-4">
+      <name>test_agent_response_logging</name>
+      <description>Verify agent responses logged with role="assistant"</description>
+      <scenario>Call log_interaction(agent="Alex", role="assistant", ...), assert agent and role correct</scenario>
+    </test>
+
+    <test id="T7" category="unit" ac="AC-5">
+      <name>test_load_conversation_history_missing_file</name>
+      <description>Verify load_conversation_history() returns empty list if file missing</description>
+      <scenario>Call with non-existent date, assert returns []</scenario>
+    </test>
+
+    <test id="T8" category="unit" ac="AC-5">
+      <name>test_load_conversation_history_parses_jsonl</name>
+      <description>Verify load_conversation_history() parses JSONL correctly</description>
+      <scenario>Create JSONL file with 3 entries, load, assert returns 3 dicts</scenario>
+    </test>
+
+    <test id="T9" category="unit" ac="AC-5">
+      <name>test_load_conversation_history_with_limit</name>
+      <description>Verify limit parameter restricts returned entries</description>
+      <scenario>File has 10 entries, load with limit=5, assert returns 5 most recent</scenario>
+    </test>
+
+    <test id="T10" category="unit" ac="AC-5">
+      <name>test_get_recent_interactions_time_filter</name>
+      <description>Verify get_recent_interactions() filters by hours</description>
+      <scenario>Create entries from 2 days ago and today, get_recent(hours=24), assert only today's returned</scenario>
+    </test>
+
+    <test id="T11" category="unit" ac="AC-5">
+      <name>test_search_conversations_finds_matches</name>
+      <description>Verify search_conversations() finds matching content</description>
+      <scenario>Log entries with "quarterly goals" and "daily tasks", search "goals", assert correct entry returned</scenario>
+    </test>
+
+    <test id="T12" category="unit" ac="AC-5">
+      <name>test_get_session_history_filters_by_session</name>
+      <description>Verify get_session_history() returns only specified session</description>
+      <scenario>Log entries with 2 different session IDs, get_session_history(id1), assert only id1 entries returned</scenario>
+    </test>
+
+    <test id="T13" category="unit" ac="AC-7">
+      <name>test_corrupted_jsonl_line_handling</name>
+      <description>Verify corrupted JSON lines skipped gracefully</description>
+      <scenario>Create JSONL with 1 valid, 1 invalid, 1 valid line, load, assert returns 2 entries</scenario>
+    </test>
+
+    <test id="T14" category="unit" ac="AC-7">
+      <name>test_file_permissions_unix</name>
+      <description>Verify file permissions set to 0o600 on Unix</description>
+      <scenario>Skip on Windows, log entry, check file.stat().st_mode, assert 0o600</scenario>
+    </test>
+
+    <test id="T15" category="integration" ac="AC-1,AC-3,AC-4">
+      <name>test_full_conversation_logging</name>
+      <description>Integration: Full user+agent conversation logged correctly</description>
+      <scenario>Log user message, then agent response, verify both in file with same session_id</scenario>
+    </test>
+
+    <test id="T16" category="integration" ac="AC-1,AC-5">
+      <name>test_multi_day_conversation</name>
+      <description>Integration: Conversations spanning multiple days</description>
+      <scenario>Create logs for 2 dates, get_recent_interactions(hours=48), verify entries from both days</scenario>
+    </test>
+
+    <test id="T17" category="integration" ac="AC-5">
+      <name>test_search_across_multiple_files</name>
+      <description>Integration: Search finds matches across multiple day files</description>
+      <scenario>Create logs for 3 days with keyword, search_conversations(query, days=7), verify all matches returned</scenario>
+    </test>
+
+    <test id="T18" category="integration" ac="AC-6">
+      <name>test_session_replay_chronological</name>
+      <description>Integration: Session history returned in chronological order</description>
+      <scenario>Log 5 interactions in session, get_session_history(), verify order by turn_number</scenario>
+    </test>
+  </testIdeas>
+
+  <implementation>
+    <step id="1" order="1" priority="critical">
+      <title>Extend memory.py with history constants</title>
+      <description>Add INTERACTION_LOGS_DIR constant and helper for directory creation</description>
+      <files>mission-control/src/memory.py</files>
+      <code>
+        # Add after existing constants
+        INTERACTION_LOGS_DIR = MEMORY_DIR / "interaction_logs"
+
+        def _ensure_logs_directory() -> None:
+            """Create interaction logs directory if it doesn't exist."""
+            INTERACTION_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+      </code>
+    </step>
+
+    <step id="2" order="2" priority="critical">
+      <title>Implement log_interaction() function</title>
+      <description>Core function to log single interaction to JSONL</description>
+      <files>mission-control/src/memory.py</files>
+      <estimatedLines>40</estimatedLines>
+      <dependencies>datetime, json, uuid, os, pathlib</dependencies>
+    </step>
+
+    <step id="3" order="3" priority="high">
+      <title>Implement load_conversation_history() function</title>
+      <description>Load and parse JSONL file for specific date</description>
+      <files>mission-control/src/memory.py</files>
+      <estimatedLines>35</estimatedLines>
+      <notes>Handle corrupted lines, missing files, streaming reads</notes>
+    </step>
+
+    <step id="4" order="4" priority="high">
+      <title>Implement get_recent_interactions() function</title>
+      <description>Load recent interactions within time range</description>
+      <files>mission-control/src/memory.py</files>
+      <estimatedLines>40</estimatedLines>
+      <notes>May need to read multiple day files</notes>
+    </step>
+
+    <step id="5" order="5" priority="medium">
+      <title>Implement search_conversations() function</title>
+      <description>Search conversation history for matching content</description>
+      <files>mission-control/src/memory.py</files>
+      <estimatedLines>45</estimatedLines>
+      <notes>Case-insensitive substring matching across multiple files</notes>
+    </step>
+
+    <step id="6" order="6" priority="medium">
+      <title>Implement get_session_history() function</title>
+      <description>Get all interactions from specific session</description>
+      <files>mission-control/src/memory.py</files>
+      <estimatedLines>40</estimatedLines>
+      <notes>Search across all JSONL files for session_id</notes>
+    </step>
+
+    <step id="7" order="7" priority="critical">
+      <title>Update log_agent_actions.py hook for JSONL</title>
+      <description>Convert hook to write JSONL entries</description>
+      <files>mission-control/.claude/hooks/log_agent_actions.py</files>
+      <notes>
+        Use log_interaction() function from memory module.
+        Extract agent name, content from hook event data.
+        Handle errors gracefully.
+      </notes>
+    </step>
+
+    <step id="8" order="8" priority="critical">
+      <title>Add session ID tracking to main.py</title>
+      <description>Generate UUID session ID at conversation start</description>
+      <files>mission-control/src/main.py</files>
+      <code>
+        import uuid
+
+        # In main() function, before conversation loop:
+        session_id = str(uuid.uuid4())
+        os.environ['SESSION_ID'] = session_id
+      </code>
+    </step>
+
+    <step id="9" order="9" priority="critical">
+      <title>Add user message logging to main.py</title>
+      <description>Log user messages before sending to agent</description>
+      <files>mission-control/src/main.py</files>
+      <code>
+        from memory import log_interaction
+
+        # After user input:
+        user_message = input("You: ")
+        log_interaction(agent="User", role="user", content=user_message)
+      </code>
+    </step>
+
+    <step id="10" order="10" priority="high">
+      <title>Create comprehensive test suite</title>
+      <description>Add 15+ unit tests and 3+ integration tests</description>
+      <files>mission-control/tests/test_conversation_history.py</files>
+      <testCount>18</testCount>
+      <notes>
+        Use pytest fixtures for temp directories and sample data.
+        Follow patterns from test_memory.py.
+        Test all 7 acceptance criteria.
+      </notes>
+    </step>
+
+    <step id="11" order="11" priority="medium">
+      <title>Run tests and fix any failures</title>
+      <description>Execute pytest, fix any failing tests, achieve 100% pass rate</description>
+      <command>uv run pytest tests/test_conversation_history.py -v</command>
+    </step>
+
+    <step id="12" order="12" priority="low">
+      <title>Manual testing and validation</title>
+      <description>Run application, have conversation, verify logs created correctly</description>
+      <validation>
+        - Start app, have 3-turn conversation
+        - Check data/memory/interaction_logs/{date}.jsonl exists
+        - Verify JSONL format valid
+        - Check session IDs match
+        - Test search and history retrieval functions
+      </validation>
+    </step>
+  </implementation>
+
+  <risks>
+    <risk id="R1" impact="high" probability="high">
+      <title>JSONL files grow very large</title>
+      <mitigation>Daily rotation, pruning in STORY-2.5, lazy loading, streaming reads</mitigation>
+    </risk>
+
+    <risk id="R2" impact="high" probability="low">
+      <title>Disk space exhaustion</title>
+      <mitigation>Monitor disk usage, warn if low, graceful degradation (stop logging but don't crash)</mitigation>
+    </risk>
+
+    <risk id="R3" impact="medium" probability="medium">
+      <title>Performance degradation with history loading</title>
+      <mitigation>Lazy loading, limit parameters, streaming reads, indexed search with grep</mitigation>
+    </risk>
+
+    <risk id="R4" impact="medium" probability="low">
+      <title>Hook execution slowdown</title>
+      <mitigation>Keep hook &lt;200ms, async writes, performance testing</mitigation>
+    </risk>
+
+    <risk id="R5" impact="medium" probability="low">
+      <title>Log file corruption from concurrent writes</title>
+      <mitigation>Single-threaded app, append-only writes, file locking if needed</mitigation>
+    </risk>
+  </risks>
+
+  <notes>
+    <note type="architecture">
+      JSONL format chosen for simplicity, streaming capability, and human-readability.
+      Industry standard for log files, no special parsing needed.
+    </note>
+
+    <note type="design">
+      Daily file rotation (one file per day) balances file size vs file count.
+      Easy to archive old logs, prune by date, and organize chronologically.
+    </note>
+
+    <note type="implementation">
+      Session ID (UUID v4) enables tracking conversations across app restarts.
+      Passed to hooks via environment variable for consistency.
+    </note>
+
+    <note type="testing">
+      Follow patterns from test_memory.py - use pytest fixtures, temp directories,
+      comprehensive scenario coverage. Aim for 100% pass rate.
+    </note>
+
+    <note type="integration">
+      Hook approach ensures logging doesn't block main conversation loop.
+      Errors in logging should never crash the application.
+    </note>
+
+    <note type="performance">
+      grep/ripgrep sufficient for search - no database complexity needed for MVP.
+      Can add full-text search later if performance becomes issue.
+    </note>
+
+    <note type="comparison">
+      Story 2.1 (Business Context): High-level business info (company, values, goals)
+      Story 2.2 (Conversation History): Interaction logs (who said what when)
+      Complementary but distinct purposes.
+    </note>
+  </notes>
+
+</story-context>
