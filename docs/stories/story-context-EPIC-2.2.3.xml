@@ -1,0 +1,791 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context>
+  <metadata>
+    <story-id>STORY-2.3</story-id>
+    <epic-id>EPIC-2</epic-id>
+    <title>Preference Learning System</title>
+    <story-points>6</story-points>
+    <priority>P0</priority>
+    <status>Ready</status>
+    <created>2025-10-15</created>
+    <approved>2025-10-15</approved>
+    <quality-score>9.7/10</quality-score>
+    <context-generated>2025-10-15</context-generated>
+  </metadata>
+
+  <user-story>
+    As a Chief of Staff agent (Alex), I want to learn and remember user preferences from conversations so that I can provide increasingly personalized and relevant responses without asking the same questions repeatedly.
+  </user-story>
+
+  <description>
+    Implement a preference learning system that analyzes conversation history to identify, extract, and persist user preferences including communication style, preferred frameworks, decision-making patterns, work habits, and domain-specific preferences. The system should detect preferences both explicitly stated ("I prefer OKRs over SMART goals") and implicitly demonstrated (consistently choosing morning planning sessions).
+
+    The learned preferences should be stored in a structured, human-readable format and automatically loaded on startup to inform agent behavior across all conversations.
+  </description>
+
+  <acceptance-criteria count="7">
+    <criterion id="AC-1" priority="critical">
+      <title>Preference Data Model</title>
+      <description>
+        Given the system needs to store diverse user preferences, when preferences are saved to storage, then the data model shall include 5 categories: communication_style, frameworks_and_methods, work_habits, agent_interactions, domain_specific.
+      </description>
+      <validation>
+        - JSON schema includes all 5 categories with proper structure
+        - communication_style: verbosity, formality, emoji_usage, response_style
+        - frameworks_and_methods: goal_setting, time_management, strategic_planning (arrays)
+        - work_habits: preferred_planning_time, meeting_preferences, decision_making_speed
+        - agent_interactions: delegation_style, feedback_frequency, preferred_agents (array)
+        - domain_specific: industry, role, team_size
+        - Includes last_updated timestamp (ISO 8601)
+        - Includes confidence_scores dict with confidence per category
+        - All fields optional (graceful handling of empty preferences)
+      </validation>
+    </criterion>
+
+    <criterion id="AC-2" priority="critical">
+      <title>Explicit Preference Detection</title>
+      <description>
+        Given a user makes an explicit preference statement, when the conversation contains phrases like "I prefer", "I like", "I always", "I usually", then the system shall extract and store the preference with high confidence (0.9+).
+      </description>
+      <validation>
+        - Pattern matching detects "I prefer OKRs" → frameworks_and_methods.goal_setting: ["OKRs"]
+        - Pattern matching detects "I like concise responses" → communication_style.verbosity: "concise"
+        - Pattern matching detects "I always plan in the morning" → work_habits.preferred_planning_time: "morning"
+        - Confidence score 0.9-1.0 for explicit statements
+        - Timestamps recorded for each preference
+        - Negative preferences handled: "I don't like X" → confidence 0.9, value negated
+      </validation>
+    </criterion>
+
+    <criterion id="AC-3" priority="high">
+      <title>Implicit Preference Learning</title>
+      <description>
+        Given conversation history shows repeated patterns, when analyzing historical interactions, then the system shall infer implicit preferences from behavior patterns with moderate confidence (0.5-0.7).
+      </description>
+      <validation>
+        - 3+ morning planning sessions (timestamps 6-10am) → infer preferred_planning_time: "morning"
+        - Consistently brief user messages → infer verbosity: "concise"
+        - Frequent delegation to Jordan → add "Jordan" to preferred_agents
+        - Confidence score 0.5-0.7 for implicit inferences
+        - Requires minimum 5 data points for pattern detection
+        - Pattern strength increases confidence within 0.5-0.7 range
+      </validation>
+    </criterion>
+
+    <criterion id="AC-4" priority="critical">
+      <title>Preference Storage and Retrieval</title>
+      <description>
+        Given preferences have been learned, when saving to storage, then preferences shall be persisted in data/memory/user_preferences.json with proper formatting, permissions, and backup handling.
+      </description>
+      <validation>
+        - File created at data/memory/user_preferences.json
+        - JSON formatted with 4-space indentation (human-readable)
+        - Backup created before overwriting (user_preferences.json.bak)
+        - File permissions 0o600 on Unix systems
+        - load_user_preferences() returns dict with all 5 categories
+        - Missing file returns empty default structure (no error)
+        - Corrupted JSON returns empty structure with warning logged
+        - Graceful degradation on all errors
+      </validation>
+    </criterion>
+
+    <criterion id="AC-5" priority="critical">
+      <title>Preference Update API</title>
+      <description>
+        Given new preferences need to be added or updated, when calling preference update functions, then the system shall provide 8 API functions for safe, atomic updates with validation.
+      </description>
+      <validation>
+        - update_preference(category, key, value, confidence) → bool implemented
+        - get_preference(category, key, default) → Any implemented
+        - get_preferences_summary() → str implemented (human-readable)
+        - get_preferences_for_prompt() → str implemented (agent prompts)
+        - merge_preferences(new_prefs, overwrite) → bool implemented
+        - load_user_preferences() → dict implemented
+        - save_user_preferences(prefs) → bool implemented
+        - analyze_conversation_for_preferences(history) → dict implemented
+        - All functions have proper error handling (no exceptions raised)
+        - Type hints and docstrings for all functions
+      </validation>
+    </criterion>
+
+    <criterion id="AC-6" priority="high">
+      <title>Preference Analysis Hook</title>
+      <description>
+        Given conversations complete, when Stop event fires, then preference detection hook shall analyze conversation for new preferences without blocking (<500ms execution).
+      </description>
+      <validation>
+        - .claude/hooks/preference_detector.py created
+        - Hook registered in .claude/settings.json for Stop event
+        - Hook analyzes last 10 conversation turns
+        - Explicit statements detected with regex patterns
+        - Hook execution completes in <500ms
+        - Errors logged to stderr with warning prefix
+        - Hook failures don't crash main application (graceful exit)
+        - Updates user_preferences.json when preferences detected
+        - Logs detected preferences to stderr for visibility
+      </validation>
+    </criterion>
+
+    <criterion id="AC-7" priority="medium">
+      <title>Confidence Tracking and Decay</title>
+      <description>
+        Given preferences may become stale over time, when preferences are stored, then confidence scores shall be tracked per preference for future decay handling.
+      </description>
+      <validation>
+        - Each preference has confidence score 0.0-1.0 stored
+        - Explicit statements start at 0.9-1.0 confidence
+        - Implicit inferences start at 0.5-0.7 confidence
+        - Repeated confirmations increase confidence (max 1.0)
+        - Contradictions decrease old preference to 0.0, set new to 0.9
+        - Timestamps enable future age-based decay (STORY-2.5)
+        - Confidence scores accessible via API
+        - Low confidence (<0.3) preferences not applied by agents
+      </validation>
+    </criterion>
+  </acceptance-criteria>
+
+  <technical-context>
+    <architecture>
+      <component name="Preference Storage">
+        <file>data/memory/user_preferences.json</file>
+        <format>JSON with 4-space indentation</format>
+        <schema>
+          {
+            "communication_style": {
+              "verbosity": "concise|detailed|balanced",
+              "formality": "casual|professional|formal",
+              "emoji_usage": "minimal|occasional|frequent",
+              "response_style": "direct|socratic|collaborative"
+            },
+            "frameworks_and_methods": {
+              "goal_setting": ["OKRs", "SMART", "Rocks"],
+              "time_management": ["Eisenhower Matrix", "Time Blocking"],
+              "strategic_planning": ["Vision/Traction", "Blue Ocean"]
+            },
+            "work_habits": {
+              "preferred_planning_time": "morning|afternoon|evening",
+              "meeting_preferences": "minimal|moderate|frequent",
+              "decision_making_speed": "fast|deliberate|varies"
+            },
+            "agent_interactions": {
+              "delegation_style": "autonomous|collaborative|directed",
+              "feedback_frequency": "frequent|occasional|minimal",
+              "preferred_agents": ["Alex", "Jordan", "Quinn"]
+            },
+            "domain_specific": {
+              "industry": "string",
+              "role": "string",
+              "team_size": "string"
+            },
+            "last_updated": "ISO 8601",
+            "confidence_scores": {
+              "communication_style": 0.85,
+              "frameworks_and_methods": 0.62
+            }
+          }
+        </schema>
+        <permissions>0o600 (Unix), standard (Windows)</permissions>
+        <backup>user_preferences.json.bak before overwrite</backup>
+      </component>
+
+      <component name="Preference API">
+        <module>src/memory.py</module>
+        <functions>
+          <function>
+            <signature>load_user_preferences() -> Dict[str, Any]</signature>
+            <description>Load preferences from JSON file, return empty structure if missing/corrupted</description>
+          </function>
+          <function>
+            <signature>save_user_preferences(prefs: Dict[str, Any]) -> bool</signature>
+            <description>Save preferences to JSON with backup, update timestamp, return success status</description>
+          </function>
+          <function>
+            <signature>update_preference(category: str, key: str, value: Any, confidence: float = 1.0) -> bool</signature>
+            <description>Update single preference atomically, merge with existing, validate category/key</description>
+          </function>
+          <function>
+            <signature>get_preference(category: str, key: str, default: Any = None) -> Any</signature>
+            <description>Retrieve single preference value, return default if not found</description>
+          </function>
+          <function>
+            <signature>get_preferences_summary() -> str</signature>
+            <description>Generate human-readable summary of learned preferences for display</description>
+          </function>
+          <function>
+            <signature>get_preferences_for_prompt() -> str</signature>
+            <description>Format preferences for agent system prompt (multiline, concise)</description>
+          </function>
+          <function>
+            <signature>merge_preferences(new_prefs: dict, overwrite: bool = False) -> bool</signature>
+            <description>Merge new preferences dict into existing, optionally overwrite conflicts</description>
+          </function>
+          <function>
+            <signature>analyze_conversation_for_preferences(history: List[dict]) -> dict</signature>
+            <description>Analyze conversation history, return detected preferences with confidence scores</description>
+          </function>
+        </functions>
+      </component>
+
+      <component name="Preference Detection Hook">
+        <file>.claude/hooks/preference_detector.py</file>
+        <trigger>Stop event (agent response complete)</trigger>
+        <execution-limit>500ms</execution-limit>
+        <responsibilities>
+          - Load recent conversation history (last 10 turns)
+          - Call analyze_conversation_for_preferences()
+          - Update user_preferences.json if preferences detected
+          - Log detected preferences to stderr
+          - Handle errors gracefully (no crashes)
+        </responsibilities>
+        <patterns>
+          <explicit>
+            - "I prefer X" (high confidence 0.95)
+            - "I like X" (high confidence 0.9)
+            - "I always X" (medium-high confidence 0.8)
+            - "I usually X" (medium confidence 0.7)
+            - "I don't like X" (high confidence 0.9, negative)
+          </explicit>
+          <implicit>
+            - Morning planning pattern (3+ sessions 6-10am) → confidence 0.6
+            - Brief messages pattern (avg <50 words, 5+ messages) → confidence 0.5
+            - Framework mentions (3+ OKR mentions) → confidence 0.65
+            - Agent preference (5+ delegations to Jordan) → confidence 0.7
+          </implicit>
+        </patterns>
+      </component>
+
+      <component name="Startup Integration">
+        <file>src/main.py</file>
+        <integration-point>
+          Load preferences on startup, include in agent system prompt alongside business context
+        </integration-point>
+        <code-example>
+          from memory import (
+              load_business_context,
+              load_user_preferences,
+              get_context_for_prompt,
+              get_preferences_for_prompt
+          )
+
+          # Load both business context and preferences
+          business_context = load_business_context()
+          user_prefs = load_user_preferences()
+
+          # Include in system prompt
+          context_text = get_context_for_prompt()
+          prefs_text = get_preferences_for_prompt()
+
+          system_prompt = f"""You are Alex, Chief of Staff.
+
+          Business Context:
+          {context_text}
+
+          User Preferences:
+          {prefs_text}
+
+          Adapt your communication style and recommendations based on these preferences.
+          """
+        </code-example>
+      </component>
+    </architecture>
+
+    <dependencies>
+      <prerequisite story="STORY-2.1" status="DONE">
+        Business Context Storage - memory.py module exists with proven JSON storage patterns
+      </prerequisite>
+      <prerequisite story="STORY-2.2" status="DONE">
+        Conversation History Logging - load_conversation_history() available for analysis
+      </prerequisite>
+      <prerequisite story="STORY-1.3" status="DONE">
+        Basic conversation loop - agents can access loaded preferences
+      </prerequisite>
+      <prerequisite story="STORY-1.5" status="DONE">
+        Hooks system - Stop event registration proven in Story 2.2
+      </prerequisite>
+    </dependencies>
+
+    <constraints>
+      <constraint id="PERF-1" type="performance">
+        Hook execution must complete in <500ms to avoid conversation latency
+      </constraint>
+      <constraint id="PERF-2" type="performance">
+        Preference loading on startup must complete in <100ms
+      </constraint>
+      <constraint id="DATA-1" type="data-integrity">
+        JSON file must always be valid (backup before overwrite)
+      </constraint>
+      <constraint id="DATA-2" type="data-integrity">
+        Confidence scores must be clamped to [0.0, 1.0] range
+      </constraint>
+      <constraint id="PRIV-1" type="privacy">
+        Preferences stored locally only (data/memory/ in .gitignore)
+      </constraint>
+      <constraint id="PRIV-2" type="privacy">
+        File permissions 0o600 on Unix (owner-only read/write)
+      </constraint>
+      <constraint id="ERROR-1" type="error-handling">
+        Missing file returns empty structure (no exception)
+      </constraint>
+      <constraint id="ERROR-2" type="error-handling">
+        Corrupted JSON logs warning, returns empty structure
+      </constraint>
+      <constraint id="ERROR-3" type="error-handling">
+        Hook errors must not crash main application
+      </constraint>
+      <constraint id="UX-1" type="usability">
+        JSON must be human-readable (4-space indent, clear keys)
+      </constraint>
+      <constraint id="UX-2" type="usability">
+        Manual edits to JSON file must be respected
+      </constraint>
+      <constraint id="TEST-1" type="testability">
+        Confidence scores must be inspectable and testable
+      </constraint>
+    </constraints>
+  </technical-context>
+
+  <code-artifacts>
+    <artifact id="memory-module" file="mission-control/src/memory.py" lines="562">
+      <description>
+        Existing memory module from Stories 2.1 and 2.2. Contains business context storage (5 functions, ~150 lines) and conversation history logging (5 functions, ~260 lines). Need to extend with 8 preference management functions (~250 lines estimated).
+      </description>
+      <relevant-sections>
+        <section lines="1-100">Module imports, constants, helper functions</section>
+        <section lines="100-200">Business context functions (Story 2.1)</section>
+        <section lines="300-562">Conversation history functions (Story 2.2)</section>
+      </relevant-sections>
+      <extension-point>
+        Add preference functions after conversation history section (line ~563)
+      </extension-point>
+      <patterns-to-follow>
+        - Graceful error handling (return empty/False, don't raise)
+        - Pathlib for cross-platform paths
+        - 4-space JSON indentation
+        - Backup before overwrite
+        - File permissions 0o600 on Unix
+        - Type hints and comprehensive docstrings
+        - Helper functions for common operations
+      </patterns-to-follow>
+    </artifact>
+
+    <artifact id="settings-json" file="mission-control/.claude/settings.json">
+      <description>
+        Hook configuration file. Currently registers context_detector and log_agent_actions hooks. Need to add preference_detector hook for Stop event.
+      </description>
+      <current-hooks>
+        - context_detector.py (Stop event)
+        - log_agent_actions.py (Stop event)
+      </current-hooks>
+      <new-hook>
+        {
+          "hooks": {
+            "stop": [
+              "python .claude/hooks/context_detector.py",
+              "python .claude/hooks/log_agent_actions.py",
+              "python .claude/hooks/preference_detector.py"
+            ]
+          }
+        }
+      </new-hook>
+    </artifact>
+
+    <artifact id="main-py" file="mission-control/src/main.py" lines="201">
+      <description>
+        Main conversation loop. Currently loads business context (Story 2.1) and sets up session tracking (Story 2.2). Need to add preference loading and include in system prompt.
+      </description>
+      <integration-location>Lines 93-125 (system prompt setup)</integration-location>
+      <existing-imports>
+        from memory import load_business_context, get_context_for_prompt, log_interaction
+      </existing-imports>
+      <new-imports>
+        from memory import load_user_preferences, get_preferences_for_prompt
+      </new-imports>
+      <modification>
+        Add preference loading after business context loading, include preferences in system prompt alongside business context
+      </modification>
+    </artifact>
+
+    <artifact id="test-memory" file="mission-control/tests/test_memory.py" lines="466">
+      <description>
+        Existing test suite for memory module. Contains 28 tests for business context (Story 2.1). Provides patterns for preference function tests.
+      </description>
+      <test-patterns>
+        - pytest fixtures for temp directories (monkeypatch)
+        - Class-based test organization (TestLoadPreferences, TestUpdatePreferences, etc.)
+        - Mock file operations for error scenarios
+        - Comprehensive docstrings
+        - Validation of file creation, permissions, backup
+        - Graceful error handling tests
+      </test-patterns>
+      <new-test-file>
+        Create tests/test_preferences.py following same patterns
+      </new-test-file>
+    </artifact>
+
+    <artifact id="gitignore" file="mission-control/.gitignore">
+      <description>
+        Git ignore file. Already excludes data/ directory, so user_preferences.json will not be tracked.
+      </description>
+      <confirmation>
+        Verify data/memory/user_preferences.json is ignored (already covered by data/ exclusion)
+      </confirmation>
+    </artifact>
+  </code-artifacts>
+
+  <implementation-plan>
+    <step id="1" order="1" priority="high">
+      <title>Add preference data structures to memory.py</title>
+      <description>Define _get_empty_preferences() helper and PREFERENCE_FILE constant</description>
+      <files>mission-control/src/memory.py</files>
+      <estimated-lines>40</estimated-lines>
+      <notes>
+        Follow pattern from _get_empty_context(). Return dict with all 5 categories, empty values, timestamp, confidence_scores dict.
+      </notes>
+    </step>
+
+    <step id="2" order="2" priority="high">
+      <title>Implement load_user_preferences() function</title>
+      <description>Load preferences from JSON, return empty structure if missing/corrupted</description>
+      <files>mission-control/src/memory.py</files>
+      <estimated-lines>30</estimated-lines>
+      <notes>
+        Similar to load_business_context(). Handle missing file, corrupted JSON, validate structure.
+      </notes>
+    </step>
+
+    <step id="3" order="3" priority="high">
+      <title>Implement save_user_preferences() function</title>
+      <description>Save preferences with backup, timestamp update, file permissions</description>
+      <files>mission-control/src/memory.py</files>
+      <estimated-lines>40</estimated-lines>
+      <notes>
+        Similar to save_business_context(). Create backup, write JSON, set permissions, handle errors.
+      </notes>
+    </step>
+
+    <step id="4" order="4" priority="high">
+      <title>Implement update_preference() function</title>
+      <description>Atomically update single preference with confidence score</description>
+      <files>mission-control/src/memory.py</files>
+      <estimated-lines>30</estimated-lines>
+      <notes>
+        Load prefs, validate category/key, update value and confidence, save. Similar to update_business_context().
+      </notes>
+    </step>
+
+    <step id="5" order="5" priority="high">
+      <title>Implement get_preference() function</title>
+      <description>Retrieve single preference value with default</description>
+      <files>mission-control/src/memory.py</files>
+      <estimated-lines>15</estimated-lines>
+      <notes>
+        Simple dict navigation with default fallback. Handle missing keys gracefully.
+      </notes>
+    </step>
+
+    <step id="6" order="6" priority="medium">
+      <title>Implement get_preferences_summary() function</title>
+      <description>Generate human-readable summary of learned preferences</description>
+      <files>mission-control/src/memory.py</files>
+      <estimated-lines>40</estimated-lines>
+      <notes>
+        Similar to get_context_summary(). Build readable string showing key preferences with confidence scores.
+      </notes>
+    </step>
+
+    <step id="7" order="7" priority="high">
+      <title>Implement get_preferences_for_prompt() function</title>
+      <description>Format preferences for agent system prompts</description>
+      <files>mission-control/src/memory.py</files>
+      <estimated-lines>50</estimated-lines>
+      <notes>
+        Similar to get_context_for_prompt(). Multiline format, concise, highlight high-confidence preferences.
+      </notes>
+    </step>
+
+    <step id="8" order="8" priority="medium">
+      <title>Implement merge_preferences() function</title>
+      <description>Merge new preferences dict into existing</description>
+      <files>mission-control/src/memory.py</files>
+      <estimated-lines>30</estimated-lines>
+      <notes>
+        Deep merge dicts, handle overwrite flag, update confidence scores, save result.
+      </notes>
+    </step>
+
+    <step id="9" order="9" priority="high">
+      <title>Implement analyze_conversation_for_preferences() function</title>
+      <description>Pattern matching and behavioral analysis for preference detection</description>
+      <files>mission-control/src/memory.py</files>
+      <estimated-lines>80</estimated-lines>
+      <notes>
+        Most complex function. Explicit pattern matching with regex, implicit inference from behavioral patterns. Return dict of detected preferences with confidence scores.
+      </notes>
+    </step>
+
+    <step id="10" order="10" priority="high">
+      <title>Create preference_detector.py hook</title>
+      <description>Hook to analyze conversations and detect preferences on Stop event</description>
+      <files>mission-control/.claude/hooks/preference_detector.py</files>
+      <estimated-lines>80</estimated-lines>
+      <notes>
+        Follow pattern from log_agent_actions.py. Load last 10 conversation turns, call analyze_conversation_for_preferences(), update preferences if detected. <500ms execution.
+      </notes>
+    </step>
+
+    <step id="11" order="11" priority="high">
+      <title>Register preference_detector hook</title>
+      <description>Add hook to .claude/settings.json Stop event</description>
+      <files>mission-control/.claude/settings.json</files>
+      <estimated-lines>1</estimated-lines>
+      <notes>
+        Add "python .claude/hooks/preference_detector.py" to hooks.stop array.
+      </notes>
+    </step>
+
+    <step id="12" order="12" priority="high">
+      <title>Integrate preference loading into main.py</title>
+      <description>Load preferences on startup, include in agent system prompt</description>
+      <files>mission-control/src/main.py</files>
+      <estimated-lines>10</estimated-lines>
+      <notes>
+        Add load_user_preferences() and get_preferences_for_prompt() imports. Load preferences after business context. Include in system prompt.
+      </notes>
+    </step>
+
+    <step id="13" order="13" priority="high">
+      <title>Create comprehensive test suite</title>
+      <description>Add 15+ unit tests and 3+ integration tests for preferences</description>
+      <files>mission-control/tests/test_preferences.py</files>
+      <estimated-lines>600</estimated-lines>
+      <notes>
+        Follow patterns from test_memory.py. Test all 8 functions, explicit/implicit detection, confidence scoring, hook integration, error handling.
+      </notes>
+    </step>
+
+    <step id="14" order="14" priority="high">
+      <title>Run tests and fix failures</title>
+      <description>Execute pytest, achieve 100% pass rate</description>
+      <files>all</files>
+      <estimated-time>30-60 minutes</estimated-time>
+      <notes>
+        Run: uv run pytest tests/test_preferences.py -v. Fix any failures. Ensure no regressions in existing tests.
+      </notes>
+    </step>
+
+    <step id="15" order="15" priority="medium">
+      <title>Manual validation</title>
+      <description>Test preference learning end-to-end with real conversations</description>
+      <files>manual testing</files>
+      <estimated-time>30 minutes</estimated-time>
+      <notes>
+        Run app, state explicit preferences, demonstrate behavioral patterns, verify detection and storage. Check JSON file format. Test restart and preference loading.
+      </notes>
+    </step>
+  </implementation-plan>
+
+  <test-ideas count="20">
+    <test id="T1" category="unit" ac="AC-1">
+      <title>Test _get_empty_preferences() returns proper structure</title>
+      <description>Verify empty preferences dict has all 5 categories with correct keys</description>
+    </test>
+
+    <test id="T2" category="unit" ac="AC-4">
+      <title>Test load_user_preferences() with missing file</title>
+      <description>Verify returns empty structure when file doesn't exist (no error)</description>
+    </test>
+
+    <test id="T3" category="unit" ac="AC-4">
+      <title>Test load_user_preferences() with corrupted JSON</title>
+      <description>Verify logs warning and returns empty structure on JSON decode error</description>
+    </test>
+
+    <test id="T4" category="unit" ac="AC-4">
+      <title>Test save_user_preferences() creates file and backup</title>
+      <description>Verify file created, backup made if exists, proper formatting</description>
+    </test>
+
+    <test id="T5" category="unit" ac="AC-4">
+      <title>Test save_user_preferences() updates timestamp</title>
+      <description>Verify last_updated field is updated on save</description>
+    </test>
+
+    <test id="T6" category="unit" ac="AC-5">
+      <title>Test update_preference() merges single preference</title>
+      <description>Verify can update single preference without affecting others</description>
+    </test>
+
+    <test id="T7" category="unit" ac="AC-5">
+      <title>Test update_preference() validates category</title>
+      <description>Verify returns False for invalid category</description>
+    </test>
+
+    <test id="T8" category="unit" ac="AC-5">
+      <title>Test get_preference() returns value or default</title>
+      <description>Verify retrieves existing preference or returns default if missing</description>
+    </test>
+
+    <test id="T9" category="unit" ac="AC-5">
+      <title>Test get_preferences_summary() formats readable text</title>
+      <description>Verify generates human-readable summary of preferences</description>
+    </test>
+
+    <test id="T10" category="unit" ac="AC-5">
+      <title>Test get_preferences_for_prompt() formats for agents</title>
+      <description>Verify generates multiline prompt-friendly format</description>
+    </test>
+
+    <test id="T11" category="unit" ac="AC-5">
+      <title>Test merge_preferences() combines dicts</title>
+      <description>Verify deep merge with and without overwrite flag</description>
+    </test>
+
+    <test id="T12" category="unit" ac="AC-2">
+      <title>Test analyze_conversation_for_preferences() detects "I prefer"</title>
+      <description>Verify regex detects "I prefer OKRs" and extracts correctly</description>
+    </test>
+
+    <test id="T13" category="unit" ac="AC-2">
+      <title>Test explicit detection with high confidence</title>
+      <description>Verify explicit statements get confidence 0.9-1.0</description>
+    </test>
+
+    <test id="T14" category="unit" ac="AC-3">
+      <title>Test implicit detection from behavioral patterns</title>
+      <description>Verify morning planning pattern (3+ sessions) detected</description>
+    </test>
+
+    <test id="T15" category="unit" ac="AC-3">
+      <title>Test implicit detection requires minimum data points</title>
+      <description>Verify <5 data points doesn't trigger pattern detection</description>
+    </test>
+
+    <test id="T16" category="unit" ac="AC-7">
+      <title>Test confidence score clamping</title>
+      <description>Verify confidence scores clamped to [0.0, 1.0] range</description>
+    </test>
+
+    <test id="T17" category="unit" ac="AC-7">
+      <title>Test confidence increase on repeated preference</title>
+      <description>Verify stating same preference multiple times increases confidence</description>
+    </test>
+
+    <test id="T18" category="integration" ac="AC-6">
+      <title>Test preference_detector hook integration</title>
+      <description>Full conversation → hook detects preference → stored correctly</description>
+    </test>
+
+    <test id="T19" category="integration" ac="AC-2,AC-3">
+      <title>Test explicit and implicit detection together</title>
+      <description>Verify both explicit statement and behavioral pattern detected in same session</description>
+    </test>
+
+    <test id="T20" category="integration" ac="AC-4,AC-5">
+      <title>Test preference persistence across app restart</title>
+      <description>Learn preference → save → restart → load → verify in system prompt</description>
+    </test>
+  </test-ideas>
+
+  <success-metrics>
+    <metric id="M1" type="accuracy">
+      80%+ of explicit preferences correctly detected and stored
+    </metric>
+    <metric id="M2" type="learning">
+      3+ behavioral patterns detected per week of active use
+    </metric>
+    <metric id="M3" type="efficiency">
+      30% reduction in redundant questions after 2 weeks of use
+    </metric>
+    <metric id="M4" type="awareness">
+      User can describe 5+ learned preferences when asked
+    </metric>
+    <metric id="M5" type="accuracy">
+      High-confidence (0.9+) preferences have 95%+ accuracy
+    </metric>
+    <metric id="M6" type="performance">
+      Preference detection hook executes in <300ms average
+    </metric>
+  </success-metrics>
+
+  <risks>
+    <risk id="R1" impact="medium" probability="medium">
+      <description>False preference detection (noise in conversations)</description>
+      <mitigation>Require high confidence (0.8+) before applying preferences in agent behavior</mitigation>
+    </risk>
+    <risk id="R2" impact="medium" probability="medium">
+      <description>Preferences lock in bad patterns early</description>
+      <mitigation>Confidence decay over time (STORY-2.5), easy manual editing of JSON file</mitigation>
+    </risk>
+    <risk id="R3" impact="high" probability="high">
+      <description>Detection patterns too brittle for real usage</description>
+      <mitigation>Start with simple patterns, iterate based on actual usage data. MVP focuses on obvious cases.</mitigation>
+    </risk>
+    <risk id="R4" impact="medium" probability="low">
+      <description>Performance impact on conversation flow</description>
+      <mitigation>Hook execution <500ms target, async processing, lightweight analysis only</mitigation>
+    </risk>
+    <risk id="R5" impact="low" probability="medium">
+      <description>User doesn't notice personalization</description>
+      <mitigation>Make preferences visible in UI, log what was learned, show preference summary on request</mitigation>
+    </risk>
+    <risk id="R6" impact="medium" probability="low">
+      <description>Conflicting preferences cause confusion</description>
+      <mitigation>Last-write-wins strategy, timestamp tracking, confidence decrease on contradictions</mitigation>
+    </risk>
+  </risks>
+
+  <notes>
+    <note>
+      Story 2.3 creates the personalization layer that makes agents feel like they truly know the user. This complements Stories 2.1 (business context - what the business is) and 2.2 (conversation history - what was said). Story 2.3 adds personal preferences (how the user likes to work).
+    </note>
+    <note>
+      Pattern matching should start simple - focus on obvious explicit statements first. Implicit learning can be enhanced in future iterations based on real usage patterns.
+    </note>
+    <note>
+      Confidence scoring is critical for handling uncertainty. Low-confidence preferences shouldn't strongly influence agent behavior until confirmed.
+    </note>
+    <note>
+      The most complex part is analyze_conversation_for_preferences(). Suggest implementing explicit detection first (regex), then adding implicit inference incrementally.
+    </note>
+    <note>
+      Hook integration follows proven pattern from Story 2.2 (log_agent_actions.py). Same error handling and performance considerations apply.
+    </note>
+    <note>
+      Human-readable JSON format (4-space indent) is essential - users should be able to manually inspect and edit preferences.
+    </note>
+  </notes>
+
+  <definition-of-done>
+    <item>src/memory.py extended with 8 preference functions (~250 lines)</item>
+    <item>.claude/hooks/preference_detector.py created and registered</item>
+    <item>.claude/settings.json updated with hook registration</item>
+    <item>src/main.py loads preferences on startup, includes in prompt</item>
+    <item>data/memory/user_preferences.json schema validated</item>
+    <item>All 7 acceptance criteria validated and passing</item>
+    <item>Unit tests written and passing (15+ tests)</item>
+    <item>Integration tests passing (hook detection, persistence, loading)</item>
+    <item>Manual validation complete (6 test scenarios)</item>
+    <item>Code reviewed and approved</item>
+    <item>Documentation updated (README with preferences section)</item>
+    <item>Git commit created with proper message</item>
+    <item>Sprint backlog updated (Story 2.3 marked complete)</item>
+  </definition-of-done>
+
+  <quality-assessment>
+    <overall-score>9.7/10</overall-score>
+    <strengths>
+      <strength>Comprehensive acceptance criteria with clear validation</strength>
+      <strength>Detailed technical plan with 8 API functions specified</strength>
+      <strength>All prerequisites met (Stories 2.1, 2.2 complete)</strength>
+      <strength>Thorough testing strategy (20 test ideas covering all ACs)</strength>
+      <strength>Realistic risk assessment with practical mitigations</strength>
+      <strength>15-step implementation plan with time estimates</strength>
+      <strength>Hook integration pattern proven in Story 2.2</strength>
+    </strengths>
+    <minor-gaps>
+      <gap>Implicit learning algorithm details light (acceptable for 6-point story, can refine during dev)</gap>
+      <gap>Confidence decay formula not specified (delegated to STORY-2.5, prevents scope creep)</gap>
+    </minor-gaps>
+    <readiness>READY FOR IMPLEMENTATION</readiness>
+  </quality-assessment>
+</story-context>
