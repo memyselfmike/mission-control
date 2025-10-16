@@ -1,21 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git init:*)",
+      "Bash(uv run:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(gh:*)",
-      "Bash(git remote add:*)",
-      "Bash(git branch:*)",
-      "Bash(git push:*)",
-      "Bash(mkdir:*)",
-      "Bash(git clone:*)",
-      "Bash(uv init:*)",
-      "SlashCommand(/bmad:core:agents:bmad-master)",
-      "SlashCommand(/bmad:core:agents:bmad-master story-ready)",
-      "SlashCommand(/bmad:core:agents:bmad-master:*)",
-      "Bash(uv run pytest:*)",
-      "Bash(assistant\",\n  \"content\": \"Message text\",\n  \"metadata\": {\n    \"model\": \"string\",\n    \"turn_number\": int,\n    \"tokens\": int\n  }\n}\n\nDevelopment Constraints:\n- JSONL format required (streaming, human-readable)\n- Hook execution <200ms (no conversation latency)\n- Log writes <50ms (append-only performance)\n- Daily file rotation ({YYYY-MM-DD}.jsonl)\n- Graceful degradation (errors don''''t crash app)\n- File permissions 0o600 on Unix\n- Session IDs via UUID v4\n- Windows path handling with pathlib\n- Streaming reads (low memory)\n- Append-only files (no overwrites)\n\nImplementation Plan (12 Steps):\n1. Add INTERACTION_LOGS_DIR constant\n2. Implement log_interaction() function\n3. Implement load_conversation_history()\n4. Implement get_recent_interactions()\n5. Implement search_conversations()\n6. Implement get_session_history()\n7. Update log_agent_actions.py hook\n8. Add session ID tracking to main.py\n9. Add user message logging to main.py\n10. Create comprehensive test suite (18 tests)\n11. Run tests, achieve 100% pass rate\n12. Manual validation\n\nCode Artifacts Referenced:\n- mission-control/src/memory.py (285 lines) - EXTEND\n- mission-control/.claude/hooks/log_agent_actions.py - UPDATE\n- mission-control/src/main.py - MODIFY\n- mission-control/tests/test_memory.py (466 lines) - REFERENCE\n- mission-control/.claude/settings.json - NO CHANGE\n\nTest Coverage:\n- 18 test ideas spanning all 7 acceptance criteria\n- Unit tests: log creation, parsing, filtering, search, permissions\n- Integration tests: multi-day, search across files, session replay\n- 100% AC coverage, 100% pass rate target\n\nEstimated Implementation Time: 2-3 hours\nEstimated Test Development: 1-2 hours\nTotal Estimated Time: 3-5 hours\n\nNext: Run dev-story workflow to implement Story 2.2\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(Alex)",
+      "Bash(Jordan)",
+      "Bash(Quinn)",
+      "Bash(Taylor)",
+      "Bash(Sam)",
+      "Bash(Morgan\",\n  \"role\": \"user)",
+      "Bash(assistant\",\n  \"content\": \"Full message text\",\n  \"metadata\": {\"model\": \"...\", \"tokens\": N, \"turn_number\": N}\n}\n\nFiles Updated:\n- docs/stories/story-2.2.md: Status DONE, implementation record\n- docs/bmm-workflow-status.md: Sprint 1 progress, decision log\n\nNext: Story 2.3 (Preference Learning System, 6 points)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
