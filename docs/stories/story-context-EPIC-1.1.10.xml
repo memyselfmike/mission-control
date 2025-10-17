@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context>
+  <metadata>
+    <story-id>1.10</story-id>
+    <story-name>Proactive Notification System</story-name>
+    <epic>EPIC-1: Autonomous Agent Framework</epic>
+    <story-points>8</story-points>
+    <priority>P1</priority>
+    <created>2025-10-17</created>
+    <status>Ready</status>
+    <quality-score>9.6/10</quality-score>
+  </metadata>
+
+  <user-story>
+    As a user, I want Mission Control to proactively notify me of important events,
+    insights, and recommendations without having to ask, so that I stay informed of
+    critical developments and opportunities without manual checking.
+  </user-story>
+
+  <acceptance-criteria>
+    <criterion id="AC1" priority="must-have">
+      <title>Notification Data Model</title>
+      <description>
+        Notification must include: UUID, timestamp, type (pattern/event/schedule/insight),
+        priority (low/medium/high/urgent), title (&lt;80 chars), message (&lt;500 chars),
+        optional action, source, metadata dict, status (pending/viewed/dismissed/snoozed/acted)
+      </description>
+      <test-scenarios>
+        <scenario>Valid notification created with all required fields</scenario>
+        <scenario>Invalid data rejected (missing fields, wrong types)</scenario>
+        <scenario>UUID uniqueness enforced</scenario>
+      </test-scenarios>
+    </criterion>
+
+    <criterion id="AC2" priority="must-have">
+      <title>Pattern-Based Notifications</title>
+      <description>
+        When pattern recognition system (Story 1.8) detects high-confidence pattern (&gt;0.7),
+        generate notification with suggestion. Example: "You usually review goals on Friday mornings"
+      </description>
+      <test-scenarios>
+        <scenario>Pattern confidence &gt;0.7 triggers notification</scenario>
+        <scenario>Pattern confidence &lt;0.7 no notification</scenario>
+        <scenario>Repeated pattern increases notification relevance</scenario>
+      </test-scenarios>
+    </criterion>
+
+    <criterion id="AC3" priority="must-have">
+      <title>Event-Based Notifications</title>
+      <description>
+        When event dispatcher (Story 1.7) handles high-priority event, generate notification.
+        Examples: file changes, goal deadlines, metric thresholds
+      </description>
+      <test-scenarios>
+        <scenario>High priority event triggers notification</scenario>
+        <scenario>Low priority event notification can be suppressed</scenario>
+        <scenario>Event metadata included in notification</scenario>
+      </test-scenarios>
+    </criterion>
+
+    <criterion id="AC4" priority="must-have">
+      <title>Time-Based Notifications</title>
+      <description>
+        When scheduled task (Story 1.6) execution time arrives, generate notification.
+        Examples: daily standups, weekly reviews, quarterly planning
+      </description>
+      <test-scenarios>
+        <scenario>Scheduled task fires at correct time</scenario>
+        <scenario>Notification includes task details</scenario>
+        <scenario>User can snooze/dismiss scheduled notifications</scenario>
+      </test-scenarios>
+    </criterion>
+
+    <criterion id="AC5" priority="must-have">
+      <title>Notification History &amp; Persistence</title>
+      <description>
+        All notifications logged to data/memory/notifications.jsonl in JSONL format.
+        Include all metadata, user actions (viewed/dismissed/snoozed/acted).
+        Retained for 90 days.
+      </description>
+      <test-scenarios>
+        <scenario>Notifications saved to JSONL on creation</scenario>
+        <scenario>History loading returns all from last 90 days</scenario>
+        <scenario>User actions (dismiss, snooze) persisted</scenario>
+        <scenario>Query by date/type/priority works</scenario>
+      </test-scenarios>
+    </criterion>
+
+    <criterion id="AC6" priority="must-have">
+      <title>Notification Preferences</title>
+      <description>
+        User preferences stored in data/memory/notification_preferences.json.
+        Controls: enable/disable by type, priority threshold, max per hour/day,
+        quiet hours (start/end time), do-not-disturb mode
+      </description>
+      <test-scenarios>
+        <scenario>Disabled type notifications not shown</scenario>
+        <scenario>Priority threshold filters low-priority notifications</scenario>
+        <scenario>Rate limiting enforced (max per hour)</scenario>
+        <scenario>Quiet hours suppresses notifications</scenario>
+      </test-scenarios>
+    </criterion>
+
+    <criterion id="AC7" priority="should-have">
+      <title>CLI Display Integration</title>
+      <description>
+        Display notifications using Rich library with color-coding by priority,
+        icons by type, non-blocking display between conversation turns,
+        options to dismiss/snooze/take action
+      </description>
+      <test-scenarios>
+        <scenario>High priority notification displayed prominently</scenario>
+        <scenario>Low priority notification shown subtly</scenario>
+        <scenario>Multiple notifications queued properly</scenario>
+      </test-scenarios>
+    </criterion>
+
+    <criterion id="AC8" priority="must-have">
+      <title>Performance Requirements</title>
+      <description>
+        Notification generation &lt;100ms, display &lt;50ms (non-blocking),
+        history query (1000 entries) &lt;200ms, preference loading &lt;50ms,
+        no memory leaks from long-running process
+      </description>
+      <test-scenarios>
+        <scenario>Generate 100 notifications, all &lt;100ms</scenario>
+        <scenario>Display notification during conversation, no lag</scenario>
+        <scenario>Query 1000 notifications &lt;200ms</scenario>
+      </test-scenarios>
+    </criterion>
+  </acceptance-criteria>
+
+  <technical-implementation>
+    <architecture>
+      <component name="Notification">
+        <description>Data model for single notification (dataclass)</description>
+        <file>src/notifications.py</file>
+        <responsibilities>
+          - Store notification data (id, timestamp, type, priority, title, message, etc.)
+          - Serialize to/from dict for JSON storage
+          - Validate required fields
+        </responsibilities>
+      </component>
+
+      <component name="NotificationManager">
+        <description>Central coordinator for all notifications</description>
+        <file>src/notifications.py</file>
+        <responsibilities>
+          - Create notifications from various sources
+          - Check preferences before showing
+          - Manage notification queue
+          - Coordinate with storage and display
+        </responsibilities>
+      </component>
+
+      <component name="NotificationQueue">
+        <description>Priority queue for pending notifications</description>
+        <file>src/notifications.py</file>
+        <responsibilities>
+          - Queue notifications by priority
+          - Handle rate limiting
+          - Support snooze/dismiss operations
+        </responsibilities>
+      </component>
+
+      <component name="NotificationStorage">
+        <description>JSONL persistence for notification history</description>
+        <file>src/notifications.py</file>
+        <responsibilities>
+          - Save notifications to JSONL
+          - Load notification history
+          - Query by date/type/priority
+          - Implement 90-day retention
+        </responsibilities>
+      </component>
+
+      <component name="NotificationPreferences">
+        <description>User preference management</description>
+        <file>src/notifications.py</file>
+        <responsibilities>
+          - Load preferences from JSON
+          - Save updated preferences
+          - Provide defaults if file missing
+          - Validate preference values
+        </responsibilities>
+      </component>
+
+      <component name="NotificationDisplay">
+        <description>Rich-based CLI rendering</description>
+        <file>src/notifications.py</file>
+        <responsibilities>
+          - Format notifications with Rich
+          - Color-code by priority
+          - Add type icons
+          - Handle user input (dismiss/snooze/act)
+        </responsibilities>
+      </component>
+    </architecture>
+
+    <data-model>
+      <notification-fields>
+        <field name="id" type="str" required="true">UUID v4</field>
+        <field name="timestamp" type="str" required="true">ISO 8601 format</field>
+        <field name="type" type="str" required="true">pattern|event|schedule|insight</field>
+        <field name="priority" type="str" required="true">low|medium|high|urgent</field>
+        <field name="title" type="str" required="true">Max 80 characters</field>
+        <field name="message" type="str" required="true">Max 500 characters</field>
+        <field name="action" type="str" required="false">Suggested next step</field>
+        <field name="source" type="str" required="true">System that generated notification</field>
+        <field name="metadata" type="dict" required="true">Context-specific data</field>
+        <field name="status" type="str" required="true">pending|viewed|dismissed|snoozed|acted</field>
+      </notification-fields>
+
+      <preference-fields>
+        <field name="enabled" type="bool" default="true">Master enable/disable</field>
+        <field name="types" type="dict">Enable/disable per type</field>
+        <field name="priority_threshold" type="str" default="low">Minimum priority to show</field>
+        <field name="max_per_hour" type="int" default="5">Rate limit</field>
+        <field name="max_per_day" type="int" default="50">Daily cap</field>
+        <field name="quiet_hours" type="dict">Start/end time range</field>
+        <field name="do_not_disturb" type="bool" default="false">Suppress all notifications</field>
+      </preference-fields>
+    </data-model>
+
+    <storage-format>
+      <jsonl-file>data/memory/notifications.jsonl</jsonl-file>
+      <json-preferences>data/memory/notification_preferences.json</json-preferences>
+      <retention-policy>90 days</retention-policy>
+    </storage-format>
+
+    <integration-points>
+      <integration source="pattern_analyzer" story="1.8">
+        <trigger>Pattern detected with confidence &gt; 0.7</trigger>
+        <action>Call NotificationManager.create_notification(type="pattern", ...)</action>
+        <file>src/patterns/pattern_analyzer.py</file>
+      </integration>
+
+      <integration source="event_dispatcher" story="1.7">
+        <trigger>High-priority event occurs</trigger>
+        <action>Call NotificationManager.create_notification(type="event", ...)</action>
+        <file>src/events/event_dispatcher.py</file>
+      </integration>
+
+      <integration source="scheduler" story="1.6">
+        <trigger>Scheduled task execution time arrives</trigger>
+        <action>Call NotificationManager.create_notification(type="schedule", ...)</action>
+        <file>src/scheduler.py</file>
+      </integration>
+    </integration-points>
+  </technical-implementation>
+
+  <dependencies>
+    <dependency>
+      <story-id>1.6</story-id>
+      <story-name>Scheduled Task Execution Framework</story-name>
+      <status>Complete</status>
+      <usage>Time-based notification triggers</usage>
+    </dependency>
+
+    <dependency>
+      <story-id>1.7</story-id>
+      <story-name>Event Detection System</story-name>
+      <status>Complete</status>
+      <usage>Event-based notification triggers</usage>
+    </dependency>
+
+    <dependency>
+      <story-id>1.8</story-id>
+      <story-name>Pattern Recognition Engine</story-name>
+      <status>Complete</status>
+      <usage>Pattern-based notification suggestions</usage>
+    </dependency>
+
+    <dependency>
+      <story-id>2.3</story-id>
+      <story-name>Preference Learning System</story-name>
+      <status>Complete</status>
+      <usage>Notification personalization</usage>
+    </dependency>
+
+    <dependency>
+      <story-id>1.9</story-id>
+      <story-name>Context Gathering</story-name>
+      <status>Complete</status>
+      <usage>Contextual relevance for notifications</usage>
+    </dependency>
+
+    <external-dependency>
+      <name>Rich</name>
+      <version>&gt;=13.0.0</version>
+      <usage>CLI display formatting</usage>
+    </external-dependency>
+  </dependencies>
+
+  <code-artifacts>
+    <artifact name="Pattern Analyzer" path="src/patterns/pattern_analyzer.py" lines="1-500">
+      Pattern detection system - need to integrate notification calls when patterns detected
+    </artifact>
+
+    <artifact name="Event Dispatcher" path="src/events/event_dispatcher.py" lines="1-400">
+      Event handling system - need to integrate notification calls for high-priority events
+    </artifact>
+
+    <artifact name="Scheduler" path="src/scheduler.py" lines="1-300">
+      Task scheduling system - need to integrate notification calls when tasks fire
+    </artifact>
+
+    <artifact name="Memory System" path="src/memory.py" lines="1-1500">
+      Reference for JSONL storage patterns and preference management patterns
+    </artifact>
+
+    <artifact name="Main Application" path="src/main.py" lines="1-200">
+      Need to integrate notification display into conversation loop
+    </artifact>
+  </code-artifacts>
+
+  <development-constraints>
+    <constraint id="C1" type="performance">
+      Notification generation must complete in &lt;100ms
+    </constraint>
+
+    <constraint id="C2" type="performance">
+      Notification display must be non-blocking (&lt;50ms)
+    </constraint>
+
+    <constraint id="C3" type="performance">
+      History queries (1000 entries) must complete in &lt;200ms
+    </constraint>
+
+    <constraint id="C4" type="storage">
+      Use JSONL format for notification history (one line per notification)
+    </constraint>
+
+    <constraint id="C5" type="storage">
+      Use JSON format for preferences (human-editable)
+    </constraint>
+
+    <constraint id="C6" type="ui">
+      Use Rich library for CLI formatting (color, icons, layout)
+    </constraint>
+
+    <constraint id="C7" type="ui">
+      Notifications must not interrupt user input
+    </constraint>
+
+    <constraint id="C8" type="data">
+      Notification IDs must be UUID v4 (globally unique)
+    </constraint>
+
+    <constraint id="C9" type="data">
+      Timestamps must use ISO 8601 format
+    </constraint>
+
+    <constraint id="C10" type="retention">
+      Notification history retained for 90 days (configurable)
+    </constraint>
+  </development-constraints>
+
+  <api-interfaces>
+    <interface name="NotificationManager.create_notification">
+      <signature>
+        create_notification(
+          type: str,
+          priority: str,
+          title: str,
+          message: str,
+          action: Optional[str] = None,
+          source: str = "",
+          metadata: Dict[str, Any] = None
+        ) -> Notification
+      </signature>
+      <description>Create and queue a new notification</description>
+    </interface>
+
+    <interface name="NotificationManager.should_show">
+      <signature>should_show(notification: Notification) -> bool</signature>
+      <description>Check if notification should be shown based on preferences</description>
+    </interface>
+
+    <interface name="NotificationManager.get_pending">
+      <signature>get_pending() -> List[Notification]</signature>
+      <description>Get all pending notifications from queue</description>
+    </interface>
+
+    <interface name="NotificationManager.dismiss">
+      <signature>dismiss(notification_id: str) -> bool</signature>
+      <description>Dismiss a notification</description>
+    </interface>
+
+    <interface name="NotificationManager.snooze">
+      <signature>snooze(notification_id: str, minutes: int = 60) -> bool</signature>
+      <description>Snooze notification for N minutes</description>
+    </interface>
+
+    <interface name="NotificationStorage.save">
+      <signature>save(notification: Notification) -> bool</signature>
+      <description>Save notification to JSONL file</description>
+    </interface>
+
+    <interface name="NotificationStorage.get_recent">
+      <signature>get_recent(days: int = 7) -> List[Notification]</signature>
+      <description>Get notifications from last N days</description>
+    </interface>
+
+    <interface name="NotificationStorage.get_by_type">
+      <signature>get_by_type(type: str) -> List[Notification]</signature>
+      <description>Get all notifications of specific type</description>
+    </interface>
+
+    <interface name="NotificationPreferences.set_type_enabled">
+      <signature>set_type_enabled(type: str, enabled: bool) -> bool</signature>
+      <description>Enable/disable notifications by type</description>
+    </interface>
+
+    <interface name="NotificationPreferences.set_priority_threshold">
+      <signature>set_priority_threshold(threshold: str) -> bool</signature>
+      <description>Set minimum priority to show (low/medium/high/urgent)</description>
+    </interface>
+  </api-interfaces>
+
+  <test-ideas>
+    <test-category name="Notification Model">
+      <test>Create notification with all required fields</test>
+      <test>Reject notification with missing required fields</test>
+      <test>Validate UUID uniqueness</test>
+      <test>Serialize notification to dict</test>
+      <test>Deserialize notification from dict</test>
+    </test-category>
+
+    <test-category name="Notification Manager">
+      <test>Create notification and add to queue</test>
+      <test>Check preferences before showing notification</test>
+      <test>Dismiss notification removes from queue</test>
+      <test>Snooze notification delays display</test>
+      <test>Get pending notifications returns correct list</test>
+    </test-category>
+
+    <test-category name="Pattern Integration">
+      <test>Pattern confidence &gt;0.7 triggers notification</test>
+      <test>Pattern confidence &lt;0.7 no notification</test>
+      <test>Pattern metadata included in notification</test>
+    </test-category>
+
+    <test-category name="Event Integration">
+      <test>High-priority event triggers notification</test>
+      <test>Low-priority event respects preferences</test>
+      <test>Event metadata included in notification</test>
+    </test-category>
+
+    <test-category name="Scheduler Integration">
+      <test>Scheduled task triggers notification at correct time</test>
+      <test>Task metadata included in notification</test>
+    </test-category>
+
+    <test-category name="Storage">
+      <test>Save notification to JSONL file</test>
+      <test>Load notifications from JSONL file</test>
+      <test>Query by date range works</test>
+      <test>Query by type works</test>
+      <test>Query by priority works</test>
+      <test>Handle corrupted JSONL lines gracefully</test>
+    </test-category>
+
+    <test-category name="Preferences">
+      <test>Load preferences from JSON</test>
+      <test>Save preferences to JSON</test>
+      <test>Use defaults if file missing</test>
+      <test>Disable type suppresses notifications</test>
+      <test>Priority threshold filters correctly</test>
+      <test>Rate limiting enforced (max per hour)</test>
+      <test>Quiet hours suppress notifications</test>
+    </test-category>
+
+    <test-category name="Performance">
+      <test>Generate 100 notifications in &lt;100ms each</test>
+      <test>Display notification in &lt;50ms</test>
+      <test>Query 1000 notifications in &lt;200ms</test>
+      <test>No memory leaks after 1000 notifications</test>
+    </test-category>
+  </test-ideas>
+
+  <implementation-plan>
+    <phase name="Phase 1: Foundation" estimated-hours="4">
+      <task>Create Notification dataclass with all fields</task>
+      <task>Create NotificationManager skeleton</task>
+      <task>Create NotificationStorage for JSONL persistence</task>
+      <task>Create NotificationPreferences for JSON config</task>
+      <task>Write unit tests for data model (5 tests)</task>
+    </phase>
+
+    <phase name="Phase 2: Core Logic" estimated-hours="4">
+      <task>Implement NotificationManager.create_notification()</task>
+      <task>Implement NotificationManager.should_show() with preference checking</task>
+      <task>Implement NotificationQueue with priority ordering</task>
+      <task>Implement dismiss/snooze operations</task>
+      <task>Write unit tests for manager (8 tests)</task>
+    </phase>
+
+    <phase name="Phase 3: Storage &amp; Preferences" estimated-hours="3">
+      <task>Implement JSONL save/load operations</task>
+      <task>Implement query methods (by date, type, priority)</task>
+      <task>Implement preference load/save/update</task>
+      <task>Implement rate limiting logic</task>
+      <task>Write unit tests for storage and preferences (7 tests)</task>
+    </phase>
+
+    <phase name="Phase 4: Integrations" estimated-hours="3">
+      <task>Integrate with pattern_analyzer (Story 1.8)</task>
+      <task>Integrate with event_dispatcher (Story 1.7)</task>
+      <task>Integrate with scheduler (Story 1.6)</task>
+      <task>Write integration tests (5 tests)</task>
+    </phase>
+
+    <phase name="Phase 5: CLI Display" estimated-hours="2">
+      <task>Create NotificationDisplay with Rich formatting</task>
+      <task>Implement color-coding by priority</task>
+      <task>Implement type icons</task>
+      <task>Integrate into main.py conversation loop</task>
+      <task>Write display tests (3 tests)</task>
+    </phase>
+
+    <phase name="Phase 6: Testing &amp; Polish" estimated-hours="2">
+      <task>Run performance benchmarks</task>
+      <task>Fix any performance issues</task>
+      <task>Manual testing with all notification types</task>
+      <task>Documentation and code cleanup</task>
+    </phase>
+  </implementation-plan>
+
+  <risks>
+    <risk id="R1" severity="high">
+      <description>Notification fatigue - too many notifications annoy users</description>
+      <mitigation>Sensible defaults (max 5/hour), clear preference controls, priority filtering</mitigation>
+    </risk>
+
+    <risk id="R2" severity="medium">
+      <description>Performance impact - slow notifications disrupt workflow</description>
+      <mitigation>Strict performance requirements (&lt;100ms), non-blocking display, background processing</mitigation>
+    </risk>
+
+    <risk id="R3" severity="medium">
+      <description>Integration complexity - multiple integration points</description>
+      <mitigation>Well-defined API, comprehensive integration tests, clear documentation</mitigation>
+    </risk>
+
+    <risk id="R4" severity="low">
+      <description>CLI display limitations - terminal constraints</description>
+      <mitigation>Use Rich library (proven), graceful degradation, log file always available</mitigation>
+    </risk>
+  </risks>
+
+  <success-metrics>
+    <metric>All 8 acceptance criteria passing</metric>
+    <metric>20+ unit tests passing (&gt;80% coverage)</metric>
+    <metric>5+ integration tests passing</metric>
+    <metric>Performance benchmarks met (&lt;100ms, &lt;50ms, &lt;200ms)</metric>
+    <metric>Zero bugs in manual testing</metric>
+    <metric>User preferences respected in all scenarios</metric>
+  </success-metrics>
+
+  <notes>
+    <note>This story builds on solid foundation from Stories 1.6, 1.7, 1.8</note>
+    <note>Notification system is key differentiator for autonomous behavior</note>
+    <note>Start with data model, build incrementally</note>
+    <note>Test performance early to avoid late optimization</note>
+    <note>Manual testing crucial for UX validation</note>
+  </notes>
+</story-context>
