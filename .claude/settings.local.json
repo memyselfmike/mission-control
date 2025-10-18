@@ -1,16 +1,15 @@
 {
   "permissions": {
     "allow": [
+      "Bash(python:*)",
+      "Bash(cat:*)",
       "Bash(uv run:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(Alex)",
-      "Bash(Jordan)",
-      "Bash(Quinn)",
-      "Bash(Taylor)",
-      "Bash(Sam)",
-      "Bash(Morgan\",\n  \"role\": \"user)",
-      "Bash(assistant\",\n  \"content\": \"Full message text\",\n  \"metadata\": {\"model\": \"...\", \"tokens\": N, \"turn_number\": N}\n}\n\nFiles Updated:\n- docs/stories/story-2.2.md: Status DONE, implementation record\n- docs/bmm-workflow-status.md: Sprint 1 progress, decision log\n\nNext: Story 2.3 (Preference Learning System, 6 points)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(timeout 5 uv run:*)",
+      "Bash(uv add:*)",
+      "Bash(uv remove:*)"
     ],
     "deny": [],
     "ask": []
