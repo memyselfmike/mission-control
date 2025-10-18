@@ -1,0 +1,1341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context>
+  <metadata>
+    <story-id>3.2</story-id>
+    <story-title>Design Task Data Model and Storage</story-title>
+    <epic>EPIC-3: Operator (Daily Execution Agent)</epic>
+    <story-points>5</story-points>
+    <sprint>Sprint 4</sprint>
+    <priority>P1</priority>
+    <status>Ready</status>
+    <created>2025-10-18</created>
+    <context-generated>2025-10-18</context-generated>
+  </metadata>
+
+  <user-story>
+    As Omega (Operator agent), I want a flexible task data model and storage system so that I can track tasks, priorities, and completion status across user sessions.
+  </user-story>
+
+  <acceptance-criteria>
+    <criterion id="AC1">
+      <description>Task Data Model Defined</description>
+      <details>
+        - Task structure includes: id, title, description, status, priority, dates, time estimates, energy level, context, links
+        - Status values: todo, in_progress, done, blocked, deferred
+        - Priority values: must_win_today, important, should_do, nice_to_have
+        - Energy levels: high, medium, low
+        - Context types: deep_work, admin, communication, creative
+      </details>
+      <validation>
+        - Task schema documented in code with all fields
+        - All status/priority/energy/context values defined as constants
+        - Task ID format specified (e.g., TASK-001)
+        - Date fields use ISO 8601 format
+      </validation>
+    </criterion>
+
+    <criterion id="AC2">
+      <description>Task Storage System Implemented</description>
+      <details>
+        - File: data/tasks/tasks.json (JSON format for human readability)
+        - Backup on write (same as business context storage)
+        - Auto-create directory if missing
+        - Graceful error handling (missing files, corrupted JSON)
+      </details>
+      <validation>
+        - tasks.json file created in data/tasks/ directory
+        - .gitkeep file in data/tasks/ to track directory in git
+        - Backup created as tasks.json.bak on every save
+        - Missing file returns empty task structure (no exceptions)
+        - Corrupted JSON returns empty structure with warning
+      </validation>
+    </criterion>
+
+    <criterion id="AC3">
+      <description>Task Management API Created</description>
+      <details>
+        - File: mission-control/src/tasks.py
+        - Functions: create_task(), get_task(), update_task(), delete_task(), list_tasks()
+        - Query functions: get_tasks_by_status(), get_tasks_by_priority(), get_tasks_by_goal()
+        - All functions return consistent data structures
+      </details>
+      <validation>
+        - tasks.py exists with all specified functions
+        - All functions have docstrings with examples
+        - All functions have type hints
+        - Consistent return types (Dict for task, List[Dict] for queries, bool for operations)
+        - All functions handle errors gracefully (no unhandled exceptions)
+      </validation>
+    </criterion>
+
+    <criterion id="AC4">
+      <description>Task Operations Work Correctly</description>
+      <details>
+        - Create task with all metadata
+        - Update task status (todo → in_progress → done)
+        - Update task priority
+        - Mark task complete (sets completion timestamp)
+        - Delete/archive old tasks
+      </details>
+      <validation>
+        - create_task() generates unique task IDs
+        - update_task() merges changes into existing task
+        - mark_task_complete() sets completed_date and status=done
+        - delete_task() removes task from list
+        - Task state transitions validated (todo → in_progress → done)
+      </validation>
+    </criterion>
+
+    <criterion id="AC5">
+      <description>Task Queries Work Correctly</description>
+      <details>
+        - Get today's tasks
+        - Get must-win tasks
+        - Get tasks by status (all in-progress tasks)
+        - Get overdue tasks (past due date, not done)
+        - Get tasks linked to specific goal
+      </details>
+      <validation>
+        - get_todays_tasks() filters by due_date = today OR overdue
+        - get_must_win_tasks() filters by priority = must_win_today
+        - get_tasks_by_status() returns all matching status
+        - get_overdue_tasks() returns tasks with due_date &lt; today AND status != done
+        - get_tasks_by_goal() filters by linked_to.goal_id
+      </validation>
+    </criterion>
+
+    <criterion id="AC6">
+      <description>Time Tracking Supported</description>
+      <details>
+        - Store estimated time (user provides)
+        - Store actual time (optional, user provides on completion)
+        - Calculate variance (actual vs estimated)
+        - Support learning over time (future enhancement)
+      </details>
+      <validation>
+        - estimated_time_minutes field stored in task
+        - actual_time_minutes field updated on completion
+        - calculate_time_variance() function computes difference
+        - Variance calculation handles None values gracefully
+      </validation>
+    </criterion>
+
+    <criterion id="AC7">
+      <description>Integration with Memory System</description>
+      <details>
+        - Tasks use same patterns as business context storage
+        - Tasks persist across sessions
+        - Tasks load on startup (integrate with src/startup.py)
+        - Tasks included in memory status reporting
+      </details>
+      <validation>
+        - load_tasks() and save_tasks() follow memory.py patterns
+        - startup.py imports and calls load_tasks() on initialization
+        - get_memory_status() includes task file info
+        - Task storage uses same backup/error handling as business context
+      </validation>
+    </criterion>
+  </acceptance-criteria>
+
+  <technical-context>
+    <architecture>
+      <component name="tasks.py">
+        <location>mission-control/src/tasks.py</location>
+        <purpose>Task management API - CRUD operations and queries</purpose>
+        <pattern>Follow memory.py patterns (Story 2.1) for storage operations</pattern>
+      </component>
+
+      <component name="tasks.json">
+        <location>mission-control/data/tasks/tasks.json</location>
+        <purpose>Task data storage - JSON format for human readability</purpose>
+        <pattern>Similar to business_context.json (JSON with metadata)</pattern>
+      </component>
+
+      <component name="startup.py">
+        <location>mission-control/src/startup.py</location>
+        <purpose>System initialization - load tasks on startup</purpose>
+        <modification>Add load_tasks() call to initialize_system()</modification>
+      </component>
+
+      <component name="test_tasks.py">
+        <location>mission-control/tests/test_tasks.py</location>
+        <purpose>Comprehensive test suite for task management</purpose>
+        <pattern>Follow test_memory.py patterns (pytest, fixtures, 20+ tests)</pattern>
+      </component>
+    </architecture>
+
+    <dependencies>
+      <dependency>
+        <name>Story 2.1</name>
+        <status>Complete</status>
+        <provides>Business context storage patterns (JSON, backup, error handling)</provides>
+      </dependency>
+
+      <dependency>
+        <name>Story 2.4</name>
+        <status>Complete</status>
+        <provides>Startup initialization system (initialize_system function)</provides>
+      </dependency>
+
+      <dependency>
+        <name>Story 3.1</name>
+        <status>Ready</status>
+        <provides>Omega persona (consumer of task API)</provides>
+      </dependency>
+
+      <dependency>
+        <name>Python Standard Library</name>
+        <version>3.13+</version>
+        <usage>json, os, pathlib, datetime, typing</usage>
+      </dependency>
+    </dependencies>
+
+    <existing-code>
+      <file path="mission-control/src/memory.py">
+        <description>Reference implementation for storage patterns</description>
+        <example>
+          # Storage pattern to follow:
+          def save_business_context(context: Dict[str, Any]) -> bool:
+              try:
+                  _ensure_memory_directory()
+                  context['last_updated'] = datetime.now().isoformat()
+
+                  # Backup existing file
+                  if BUSINESS_CONTEXT_FILE.exists():
+                      backup_path = BUSINESS_CONTEXT_FILE.with_suffix('.json.bak')
+                      if backup_path.exists():
+                          backup_path.unlink()
+                      BUSINESS_CONTEXT_FILE.rename(backup_path)
+
+                  # Write JSON
+                  with open(BUSINESS_CONTEXT_FILE, 'w', encoding='utf-8') as f:
+                      json.dump(context, f, indent=4, ensure_ascii=False)
+
+                  # Set permissions (Unix)
+                  if os.name != 'nt':
+                      os.chmod(BUSINESS_CONTEXT_FILE, 0o600)
+
+                  return True
+              except (IOError, OSError) as e:
+                  print(f"Error: Could not save: {e}")
+                  return False
+        </example>
+      </file>
+
+      <file path="mission-control/src/startup.py">
+        <description>Startup initialization - will be modified to load tasks</description>
+        <example>
+          # Current pattern in initialize_system():
+          # 1. Load business context
+          if MEMORY_AVAILABLE:
+              try:
+                  context = load_business_context()
+                  if context:
+                      status["business_context_loaded"] = True
+                      status["business_context"] = context
+              except Exception as e:
+                  errors.append(f"Failed to load business context: {e}")
+
+          # Add similar pattern for tasks:
+          # 2. Load tasks
+          if TASKS_AVAILABLE:
+              try:
+                  tasks = load_tasks()
+                  if tasks:
+                      status["tasks_loaded"] = True
+                      status["tasks"] = tasks
+              except Exception as e:
+                  errors.append(f"Failed to load tasks: {e}")
+        </example>
+      </file>
+    </existing-code>
+
+    <data-structures>
+      <structure name="Task">
+        <source>tasks.py (new)</source>
+        <format>JSON object</format>
+        <fields>
+          - id: str (e.g., "TASK-001", auto-generated)
+          - title: str (required)
+          - description: str (default "")
+          - status: str (todo, in_progress, done, blocked, deferred)
+          - priority: str (must_win_today, important, should_do, nice_to_have)
+          - estimated_time_minutes: int | null (user provides)
+          - actual_time_minutes: int | null (set on completion)
+          - energy_required: str (high, medium, low)
+          - context: str (deep_work, admin, communication, creative)
+          - linked_to: dict | null ({goal_id: str, project_id: str})
+          - due_date: str | null (ISO 8601 date: "2025-10-20")
+          - created_date: str (ISO 8601 timestamp, auto-generated)
+          - started_date: str | null (set when status → in_progress)
+          - completed_date: str | null (set when status → done)
+          - deferred_until: str | null (ISO 8601 date)
+          - blocked_reason: str | null
+          - notes: str (default "")
+          - tags: list[str] (default [])
+          - recurrence: str | null (daily, weekly, monthly - future)
+        </fields>
+        <example>
+          {
+            "id": "TASK-001",
+            "title": "Finish proposal for Client X",
+            "description": "Complete financial projections and executive summary",
+            "status": "in_progress",
+            "priority": "must_win_today",
+            "estimated_time_minutes": 120,
+            "actual_time_minutes": null,
+            "energy_required": "high",
+            "context": "deep_work",
+            "linked_to": {
+              "goal_id": "GOAL-Q4-01",
+              "project_id": "CLIENT-X"
+            },
+            "due_date": "2025-10-20",
+            "created_date": "2025-10-18T09:00:00Z",
+            "started_date": "2025-10-18T10:00:00Z",
+            "completed_date": null,
+            "deferred_until": null,
+            "blocked_reason": null,
+            "notes": "Needs financial data from Jordan (CFO)",
+            "tags": ["client-work", "urgent"],
+            "recurrence": null
+          }
+        </example>
+      </structure>
+
+      <structure name="TaskStorage">
+        <source>tasks.py (new)</source>
+        <format>JSON file</format>
+        <fields>
+          - tasks: list[Task] (all task objects)
+          - metadata: dict (version, last_updated, total_tasks, completed_count)
+        </fields>
+        <example>
+          {
+            "tasks": [
+              {task object 1},
+              {task object 2}
+            ],
+            "metadata": {
+              "version": "1.0",
+              "last_updated": "2025-10-18T10:30:00Z",
+              "total_tasks": 2,
+              "completed_count": 0
+            }
+          }
+        </example>
+      </structure>
+
+      <structure name="StatusValues">
+        <source>tasks.py constants</source>
+        <values>
+          - TODO = "todo"
+          - IN_PROGRESS = "in_progress"
+          - DONE = "done"
+          - BLOCKED = "blocked"
+          - DEFERRED = "deferred"
+        </values>
+      </structure>
+
+      <structure name="PriorityValues">
+        <source>tasks.py constants</source>
+        <values>
+          - MUST_WIN_TODAY = "must_win_today"
+          - IMPORTANT = "important"
+          - SHOULD_DO = "should_do"
+          - NICE_TO_HAVE = "nice_to_have"
+        </values>
+      </structure>
+
+      <structure name="EnergyLevels">
+        <source>tasks.py constants</source>
+        <values>
+          - HIGH = "high"
+          - MEDIUM = "medium"
+          - LOW = "low"
+        </values>
+      </structure>
+
+      <structure name="ContextTypes">
+        <source>tasks.py constants</source>
+        <values>
+          - DEEP_WORK = "deep_work"
+          - ADMIN = "admin"
+          - COMMUNICATION = "communication"
+          - CREATIVE = "creative"
+        </values>
+      </structure>
+    </data-structures>
+  </technical-context>
+
+  <implementation-guidance>
+    <step number="1">
+      <description>Create tasks.py module with constants and directory setup</description>
+      <details>
+        - Create file: mission-control/src/tasks.py
+        - Define constants: STATUS_*, PRIORITY_*, ENERGY_*, CONTEXT_*
+        - Define paths: TASKS_DIR, TASKS_FILE
+        - Create _ensure_tasks_directory() helper
+        - Create _get_empty_tasks() helper (returns empty task storage structure)
+        - Create _generate_task_id() helper (generates unique TASK-XXX IDs)
+      </details>
+      <output>tasks.py with constants and helpers</output>
+    </step>
+
+    <step number="2">
+      <description>Implement core storage functions (load/save)</description>
+      <details>
+        - Implement load_tasks() -> Dict[str, Any]
+          * Returns empty structure if file missing
+          * Handles corrupted JSON gracefully
+          * Validates structure (ensure tasks and metadata exist)
+        - Implement save_tasks(tasks_data: Dict) -> bool
+          * Creates backup before overwrite (tasks.json.bak)
+          * Updates metadata (last_updated, total_tasks, completed_count)
+          * Writes with indent=4 for readability
+          * Sets file permissions (0o600 on Unix)
+      </details>
+      <output>load_tasks() and save_tasks() functions working</output>
+    </step>
+
+    <step number="3">
+      <description>Implement CRUD operations</description>
+      <details>
+        - Implement create_task() with all parameters
+          * Generate unique task ID
+          * Set created_date timestamp
+          * Validate status/priority values
+          * Add to tasks list and save
+          * Return task object
+        - Implement get_task(task_id: str) -> Optional[Dict]
+          * Load tasks and find by ID
+          * Return None if not found
+        - Implement update_task(task_id: str, updates: Dict) -> bool
+          * Load tasks, find task, merge updates
+          * Handle status transitions (set started_date, completed_date)
+          * Save and return success
+        - Implement delete_task(task_id: str) -> bool
+          * Remove from list and save
+        - Implement list_tasks() -> List[Dict]
+          * Return all tasks
+      </details>
+      <output>All CRUD functions working</output>
+    </step>
+
+    <step number="4">
+      <description>Implement query functions</description>
+      <details>
+        - Implement get_tasks_by_status(status: str) -> List[Dict]
+        - Implement get_tasks_by_priority(priority: str) -> List[Dict]
+        - Implement get_todays_tasks() -> List[Dict]
+          * Filter by due_date = today OR due_date &lt; today AND status != done
+        - Implement get_must_win_tasks() -> List[Dict]
+          * Filter by priority = must_win_today AND status != done
+        - Implement get_overdue_tasks() -> List[Dict]
+          * Filter by due_date &lt; today AND status != done
+        - Implement get_tasks_by_goal(goal_id: str) -> List[Dict]
+          * Filter by linked_to.goal_id = goal_id
+      </details>
+      <output>All query functions working</output>
+    </step>
+
+    <step number="5">
+      <description>Implement helper operations</description>
+      <details>
+        - Implement mark_task_complete(task_id: str, actual_time_minutes: Optional[int]) -> bool
+          * Set status = done
+          * Set completed_date = now
+          * Set actual_time_minutes if provided
+          * Save and return success
+        - Implement calculate_time_variance(task: Dict) -> Optional[int]
+          * Return actual_time_minutes - estimated_time_minutes
+          * Return None if either value missing
+        - Implement get_tasks_summary() -> str
+          * Human-readable summary (e.g., "5 tasks | 2 in progress | 3 done")
+      </details>
+      <output>Helper functions working</output>
+    </step>
+
+    <step number="6">
+      <description>Integrate with startup.py</description>
+      <details>
+        - Add import to startup.py: from src.tasks import load_tasks
+        - Add TASKS_AVAILABLE flag (try/except import pattern)
+        - Add task loading to initialize_system():
+          * Load tasks similar to business context
+          * Add tasks_loaded: bool to status
+          * Add tasks: Dict to status
+          * Count total/completed tasks
+        - Add task info to get_memory_status():
+          * tasks_file: str
+          * tasks_exists: bool
+          * tasks_size_kb: float
+          * tasks_total: int
+          * tasks_completed: int
+        - Update format_memory_status() to include task info
+      </details>
+      <output>Tasks load on startup and appear in memory status</output>
+    </step>
+
+    <step number="7">
+      <description>Create comprehensive test suite</description>
+      <details>
+        - Create file: mission-control/tests/test_tasks.py
+        - Write 20+ tests covering:
+          * Task creation (minimal/maximal fields)
+          * Task retrieval (by ID, not found)
+          * Task updates (status, priority, fields)
+          * Task deletion
+          * Task list (empty, multiple)
+          * Status queries (todo, in_progress, done)
+          * Priority queries (must_win_today)
+          * Date queries (today's tasks, overdue)
+          * Goal queries (linked tasks)
+          * Time tracking (estimate, actual, variance)
+          * Task state transitions (todo → in_progress → done)
+          * Storage operations (backup, missing file, corrupted JSON)
+          * ID generation (uniqueness)
+          * Integration (create → reload → verify persistence)
+      </details>
+      <output>test_tasks.py with 20+ passing tests</output>
+    </step>
+
+    <step number="8">
+      <description>Create data directory and .gitkeep</description>
+      <details>
+        - Create directory: mission-control/data/tasks/
+        - Create file: mission-control/data/tasks/.gitkeep
+        - Ensure directory is tracked in git but tasks.json is in .gitignore
+      </details>
+      <output>data/tasks/ directory created and tracked</output>
+    </step>
+
+    <step number="9">
+      <description>Validate and test all acceptance criteria</description>
+      <details>
+        - AC1: Verify all task fields documented and constants defined
+        - AC2: Verify storage system follows memory.py patterns
+        - AC3: Verify all API functions exist with docstrings
+        - AC4: Test CRUD operations work correctly
+        - AC5: Test all query functions return correct results
+        - AC6: Test time tracking calculations
+        - AC7: Verify startup integration and memory status
+        - Run all tests (pytest mission-control/tests/test_tasks.py)
+        - Manual test: Create tasks via REPL, verify tasks.json readable
+      </details>
+      <output>All 7 acceptance criteria validated</output>
+    </step>
+  </implementation-guidance>
+
+  <api-function-signatures>
+    <function>
+      <name>create_task</name>
+      <signature>
+def create_task(
+    title: str,
+    description: str = "",
+    priority: str = "should_do",
+    estimated_time_minutes: Optional[int] = None,
+    energy_required: str = "medium",
+    context: str = "admin",
+    due_date: Optional[str] = None,
+    linked_to: Optional[Dict] = None,
+    tags: List[str] = []
+) -> Dict:
+    """
+    Create a new task and return task object.
+
+    Args:
+        title: Task title (required)
+        description: Task description (default "")
+        priority: Priority level (default "should_do")
+        estimated_time_minutes: Time estimate in minutes
+        energy_required: Energy level needed (default "medium")
+        context: Work context type (default "admin")
+        due_date: Due date in ISO format (YYYY-MM-DD)
+        linked_to: Dict with goal_id/project_id links
+        tags: List of tags
+
+    Returns:
+        dict: Created task object with generated ID
+
+    Example:
+        >>> task = create_task(
+        ...     title="Finish proposal",
+        ...     priority="must_win_today",
+        ...     estimated_time_minutes=120,
+        ...     due_date="2025-10-20"
+        ... )
+        >>> task["id"]  # "TASK-001"
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>get_task</name>
+      <signature>
+def get_task(task_id: str) -> Optional[Dict]:
+    """
+    Get a single task by ID.
+
+    Args:
+        task_id: Task ID (e.g., "TASK-001")
+
+    Returns:
+        dict: Task object or None if not found
+
+    Example:
+        >>> task = get_task("TASK-001")
+        >>> if task:
+        ...     print(task["title"])
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>update_task</name>
+      <signature>
+def update_task(task_id: str, updates: Dict) -> bool:
+    """
+    Update task fields. Returns True if successful.
+
+    Args:
+        task_id: Task ID to update
+        updates: Dict of fields to update
+
+    Returns:
+        bool: True if update successful, False otherwise
+
+    Example:
+        >>> update_task("TASK-001", {"status": "in_progress"})
+        >>> update_task("TASK-001", {"priority": "must_win_today", "notes": "Urgent!"})
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>delete_task</name>
+      <signature>
+def delete_task(task_id: str) -> bool:
+    """
+    Delete a task. Returns True if successful.
+
+    Args:
+        task_id: Task ID to delete
+
+    Returns:
+        bool: True if deleted, False if not found
+
+    Example:
+        >>> delete_task("TASK-001")
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>list_tasks</name>
+      <signature>
+def list_tasks() -> List[Dict]:
+    """
+    Get all tasks.
+
+    Returns:
+        list: All task objects
+
+    Example:
+        >>> tasks = list_tasks()
+        >>> for task in tasks:
+        ...     print(f"{task['id']}: {task['title']}")
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>get_tasks_by_status</name>
+      <signature>
+def get_tasks_by_status(status: str) -> List[Dict]:
+    """
+    Get all tasks with given status.
+
+    Args:
+        status: Status value (todo, in_progress, done, blocked, deferred)
+
+    Returns:
+        list: Tasks matching status
+
+    Example:
+        >>> in_progress = get_tasks_by_status("in_progress")
+        >>> done_tasks = get_tasks_by_status("done")
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>get_tasks_by_priority</name>
+      <signature>
+def get_tasks_by_priority(priority: str) -> List[Dict]:
+    """
+    Get all tasks with given priority.
+
+    Args:
+        priority: Priority value (must_win_today, important, should_do, nice_to_have)
+
+    Returns:
+        list: Tasks matching priority
+
+    Example:
+        >>> must_wins = get_tasks_by_priority("must_win_today")
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>get_todays_tasks</name>
+      <signature>
+def get_todays_tasks() -> List[Dict]:
+    """
+    Get tasks due today or overdue.
+
+    Returns:
+        list: Tasks with due_date = today OR due_date &lt; today AND status != done
+
+    Example:
+        >>> today = get_todays_tasks()
+        >>> print(f"You have {len(today)} tasks due today")
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>get_must_win_tasks</name>
+      <signature>
+def get_must_win_tasks() -> List[Dict]:
+    """
+    Get tasks marked as must_win_today.
+
+    Returns:
+        list: Tasks with priority = must_win_today AND status != done
+
+    Example:
+        >>> must_wins = get_must_win_tasks()
+        >>> if must_wins:
+        ...     print("Your must-win tasks:")
+        ...     for task in must_wins:
+        ...         print(f"  - {task['title']}")
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>get_overdue_tasks</name>
+      <signature>
+def get_overdue_tasks() -> List[Dict]:
+    """
+    Get overdue tasks (past due date, not done).
+
+    Returns:
+        list: Tasks with due_date &lt; today AND status != done
+
+    Example:
+        >>> overdue = get_overdue_tasks()
+        >>> if overdue:
+        ...     print(f"Warning: {len(overdue)} tasks overdue!")
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>get_tasks_by_goal</name>
+      <signature>
+def get_tasks_by_goal(goal_id: str) -> List[Dict]:
+    """
+    Get tasks linked to specific goal.
+
+    Args:
+        goal_id: Goal ID to filter by
+
+    Returns:
+        list: Tasks with linked_to.goal_id = goal_id
+
+    Example:
+        >>> goal_tasks = get_tasks_by_goal("GOAL-Q4-01")
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>mark_task_complete</name>
+      <signature>
+def mark_task_complete(task_id: str, actual_time_minutes: Optional[int] = None) -> bool:
+    """
+    Mark task as done, set completion timestamp.
+
+    Args:
+        task_id: Task ID to complete
+        actual_time_minutes: Optional actual time spent
+
+    Returns:
+        bool: True if successful
+
+    Example:
+        >>> mark_task_complete("TASK-001", actual_time_minutes=90)
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>calculate_time_variance</name>
+      <signature>
+def calculate_time_variance(task: Dict) -> Optional[int]:
+    """
+    Calculate time variance (actual vs estimated).
+
+    Args:
+        task: Task object
+
+    Returns:
+        int: Variance in minutes (positive = over estimate, negative = under)
+        None: If either value missing
+
+    Example:
+        >>> task = get_task("TASK-001")
+        >>> variance = calculate_time_variance(task)
+        >>> if variance and variance > 0:
+        ...     print(f"Task took {variance} minutes longer than estimated")
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>load_tasks</name>
+      <signature>
+def load_tasks() -> Dict:
+    """
+    Load tasks from storage.
+
+    Returns:
+        dict: Task storage structure with tasks list and metadata
+
+    Example:
+        >>> data = load_tasks()
+        >>> tasks = data["tasks"]
+        >>> metadata = data["metadata"]
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>save_tasks</name>
+      <signature>
+def save_tasks(tasks_data: Dict) -> bool:
+    """
+    Save tasks to storage with backup.
+
+    Args:
+        tasks_data: Task storage structure
+
+    Returns:
+        bool: True if successful
+
+    Example:
+        >>> data = load_tasks()
+        >>> # ... modify tasks ...
+        >>> save_tasks(data)
+    """
+      </signature>
+    </function>
+
+    <function>
+      <name>get_tasks_summary</name>
+      <signature>
+def get_tasks_summary() -> str:
+    """
+    Get human-readable summary of tasks.
+
+    Returns:
+        str: Summary string (e.g., "5 tasks | 2 in progress | 3 done")
+
+    Example:
+        >>> summary = get_tasks_summary()
+        >>> print(f"Task status: {summary}")
+    """
+      </signature>
+    </function>
+  </api-function-signatures>
+
+  <test-ideas>
+    <test id="1">
+      <name>test_create_task_minimal_fields</name>
+      <description>Create task with only required field (title)</description>
+      <steps>
+        1. Call create_task("Test task")
+        2. Verify task created with default values
+        3. Verify task ID generated (TASK-001 format)
+        4. Verify created_date set
+      </steps>
+      <expected>Task created successfully with defaults</expected>
+    </test>
+
+    <test id="2">
+      <name>test_create_task_all_fields</name>
+      <description>Create task with all possible fields</description>
+      <steps>
+        1. Call create_task with all parameters
+        2. Verify all fields stored correctly
+        3. Verify task persisted to disk
+      </steps>
+      <expected>Task created with all fields populated</expected>
+    </test>
+
+    <test id="3">
+      <name>test_get_task_by_id</name>
+      <description>Retrieve task by ID</description>
+      <steps>
+        1. Create task, get task_id
+        2. Call get_task(task_id)
+        3. Verify returned task matches created task
+      </steps>
+      <expected>Task retrieved successfully</expected>
+    </test>
+
+    <test id="4">
+      <name>test_get_task_not_found</name>
+      <description>Handle missing task gracefully</description>
+      <steps>
+        1. Call get_task("TASK-999")
+        2. Verify returns None (not exception)
+      </steps>
+      <expected>Returns None for missing task</expected>
+    </test>
+
+    <test id="5">
+      <name>test_update_task_status</name>
+      <description>Update task status field</description>
+      <steps>
+        1. Create task with status=todo
+        2. Update to status=in_progress
+        3. Verify status changed
+        4. Verify started_date set
+      </steps>
+      <expected>Status updated, started_date set</expected>
+    </test>
+
+    <test id="6">
+      <name>test_update_task_priority</name>
+      <description>Update task priority</description>
+      <steps>
+        1. Create task with priority=should_do
+        2. Update to priority=must_win_today
+        3. Verify priority changed
+      </steps>
+      <expected>Priority updated successfully</expected>
+    </test>
+
+    <test id="7">
+      <name>test_mark_task_complete</name>
+      <description>Mark task complete sets timestamp</description>
+      <steps>
+        1. Create task
+        2. Call mark_task_complete(task_id)
+        3. Verify status=done
+        4. Verify completed_date set
+      </steps>
+      <expected>Task marked done with timestamp</expected>
+    </test>
+
+    <test id="8">
+      <name>test_mark_task_complete_with_time</name>
+      <description>Mark complete with actual time</description>
+      <steps>
+        1. Create task with estimated_time_minutes=120
+        2. Call mark_task_complete(task_id, actual_time_minutes=90)
+        3. Verify actual_time_minutes=90
+        4. Verify completed_date set
+      </steps>
+      <expected>Task completed with time tracking</expected>
+    </test>
+
+    <test id="9">
+      <name>test_delete_task</name>
+      <description>Delete task removes it from list</description>
+      <steps>
+        1. Create task, get task_id
+        2. Call delete_task(task_id)
+        3. Verify get_task(task_id) returns None
+        4. Verify list_tasks() doesn't include task
+      </steps>
+      <expected>Task deleted successfully</expected>
+    </test>
+
+    <test id="10">
+      <name>test_list_tasks_empty</name>
+      <description>List tasks on empty storage</description>
+      <steps>
+        1. Delete tasks.json if exists
+        2. Call list_tasks()
+        3. Verify returns empty list
+      </steps>
+      <expected>Returns [] for no tasks</expected>
+    </test>
+
+    <test id="11">
+      <name>test_list_tasks_multiple</name>
+      <description>List multiple tasks</description>
+      <steps>
+        1. Create 3 tasks
+        2. Call list_tasks()
+        3. Verify returns 3 tasks
+      </steps>
+      <expected>Returns all tasks</expected>
+    </test>
+
+    <test id="12">
+      <name>test_get_tasks_by_status_todo</name>
+      <description>Query tasks by status=todo</description>
+      <steps>
+        1. Create 2 tasks with status=todo, 1 with status=done
+        2. Call get_tasks_by_status("todo")
+        3. Verify returns 2 tasks
+      </steps>
+      <expected>Returns only todo tasks</expected>
+    </test>
+
+    <test id="13">
+      <name>test_get_tasks_by_status_in_progress</name>
+      <description>Query tasks by status=in_progress</description>
+      <steps>
+        1. Create tasks with various statuses
+        2. Call get_tasks_by_status("in_progress")
+        3. Verify returns only in_progress tasks
+      </steps>
+      <expected>Returns only in-progress tasks</expected>
+    </test>
+
+    <test id="14">
+      <name>test_get_tasks_by_priority_must_win</name>
+      <description>Query must-win tasks</description>
+      <steps>
+        1. Create 2 tasks with priority=must_win_today, 1 with priority=should_do
+        2. Call get_tasks_by_priority("must_win_today")
+        3. Verify returns 2 tasks
+      </steps>
+      <expected>Returns only must-win tasks</expected>
+    </test>
+
+    <test id="15">
+      <name>test_get_todays_tasks</name>
+      <description>Get tasks due today</description>
+      <steps>
+        1. Create task with due_date=today
+        2. Create task with due_date=tomorrow
+        3. Call get_todays_tasks()
+        4. Verify returns only today's task
+      </steps>
+      <expected>Returns tasks due today</expected>
+    </test>
+
+    <test id="16">
+      <name>test_get_overdue_tasks</name>
+      <description>Get overdue tasks (past due, not done)</description>
+      <steps>
+        1. Create task with due_date=yesterday, status=todo
+        2. Create task with due_date=yesterday, status=done
+        3. Call get_overdue_tasks()
+        4. Verify returns only incomplete overdue task
+      </steps>
+      <expected>Returns only incomplete overdue tasks</expected>
+    </test>
+
+    <test id="17">
+      <name>test_get_tasks_by_goal</name>
+      <description>Query tasks linked to goal</description>
+      <steps>
+        1. Create task linked to GOAL-Q4-01
+        2. Create task linked to GOAL-Q4-02
+        3. Call get_tasks_by_goal("GOAL-Q4-01")
+        4. Verify returns only Q4-01 task
+      </steps>
+      <expected>Returns tasks linked to specific goal</expected>
+    </test>
+
+    <test id="18">
+      <name>test_calculate_time_variance</name>
+      <description>Calculate time estimate variance</description>
+      <steps>
+        1. Create task with estimated_time_minutes=120
+        2. Mark complete with actual_time_minutes=90
+        3. Call calculate_time_variance(task)
+        4. Verify returns -30 (30 minutes under estimate)
+      </steps>
+      <expected>Returns correct variance</expected>
+    </test>
+
+    <test id="19">
+      <name>test_calculate_time_variance_no_actual</name>
+      <description>Handle missing actual time</description>
+      <steps>
+        1. Create task with estimated_time_minutes=120
+        2. Call calculate_time_variance(task)
+        3. Verify returns None
+      </steps>
+      <expected>Returns None if actual time missing</expected>
+    </test>
+
+    <test id="20">
+      <name>test_task_id_generation_unique</name>
+      <description>Ensure task IDs are unique</description>
+      <steps>
+        1. Create 3 tasks
+        2. Get all task IDs
+        3. Verify all IDs unique
+        4. Verify format matches TASK-XXX
+      </steps>
+      <expected>All task IDs unique and formatted correctly</expected>
+    </test>
+
+    <test id="21">
+      <name>test_task_state_transition_todo_to_in_progress</name>
+      <description>State transition sets started_date</description>
+      <steps>
+        1. Create task with status=todo
+        2. Update status to in_progress
+        3. Verify started_date set
+      </steps>
+      <expected>started_date set on transition</expected>
+    </test>
+
+    <test id="22">
+      <name>test_task_state_transition_in_progress_to_done</name>
+      <description>State transition sets completed_date</description>
+      <steps>
+        1. Create task with status=in_progress
+        2. Update status to done
+        3. Verify completed_date set
+      </steps>
+      <expected>completed_date set on transition</expected>
+    </test>
+
+    <test id="23">
+      <name>test_storage_missing_file_returns_empty</name>
+      <description>Missing tasks.json handled gracefully</description>
+      <steps>
+        1. Delete tasks.json if exists
+        2. Call load_tasks()
+        3. Verify returns empty structure (not exception)
+      </steps>
+      <expected>Returns empty structure, no exception</expected>
+    </test>
+
+    <test id="24">
+      <name>test_storage_corrupted_json_returns_empty</name>
+      <description>Corrupted JSON handled gracefully</description>
+      <steps>
+        1. Write invalid JSON to tasks.json
+        2. Call load_tasks()
+        3. Verify returns empty structure with warning
+      </steps>
+      <expected>Returns empty structure, prints warning</expected>
+    </test>
+
+    <test id="25">
+      <name>test_storage_backup_created_on_save</name>
+      <description>Backup file created before overwrite</description>
+      <steps>
+        1. Create task (creates tasks.json)
+        2. Create another task (triggers backup)
+        3. Verify tasks.json.bak exists
+        4. Verify backup contains previous version
+      </steps>
+      <expected>Backup file created with old data</expected>
+    </test>
+
+    <test id="26">
+      <name>test_integration_create_reload_verify</name>
+      <description>Task persists across load/save cycles</description>
+      <steps>
+        1. Create task with specific data
+        2. Call load_tasks() (reload from disk)
+        3. Verify task data matches original
+      </steps>
+      <expected>Task persisted correctly to disk</expected>
+    </test>
+
+    <test id="27">
+      <name>test_integration_update_reload_verify</name>
+      <description>Task updates persist to disk</description>
+      <steps>
+        1. Create task
+        2. Update task status
+        3. Reload tasks from disk
+        4. Verify status change persisted
+      </steps>
+      <expected>Updates persisted to disk</expected>
+    </test>
+
+    <test id="28">
+      <name>test_get_must_win_tasks_excludes_done</name>
+      <description>Must-win query excludes completed tasks</description>
+      <steps>
+        1. Create must-win task with status=done
+        2. Create must-win task with status=todo
+        3. Call get_must_win_tasks()
+        4. Verify returns only incomplete task
+      </steps>
+      <expected>Completed must-wins excluded</expected>
+    </test>
+  </test-ideas>
+
+  <definition-of-done>
+    <item>src/tasks.py created with all API functions</item>
+    <item>Task data model documented in code (docstrings)</item>
+    <item>All constants defined (STATUS, PRIORITY, ENERGY, CONTEXT)</item>
+    <item>data/tasks/ directory created with .gitkeep</item>
+    <item>tests/test_tasks.py created with 20+ tests</item>
+    <item>All tests passing (100% pass rate)</item>
+    <item>Task storage uses same patterns as Story 2.1 (backup, error handling)</item>
+    <item>Task loading integrated with src/startup.py</item>
+    <item>Memory status includes task file info</item>
+    <item>All 7 acceptance criteria met</item>
+    <item>Documentation complete (all functions have docstrings with examples)</item>
+    <item>Type hints on all function signatures</item>
+    <item>Manual testing completed (REPL, tasks.json readability)</item>
+    <item>Committed to git: "Story 3.2: Task data model and storage API"</item>
+  </definition-of-done>
+
+  <constraints>
+    <constraint>Follow Story 2.1 storage patterns exactly (JSON, backup, error handling)</constraint>
+    <constraint>Task IDs must be unique and sequential (TASK-001, TASK-002, etc.)</constraint>
+    <constraint>All dates/timestamps in ISO 8601 format</constraint>
+    <constraint>File format is JSON (not JSONL) for human readability</constraint>
+    <constraint>No database dependencies (file-based storage only)</constraint>
+    <constraint>Graceful error handling (no unhandled exceptions in production paths)</constraint>
+    <constraint>All functions return consistent types (Dict, List[Dict], bool)</constraint>
+    <constraint>Tasks persist across sessions (load on startup)</constraint>
+    <constraint>Keep implementation simple (can enhance later)</constraint>
+    <constraint>Test coverage minimum 80% (aim for 90%+)</constraint>
+    <constraint>Windows compatibility (handle file paths correctly)</constraint>
+    <constraint>Backup file permissions on Unix (0o600)</constraint>
+  </constraints>
+
+  <storage-patterns>
+    <pattern name="Directory Creation">
+      <description>Auto-create directory if missing</description>
+      <code>
+def _ensure_tasks_directory() -> None:
+    """Create tasks directory if it doesn't exist."""
+    TASKS_DIR.mkdir(parents=True, exist_ok=True)
+      </code>
+    </pattern>
+
+    <pattern name="Load with Graceful Fallback">
+      <description>Return empty structure if file missing</description>
+      <code>
+def load_tasks() -> Dict[str, Any]:
+    try:
+        if not TASKS_FILE.exists():
+            return _get_empty_tasks()
+
+        with open(TASKS_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        # Validate structure
+        empty = _get_empty_tasks()
+        for key in empty.keys():
+            if key not in data:
+                data[key] = empty[key]
+
+        return data
+
+    except (json.JSONDecodeError, IOError) as e:
+        print(f"Warning: Could not load tasks: {e}")
+        print("Returning empty task structure")
+        return _get_empty_tasks()
+      </code>
+    </pattern>
+
+    <pattern name="Save with Backup">
+      <description>Backup before overwrite</description>
+      <code>
+def save_tasks(tasks_data: Dict[str, Any]) -> bool:
+    try:
+        _ensure_tasks_directory()
+
+        # Update metadata
+        tasks_data['metadata']['last_updated'] = datetime.now().isoformat()
+        tasks_data['metadata']['total_tasks'] = len(tasks_data['tasks'])
+        tasks_data['metadata']['completed_count'] = sum(
+            1 for t in tasks_data['tasks'] if t['status'] == 'done'
+        )
+
+        # Backup existing file
+        if TASKS_FILE.exists():
+            backup_path = TASKS_FILE.with_suffix('.json.bak')
+            if backup_path.exists():
+                backup_path.unlink()  # Windows compatibility
+            TASKS_FILE.rename(backup_path)
+
+        # Write JSON
+        with open(TASKS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(tasks_data, f, indent=4, ensure_ascii=False)
+
+        # Set permissions (Unix)
+        if os.name != 'nt':
+            os.chmod(TASKS_FILE, 0o600)
+
+        return True
+
+    except (IOError, OSError) as e:
+        print(f"Error: Could not save tasks: {e}")
+        return False
+      </code>
+    </pattern>
+
+    <pattern name="ID Generation">
+      <description>Generate unique sequential task IDs</description>
+      <code>
+def _generate_task_id(tasks_data: Dict[str, Any]) -> str:
+    """Generate unique task ID (TASK-001, TASK-002, etc.)."""
+    existing_ids = {task['id'] for task in tasks_data['tasks']}
+
+    counter = 1
+    while True:
+        task_id = f"TASK-{counter:03d}"
+        if task_id not in existing_ids:
+            return task_id
+        counter += 1
+      </code>
+    </pattern>
+  </storage-patterns>
+
+  <story-file-reference>
+    <location>docs/stories/story-3.2-task-data-model.md</location>
+    <estimated-effort>5 story points (1 day)</estimated-effort>
+    <breakdown>
+      - 2 hours: Design task data structure and constants
+      - 2 hours: Implement task API functions (CRUD operations)
+      - 1 hour: Implement query functions (status, priority, date)
+      - 2 hours: Write comprehensive test suite (20+ tests)
+      - 1 hour: Integration with startup.py and memory status
+    </breakdown>
+  </story-file-reference>
+
+  <related-stories>
+    <depends-on>
+      <story>2.1: Business Context Storage (patterns reference)</story>
+      <story>2.4: Memory Loading on Startup (integration point)</story>
+      <story>3.1: Operator Persona (consumer of task API)</story>
+    </depends-on>
+
+    <blocks>
+      <story>3.3: Daily Planning Workflow (needs task API)</story>
+      <story>3.4: Morning Briefing (needs task queries)</story>
+      <story>3.5: EOD Wrap-up (needs task completion)</story>
+      <story>3.6: Task Capture from Conversations (needs task creation)</story>
+    </blocks>
+
+    <future-enhancements>
+      <story>3.9: Productivity Pattern Learning (uses task data)</story>
+      <story>4.x: Link Tasks to Goals (Planner integration)</story>
+    </future-enhancements>
+  </related-stories>
+</story-context>
