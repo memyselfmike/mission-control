@@ -4,7 +4,7 @@
 **Story Points:** 5
 **Priority:** P1
 **Type:** Data Model + API
-**Status:** Ready
+**Status:** Done
 **Created:** 2025-10-18
 **Sprint:** Sprint 4
 
