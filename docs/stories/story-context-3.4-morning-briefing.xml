@@ -1,0 +1,490 @@
+<story-context id="bmad/bmm/story-context/3.4" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.4</storyId>
+    <title>Build Morning Briefing Generator</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-20</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-3.4-morning-briefing.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a user</asA>
+    <iWant>Omega to greet me with an energizing morning briefing when I start Mission Control</iWant>
+    <soThat>I immediately understand my priorities and context for the day ahead</soThat>
+    <description>
+      Build an autonomous morning briefing that executes when Mission Control starts (integrated with Story 2.4 startup system).
+      The briefing greets user with energy and context, summarizes today's must-win tasks, highlights overdue items, shows available time blocks,
+      offers to run full daily planning, and loads relevant context from memory. This is Omega's "first impression" - energizing, focused, and valuable.
+      Duration: 30 seconds to read. Trigger: Automatic on startup (morning hours). Voice: Omega's energetic, action-oriented style.
+    </description>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1" priority="critical">
+      <title>Morning Briefing Function Created</title>
+      <description>
+        - File: mission-control/src/morning_briefing.py
+        - Function: generate_morning_briefing() returns formatted text
+        - Integrates with src/startup.py (Story 2.4)
+        - Executes automatically on startup during morning hours (6am-12pm learned time)
+      </description>
+    </criterion>
+
+    <criterion id="AC2" priority="critical">
+      <title>Briefing Content Structure</title>
+      <description>
+        - Greeting (time-aware: "Good morning!")
+        - Date and day of week
+        - Must-win tasks (from task system)
+        - Overdue tasks (if any)
+        - Available time blocks
+        - Prompt to run daily planning
+        - Omega's energetic sign-off
+      </description>
+    </criterion>
+
+    <criterion id="AC3" priority="high">
+      <title>Context from Memory Loaded</title>
+      <description>
+        - User's name (from business context)
+        - Must-win tasks (from task system)
+        - Overdue tasks (from task system)
+        - Yesterday's completion stats (optional, from memory)
+        - Any pending notifications (from notification system)
+      </description>
+    </criterion>
+
+    <criterion id="AC4" priority="high">
+      <title>Time-Aware Greeting</title>
+      <description>
+        - Morning (6am-12pm): "Good morning! ⚡"
+        - Afternoon (12pm-5pm): "Good afternoon! Let's refocus."
+        - Evening (5pm-10pm): "Good evening! Wrapping up or planning tomorrow?"
+        - Night/Early (10pm-6am): Skip briefing (user is likely not working)
+      </description>
+    </criterion>
+
+    <criterion id="AC5" priority="high">
+      <title>Task Summary Quality</title>
+      <description>
+        - Shows top 3 must-win tasks (if set from yesterday's planning)
+        - Shows overdue count (without overwhelming details)
+        - Shows today's task count
+        - Highlights if no tasks are planned (prompts planning)
+      </description>
+    </criterion>
+
+    <criterion id="AC6" priority="medium">
+      <title>Actionable Next Steps</title>
+      <description>
+        - If tasks exist: "Ready to execute? Type 'go' to begin!"
+        - If no tasks: "Want to plan your day? Type 'plan my day' to start."
+        - If overdue exists: "You have {n} overdue tasks. Want to triage?"
+        - Always includes option to run daily planning workflow
+      </description>
+    </criterion>
+
+    <criterion id="AC7" priority="high">
+      <title>Performance and UX</title>
+      <description>
+        - Briefing generates in less than 500ms
+        - Output is formatted with Rich library (colors, emphasis)
+        - Not too verbose (30 seconds to read)
+        - Skippable (doesn't block conversation start)
+        - User preference: can disable briefing in settings
+      </description>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>UP-2: Energizing First Impressions</section>
+        <snippet>
+          "Mission Control should greet users warmly and set a positive, productive tone from the first interaction.
+          Every interaction should feel like collaborating with a trusted executive team member."
+        </snippet>
+      </doc>
+
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-8: Daily Planning and Execution (Operator)</section>
+        <snippet>
+          "Users can plan their day with Omega (Operator agent) including morning briefings, daily planning sessions,
+          time blocking, and end-of-day wrap-ups. Morning briefing shows: must-win tasks, calendar summary, energy assessment."
+        </snippet>
+      </doc>
+
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Solution Architecture</title>
+        <section>Module: Rich CLI Interface</section>
+        <snippet>
+          "Use Rich library for formatted CLI output with colors, panels, tables, and progress indicators.
+          All agent outputs should use Rich formatting for visual hierarchy and clarity."
+        </snippet>
+      </doc>
+
+      <doc>
+        <path>docs/stories/story-3.1-operator-persona.md</path>
+        <title>Story 3.1: Operator Agent Persona (Omega)</title>
+        <section>Omega Personality</section>
+        <snippet>
+          "Omega is energetic, action-oriented, uses momentum language ('Let's go!', 'Let's execute'), celebrates progress,
+          challenges gently, and includes ⚡ emoji for energy. Always focused on 'what's next action?'"
+        </snippet>
+      </doc>
+
+      <doc>
+        <path>docs/stories/story-3.2-task-data-model.md</path>
+        <title>Story 3.2: Task Data Model</title>
+        <section>Task API Functions</section>
+        <snippet>
+          "Provides get_must_win_tasks(), get_tasks_by_status(status), get_tasks_by_priority(priority), get_tasks_summary().
+          Tasks have priority levels including 'must_win_today' and status values including 'todo', 'done', 'blocked'."
+        </snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>mission-control/src/startup.py</path>
+        <kind>service</kind>
+        <symbol>initialize_system</symbol>
+        <lines>37-100</lines>
+        <reason>Integration point for morning briefing. Already loads business context, tasks, and notifications. Need to add briefing call here.</reason>
+      </artifact>
+
+      <artifact>
+        <path>mission-control/src/tasks.py</path>
+        <kind>service</kind>
+        <symbol>get_must_win_tasks</symbol>
+        <lines>441-480</lines>
+        <reason>Returns list of tasks with priority='must_win_today'. Used for showing top priorities in briefing.</reason>
+      </artifact>
+
+      <artifact>
+        <path>mission-control/src/tasks.py</path>
+        <kind>service</kind>
+        <symbol>get_tasks_by_status</symbol>
+        <lines>380-395</lines>
+        <reason>Filter tasks by status (e.g., 'todo', 'done'). Used to find overdue tasks and today's tasks.</reason>
+      </artifact>
+
+      <artifact>
+        <path>mission-control/src/tasks.py</path>
+        <kind>service</kind>
+        <symbol>get_tasks_summary</symbol>
+        <lines>559-600</lines>
+        <reason>Returns formatted task summary. Can be used or adapted for briefing task display.</reason>
+      </artifact>
+
+      <artifact>
+        <path>mission-control/src/memory.py</path>
+        <kind>service</kind>
+        <symbol>load_business_context</symbol>
+        <lines>107-145</lines>
+        <reason>Loads business context including user_name. Used for personalized greeting in briefing.</reason>
+      </artifact>
+
+      <artifact>
+        <path>mission-control/src/notifications.py</path>
+        <kind>service</kind>
+        <symbol>NotificationManager</symbol>
+        <lines>1-808</lines>
+        <reason>Manages notifications. Can query for pending notifications to show in briefing (optional AC3 feature).</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="rich" version="^14.2.0" usage="CLI formatting, panels, colors for briefing output" />
+        <package name="pytest" version="^8.3.4" usage="Testing framework" />
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="C1" type="performance">
+      Briefing generation must complete in under 500ms (AC7 requirement)
+    </constraint>
+
+    <constraint id="C2" type="architecture">
+      Follow modular monolith pattern: morning_briefing.py as standalone module, integrated via startup.py
+    </constraint>
+
+    <constraint id="C3" type="ux">
+      Briefing must be concise (30 seconds to read maximum). No walls of text.
+    </constraint>
+
+    <constraint id="C4" type="ux">
+      Use Rich library for all output formatting (panels, colors, emphasis)
+    </constraint>
+
+    <constraint id="C5" type="code-quality">
+      All functions must have docstrings with type hints (Python 3.13+ style)
+    </constraint>
+
+    <constraint id="C6" type="error-handling">
+      Graceful degradation required - briefing should work even if tasks/memory unavailable
+    </constraint>
+
+    <constraint id="C7" type="testing">
+      Minimum 15 unit tests covering all ACs and edge cases (per story testing strategy)
+    </constraint>
+
+    <constraint id="C8" type="voice">
+      Omega's personality must be consistent: energetic, action-oriented, uses ⚡ emoji, momentum language
+    </constraint>
+
+    <constraint id="C9" type="time-awareness">
+      Briefing behavior changes based on time: morning (6am-12pm), afternoon (12pm-5pm), evening (5pm-10pm), night (skip)
+    </constraint>
+
+    <constraint id="C10" type="integration">
+      Must integrate with existing startup.py without breaking current initialization flow
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>generate_morning_briefing</name>
+      <kind>function</kind>
+      <signature>def generate_morning_briefing() -> str</signature>
+      <description>Main function that generates and returns formatted morning briefing text with Rich markup</description>
+      <path>mission-control/src/morning_briefing.py</path>
+    </interface>
+
+    <interface>
+      <name>get_time_aware_greeting</name>
+      <kind>function</kind>
+      <signature>def get_time_aware_greeting(hour: int) -> Optional[str]</signature>
+      <description>Returns greeting based on time of day. Returns None for night hours (10pm-6am) to skip briefing.</description>
+      <path>mission-control/src/morning_briefing.py</path>
+    </interface>
+
+    <interface>
+      <name>format_task_summary</name>
+      <kind>function</kind>
+      <signature>def format_task_summary(must_wins: List[Dict], overdue: List[Dict], today_tasks: List[Dict]) -> str</signature>
+      <description>Formats task summary section showing must-wins, overdue count, and today's tasks</description>
+      <path>mission-control/src/morning_briefing.py</path>
+    </interface>
+
+    <interface>
+      <name>suggest_next_action</name>
+      <kind>function</kind>
+      <signature>def suggest_next_action(must_wins: List[Dict], overdue: List[Dict]) -> str</signature>
+      <description>Suggests next action based on task state (execute, triage, or plan)</description>
+      <path>mission-control/src/morning_briefing.py</path>
+    </interface>
+
+    <interface>
+      <name>should_show_briefing</name>
+      <kind>function</kind>
+      <signature>def should_show_briefing() -> bool</signature>
+      <description>Determines if briefing should show based on time and user preferences</description>
+      <path>mission-control/src/morning_briefing.py</path>
+    </interface>
+
+    <interface>
+      <name>get_overdue_tasks</name>
+      <kind>function</kind>
+      <signature>def get_overdue_tasks() -> List[Dict]</signature>
+      <description>Returns tasks with due_date in the past and status != 'done'. To be implemented or use get_tasks_by_status.</description>
+      <path>mission-control/src/morning_briefing.py or src/tasks.py</path>
+    </interface>
+
+    <interface>
+      <name>get_todays_tasks</name>
+      <kind>function</kind>
+      <signature>def get_todays_tasks() -> List[Dict]</signature>
+      <description>Returns tasks scheduled for today (due_date = today or no due_date with status='todo')</description>
+      <path>mission-control/src/morning_briefing.py or src/tasks.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest framework. All tests in tests/test_morning_briefing.py. Follow existing test patterns:
+      - Descriptive test names (test_feature_scenario__expected_result)
+      - Fixtures for test data setup
+      - Assert statements with clear messages
+      - Mock external dependencies (file I/O, datetime)
+      - Performance tests with timing assertions
+      - 100% test coverage for all public functions
+    </standards>
+
+    <locations>
+      mission-control/tests/test_morning_briefing.py
+    </locations>
+
+    <ideas>
+      <idea id="T1" ac="AC1">
+        test_generate_morning_briefing__returns_string: Verify generate_morning_briefing() returns non-empty string
+      </idea>
+
+      <idea id="T2" ac="AC1">
+        test_generate_morning_briefing__includes_omega_signature: Verify briefing ends with "⚡ Omega"
+      </idea>
+
+      <idea id="T3" ac="AC2">
+        test_briefing_structure__contains_all_sections: Verify briefing has greeting, date, tasks, next action
+      </idea>
+
+      <idea id="T4" ac="AC2">
+        test_briefing_with_must_wins__shows_top_3: Verify must-win tasks displayed (max 3)
+      </idea>
+
+      <idea id="T5" ac="AC2">
+        test_briefing_with_overdue__shows_count: Verify overdue count displayed when tasks overdue
+      </idea>
+
+      <idea id="T6" ac="AC3">
+        test_load_user_name__from_business_context: Verify user name loaded from memory.load_business_context()
+      </idea>
+
+      <idea id="T7" ac="AC3">
+        test_missing_business_context__graceful_fallback: Verify briefing works with default "there" if no user name
+      </idea>
+
+      <idea id="T8" ac="AC4">
+        test_time_aware_greeting__morning_6am: Verify "Good morning! ⚡" for 6am-11:59am
+      </idea>
+
+      <idea id="T9" ac="AC4">
+        test_time_aware_greeting__afternoon_2pm: Verify "Good afternoon!" for 12pm-4:59pm
+      </idea>
+
+      <idea id="T10" ac="AC4">
+        test_time_aware_greeting__evening_7pm: Verify "Good evening!" for 5pm-9:59pm
+      </idea>
+
+      <idea id="T11" ac="AC4">
+        test_should_show_briefing__night_2am__returns_false: Verify briefing skipped at 2am (night hours)
+      </idea>
+
+      <idea id="T12" ac="AC5">
+        test_task_summary__no_tasks__prompts_planning: Verify "No tasks planned" message when empty
+      </idea>
+
+      <idea id="T13" ac="AC5">
+        test_task_summary__multiple_must_wins__shows_only_3: Verify max 3 must-wins shown even if more exist
+      </idea>
+
+      <idea id="T14" ac="AC6">
+        test_suggest_next_action__has_must_wins__execute_prompt: Verify "Ready to execute?" when must-wins exist
+      </idea>
+
+      <idea id="T15" ac="AC6">
+        test_suggest_next_action__no_tasks__plan_prompt: Verify "plan my day" prompt when no tasks
+      </idea>
+
+      <idea id="T16" ac="AC6">
+        test_suggest_next_action__has_overdue__triage_prompt: Verify triage prompt when overdue tasks exist
+      </idea>
+
+      <idea id="T17" ac="AC7">
+        test_performance__briefing_under_500ms: Verify generation completes in under 500ms
+      </idea>
+
+      <idea id="T18" ac="AC7">
+        test_briefing_length__under_30_seconds_to_read: Verify briefing is concise (estimate 200-300 words max)
+      </idea>
+
+      <idea id="T19" ac="AC7">
+        test_rich_formatting__panel_displays: Verify Rich Panel can be created with briefing content
+      </idea>
+
+      <idea id="T20" integration="startup">
+        test_integration_with_startup__briefing_called: Verify startup.py calls generate_morning_briefing() at right time
+      </idea>
+    </ideas>
+  </tests>
+
+  <implementation_plan>
+    <phase n="1" description="Create morning_briefing.py module">
+      <step n="1">Create mission-control/src/morning_briefing.py file</step>
+      <step n="2">Import dependencies: datetime, typing, rich, src.tasks, src.memory</step>
+      <step n="3">Implement get_time_aware_greeting(hour: int) -> Optional[str]</step>
+      <step n="4">Implement helper functions: get_overdue_tasks(), get_todays_tasks()</step>
+      <step n="5">Implement format_task_summary(must_wins, overdue, today_tasks) -> str</step>
+      <step n="6">Implement suggest_next_action(must_wins, overdue) -> str</step>
+      <step n="7">Implement should_show_briefing() -> bool</step>
+      <step n="8">Implement generate_morning_briefing() -> str (main function)</step>
+    </phase>
+
+    <phase n="2" description="Integrate with startup.py">
+      <step n="9">Modify mission-control/src/startup.py</step>
+      <step n="10">Add import: from src.morning_briefing import generate_morning_briefing, should_show_briefing</step>
+      <step n="11">In initialize_system(), after loading memory/tasks, call should_show_briefing()</step>
+      <step n="12">If should_show_briefing() is True, generate and display briefing using Rich Panel</step>
+      <step n="13">Ensure briefing doesn't block rest of initialization</step>
+    </phase>
+
+    <phase n="3" description="Create comprehensive test suite">
+      <step n="14">Create mission-control/tests/test_morning_briefing.py</step>
+      <step n="15">Write 20 test cases covering all ACs (see test ideas above)</step>
+      <step n="16">Use fixtures for mock data (tasks, business context, time)</step>
+      <step n="17">Mock datetime.now() for time-aware testing</step>
+      <step n="18">Mock file I/O for load_business_context and task loading</step>
+      <step n="19">Run pytest and ensure 100% pass rate</step>
+    </phase>
+
+    <phase n="4" description="Validation and polish">
+      <step n="20">Verify all 7 acceptance criteria met</step>
+      <step n="21">Test performance (briefing generation under 500ms)</step>
+      <step n="22">Verify Omega's voice consistent throughout</step>
+      <step n="23">Manual test: Run Mission Control at different times of day</step>
+      <step n="24">Manual test: Verify briefing with 0 tasks, with must-wins, with overdue</step>
+    </phase>
+  </implementation_plan>
+
+  <omega_voice_examples>
+    <example context="morning_with_must_wins">
+      "Good morning! ⚡ Mike
+
+📅 **Monday, October 21, 2025**
+
+**MUST WIN TODAY:**
+1. Complete Story 3.4 implementation
+2. Review Sprint 4 progress
+3. Plan Sprint 5 priorities
+
+Ready to execute? Let's knock out those must-wins! 💪
+
+⚡ Omega"
+    </example>
+
+    <example context="morning_no_tasks">
+      "Good morning! ⚡ Mike
+
+📅 **Monday, October 21, 2025**
+
+**No tasks planned for today.**
+
+Want to plan your day? Type 'plan my day' to start.
+
+⚡ Omega"
+    </example>
+
+    <example context="morning_with_overdue">
+      "Good morning! ⚡ Mike
+
+📅 **Monday, October 21, 2025**
+
+**TODAY:** 5 tasks
+⚠️  **3 overdue tasks**
+
+Want to triage those overdue tasks? Type 'triage'.
+
+⚡ Omega"
+    </example>
+  </omega_voice_examples>
+
+</story-context>
