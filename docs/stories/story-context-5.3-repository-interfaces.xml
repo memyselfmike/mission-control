@@ -1,0 +1,379 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>5</epicId>
+    <storyId>5.3</storyId>
+    <title>Create Repository Interfaces</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-5.3-repository-interfaces.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a developer</asA>
+    <iWant>repository interfaces (abstract base classes) in the domain layer</iWant>
+    <soThat>the domain layer remains pure and infrastructure-agnostic, following Hexagonal Architecture and enabling easy testing and future storage migrations</soThat>
+    <tasks>
+- Task 1: Create repository module structure (AC: #3)
+  - Subtask 1.1: Create `src/domain/repositories/` directory
+  - Subtask 1.2: Create `src/domain/repositories/__init__.py`
+  - Subtask 1.3: Verify domain/ structure is complete
+
+- Task 2: Create ITaskRepository interface (AC: #1)
+  - Subtask 2.1: Create `src/domain/repositories/task_repository.py`
+  - Subtask 2.2: Define ITaskRepository class inheriting from ABC
+  - Subtask 2.3: Add save() method signature
+  - Subtask 2.4: Add find_by_id() method signature
+  - Subtask 2.5: Add find_all() method signature
+  - Subtask 2.6: Add find_by_status() method signature
+  - Subtask 2.7: Add find_by_priority() method signature
+  - Subtask 2.8: Add delete() method signature
+  - Subtask 2.9: Add exists() method signature
+  - Subtask 2.10: Add comprehensive docstrings
+  - Subtask 2.11: Import Task, Status, Priority from domain layer
+
+- Task 3: Create IMemoryRepository interface (AC: #2)
+  - Subtask 3.1: Create `src/domain/repositories/memory_repository.py`
+  - Subtask 3.2: Define IMemoryRepository class inheriting from ABC
+  - Subtask 3.3: Add business context methods (load, save, update)
+  - Subtask 3.4: Add conversation history methods (log, load, search)
+  - Subtask 3.5: Add preference methods (load, save, update)
+  - Subtask 3.6: Add comprehensive docstrings
+
+- Task 4: Configure module exports (AC: #3)
+  - Subtask 4.1: Export ITaskRepository in `repositories/__init__.py`
+  - Subtask 4.2: Export IMemoryRepository in `repositories/__init__.py`
+  - Subtask 4.3: Export interfaces in `domain/__init__.py` if needed
+  - Subtask 4.4: Test imports work correctly
+
+- Task 5: Verify ABC constraints (AC: #4)
+  - Subtask 5.1: Ensure all interfaces use ABC
+  - Subtask 5.2: Ensure all methods use @abstractmethod
+  - Subtask 5.3: Verify interfaces cannot be instantiated
+  - Subtask 5.4: Test that missing method implementations cause errors
+
+- Task 6: Add type hints and documentation (AC: #5)
+  - Subtask 6.1: Review all method signatures for completeness
+  - Subtask 6.2: Add return type hints to all methods
+  - Subtask 6.3: Add parameter type hints to all methods
+  - Subtask 6.4: Write docstrings for all interfaces and methods
+  - Subtask 6.5: Run mypy or type checker to verify
+
+- Task 7: Write comprehensive tests (AC: #7)
+  - Subtask 7.1: Create `tests/domain/repositories/` directory
+  - Subtask 7.2: Create `tests/domain/repositories/__init__.py`
+  - Subtask 7.3: Create `tests/domain/repositories/test_repository_interfaces.py`
+  - Subtask 7.4: Test ITaskRepository cannot be instantiated
+  - Subtask 7.5: Test IMemoryRepository cannot be instantiated
+  - Subtask 7.6: Test concrete implementation must implement all methods
+  - Subtask 7.7: Test method signatures (inspect.signature)
+  - Subtask 7.8: Create mock implementations for testing
+  - Subtask 7.9: Test mock implementations work correctly
+  - Subtask 7.10: Run coverage report, verify 100% for repository interfaces
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. **ITaskRepository Interface Created**
+   - Abstract base class `ITaskRepository` in `src/domain/repositories/task_repository.py`
+   - Methods defined (abstract, no implementation):
+     - `save(task: Task) -> None` - Create or update task
+     - `find_by_id(task_id: str) -> Optional[Task]` - Get single task
+     - `find_all() -> List[Task]` - Get all tasks
+     - `find_by_status(status: Status) -> List[Task]` - Query by status
+     - `find_by_priority(priority: Priority) -> List[Task]` - Query by priority
+     - `delete(task_id: str) -> bool` - Remove task
+     - `exists(task_id: str) -> bool` - Check if task exists
+   - All methods use Task entity from Story 5.2
+   - Proper type hints throughout
+   - Docstrings for interface and all methods
+
+2. **IMemoryRepository Interface Created**
+   - Abstract base class `IMemoryRepository` in `src/domain/repositories/memory_repository.py`
+   - Methods for business context:
+     - `load_business_context() -> Dict[str, Any]` - Get business context
+     - `save_business_context(context: Dict[str, Any]) -> None` - Save context
+     - `update_business_context(updates: Dict[str, Any]) -> None` - Partial update
+   - Methods for conversation history:
+     - `log_interaction(entry: Dict[str, Any]) -> None` - Log conversation
+     - `load_conversation_history(limit: int = 50) -> List[Dict[str, Any]]` - Get recent
+     - `search_conversations(query: str) -> List[Dict[str, Any]]` - Search history
+   - Methods for preferences:
+     - `load_user_preferences() -> Dict[str, List[Dict[str, Any]]]` - Get preferences
+     - `save_user_preferences(prefs: Dict[str, List[Dict[str, Any]]]) -> None` - Save prefs
+     - `update_preference(category: str, preference: Dict[str, Any]) -> bool` - Update single
+
+3. **Repository Module Structure**
+   - `src/domain/repositories/__init__.py` exports all interfaces
+   - Clean import path: `from src.domain.repositories import ITaskRepository, IMemoryRepository`
+   - No implementation details, only interfaces
+   - Zero dependencies on infrastructure layer
+
+4. **Abstract Base Class (ABC) Usage**
+   - All interfaces inherit from `abc.ABC`
+   - All methods decorated with `@abstractmethod`
+   - Cannot be instantiated directly
+   - Concrete implementations MUST implement all abstract methods
+
+5. **Type Safety and Documentation**
+   - All methods have complete type hints
+   - Return types specified (Task, List[Task], bool, None, etc.)
+   - Parameter types specified (str, Task, Status, Priority, etc.)
+   - Docstrings explain purpose of each method
+   - No `Any` types except where necessary for memory storage (legacy compatibility)
+
+6. **Domain Layer Purity Maintained**
+   - Repository interfaces have ZERO external dependencies
+   - No imports from infrastructure, application, or presentation layers
+   - Only imports from domain layer (entities, value objects)
+   - No file I/O, no JSON, no database code
+   - Pure abstractions only
+
+7. **Comprehensive Tests**
+   - 10+ unit tests in `tests/domain/repositories/test_repository_interfaces.py`
+   - Test that interfaces are abstract (cannot be instantiated)
+   - Test that concrete implementations must implement all methods
+   - Test type signatures match specifications
+   - Mock implementations for testing (in test file only)
+   - 100% coverage for repository interface module
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Solution Architecture</title>
+        <section>ADR-009: Hexagonal/Clean Architecture Adoption</section>
+        <snippet>Mission Control adopts Hexagonal/Clean Architecture with strict layering. Repository interfaces belong in domain layer (abstract), implementations in infrastructure layer. This enables testability, flexibility, and SOLID principles.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Product Epics</title>
+        <section>EPIC-5R: Architectural Refactoring - Phase 1</section>
+        <snippet>Phase 1: Foundation (10 pts, Week 1) - Story 5.1: Value Objects (3 pts), Story 5.2: Task Entity (5 pts), Story 5.3: Repository Interfaces (2 pts). Repository pattern for ALL storage enables easy testing and future DB migration.</snippet>
+      </doc>
+      <doc>
+        <path>mission-control/CLAUDE.md</path>
+        <title>Engineering Rules</title>
+        <section>Section 3: Repository Pattern (MANDATORY FOR ALL STORAGE)</section>
+        <snippet>ALL storage access MUST go through repositories. Repository interface in domain layer (abstract), implementation in infrastructure layer. Application layer uses interface NOT implementation. Method naming: save(), find_by_id(), find_all(), find_by_X(), delete(), exists().</snippet>
+      </doc>
+      <doc>
+        <path>mission-control/CLAUDE.md</path>
+        <title>Engineering Rules</title>
+        <section>Section 10: Output & Logging Standards</section>
+        <snippet>ALL operations MUST log to stdout for visibility. Log format: [Component] Message: key=value. Log entry/exit for use cases and repositories. Log success AND error cases with full context. Performance logging for expensive operations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-5.1-domain-value-objects.md</path>
+        <title>Story 5.1: Domain Value Objects</title>
+        <section>Completed Story</section>
+        <snippet>Created Priority, Status, EnergyLevel, Context, TimeBlock value objects in mission-control/src/domain/value_objects/. All immutable, type-safe enums. 30 tests passing (100%).</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-5.2-task-entity.md</path>
+        <title>Story 5.2: Task Entity</title>
+        <section>Completed Story</section>
+        <snippet>Created Task entity in mission-control/src/domain/entities/task.py with 18 fields, 9 behavior methods, 3 factory methods. Uses value objects from Story 5.1. 44 tests passing (100%). Zero infrastructure dependencies.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>mission-control/src/domain/entities/task.py</path>
+        <kind>entity</kind>
+        <symbol>Task</symbol>
+        <lines>complete file</lines>
+        <reason>ITaskRepository will manage Task entities - need to understand Task structure for repository interface design</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/priority.py</path>
+        <kind>value_object</kind>
+        <symbol>Priority</symbol>
+        <lines>complete file</lines>
+        <reason>ITaskRepository.find_by_priority() needs Priority enum</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/status.py</path>
+        <kind>value_object</kind>
+        <symbol>Status</symbol>
+        <lines>complete file</lines>
+        <reason>ITaskRepository.find_by_status() needs Status enum</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/__init__.py</path>
+        <kind>module_init</kind>
+        <symbol>N/A</symbol>
+        <lines>complete file</lines>
+        <reason>May need to export repository interfaces from domain layer</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/memory.py</path>
+        <kind>legacy_module</kind>
+        <symbol>load_business_context, save_business_context, log_interaction, etc.</symbol>
+        <lines>complete file</lines>
+        <reason>IMemoryRepository will eventually replace this god object - need to understand existing memory API for interface design</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/tests/test_value_objects.py</path>
+        <kind>test</kind>
+        <symbol>test_priority_*, test_status_*</symbol>
+        <lines>complete file</lines>
+        <reason>Example of testing domain layer components with zero infrastructure dependencies</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/tests/domain/entities/test_task.py</path>
+        <kind>test</kind>
+        <symbol>Various Task tests</symbol>
+        <lines>complete file</lines>
+        <reason>Example of testing entities in isolation - repository interface tests should follow similar pattern</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="abc" version="builtin">Abstract base class support for defining repository interfaces</package>
+        <package name="typing" version="builtin">Type hints: List, Optional, Dict, Any for method signatures</package>
+        <package name="pytest" version=">=8.4.2">Testing framework for comprehensive test suite</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>MANDATORY: Repository interfaces in domain layer (mission-control/src/domain/repositories/), NOT infrastructure</constraint>
+    <constraint>MANDATORY: All interfaces inherit from abc.ABC, all methods decorated with @abstractmethod</constraint>
+    <constraint>MANDATORY: ZERO external dependencies - no imports from infrastructure, application, or presentation layers</constraint>
+    <constraint>MANDATORY: Only imports from domain layer (entities, value_objects)</constraint>
+    <constraint>MANDATORY: No implementation code - pure abstractions only (no file I/O, no JSON, no database code)</constraint>
+    <constraint>MANDATORY: Complete type hints on all methods (Task, List[Task], Optional[Task], bool, None, etc.)</constraint>
+    <constraint>MANDATORY: Comprehensive docstrings explaining purpose of each interface and method</constraint>
+    <constraint>REQUIRED: Follow repository method naming conventions: save(), find_by_id(), find_all(), find_by_X(), delete(), exists()</constraint>
+    <constraint>REQUIRED: ITaskRepository manages Task entities using value objects from Story 5.1 (Priority, Status)</constraint>
+    <constraint>REQUIRED: IMemoryRepository uses Dict[str, Any] for legacy compatibility with existing memory.py API</constraint>
+    <constraint>REQUIRED: All operations log to stdout following [Component] Message: key=value format (CLAUDE.md Section 10)</constraint>
+    <constraint>REQUIRED: File size limit: Each repository interface &lt; 150 lines (prefer 50-100 lines)</constraint>
+    <constraint>REQUIRED: Clean import path: from src.domain.repositories import ITaskRepository, IMemoryRepository</constraint>
+    <constraint>TESTING: 10+ unit tests with 100% coverage, tests verify abstraction (cannot instantiate), concrete implementations must implement all methods</constraint>
+    <constraint>STRANGLER FIG: These interfaces will be implemented in Story 5.5 (Task Repository) and Story 5.6 (Memory Repositories). Old memory.py continues working until migration complete.</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>ITaskRepository</name>
+      <kind>Abstract Base Class</kind>
+      <signature>
+class ITaskRepository(ABC):
+    @abstractmethod
+    def save(self, task: Task) -> None: ...
+
+    @abstractmethod
+    def find_by_id(self, task_id: str) -> Optional[Task]: ...
+
+    @abstractmethod
+    def find_all(self) -> List[Task]: ...
+
+    @abstractmethod
+    def find_by_status(self, status: Status) -> List[Task]: ...
+
+    @abstractmethod
+    def find_by_priority(self, priority: Priority) -> List[Task]: ...
+
+    @abstractmethod
+    def delete(self, task_id: str) -> bool: ...
+
+    @abstractmethod
+    def exists(self, task_id: str) -> bool: ...
+      </signature>
+      <path>mission-control/src/domain/repositories/task_repository.py</path>
+    </interface>
+
+    <interface>
+      <name>IMemoryRepository</name>
+      <kind>Abstract Base Class</kind>
+      <signature>
+class IMemoryRepository(ABC):
+    # Business context
+    @abstractmethod
+    def load_business_context(self) -> Dict[str, Any]: ...
+
+    @abstractmethod
+    def save_business_context(self, context: Dict[str, Any]) -> None: ...
+
+    @abstractmethod
+    def update_business_context(self, updates: Dict[str, Any]) -> None: ...
+
+    # Conversation history
+    @abstractmethod
+    def log_interaction(self, entry: Dict[str, Any]) -> None: ...
+
+    @abstractmethod
+    def load_conversation_history(self, limit: int = 50) -> List[Dict[str, Any]]: ...
+
+    @abstractmethod
+    def search_conversations(self, query: str) -> List[Dict[str, Any]]: ...
+
+    # Preferences
+    @abstractmethod
+    def load_user_preferences(self) -> Dict[str, List[Dict[str, Any]]]: ...
+
+    @abstractmethod
+    def save_user_preferences(self, prefs: Dict[str, List[Dict[str, Any]]]) -> None: ...
+
+    @abstractmethod
+    def update_preference(self, category: str, preference: Dict[str, Any]) -> bool: ...
+      </signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Mission Control uses pytest framework with strict test coverage requirements. Domain layer tests MUST achieve 90%+ coverage with zero external dependencies (no file I/O, all mocked). Repository interface tests verify abstraction (cannot instantiate ABC), method signatures (using inspect.signature), and mock implementations work correctly. Follow Arrange-Act-Assert pattern. All tests log execution to stdout for visibility.</standards>
+
+    <locations>
+mission-control/tests/domain/repositories/ - Create new directory for repository interface tests
+test file: mission-control/tests/domain/repositories/test_repository_interfaces.py
+    </locations>
+
+    <ideas>
+<!-- Mapped to Acceptance Criteria -->
+
+AC #1 (ITaskRepository Interface):
+- test_itask_repository_is_abstract_cannot_instantiate: Verify ITaskRepository cannot be instantiated directly (TypeError)
+- test_itask_repository_has_all_required_methods: Verify all 7 methods exist (save, find_by_id, find_all, find_by_status, find_by_priority, delete, exists)
+- test_itask_repository_method_signatures_correct: Use inspect.signature to verify parameter types and return types match spec
+
+AC #2 (IMemoryRepository Interface):
+- test_imemory_repository_is_abstract_cannot_instantiate: Verify IMemoryRepository cannot be instantiated directly
+- test_imemory_repository_has_business_context_methods: Verify load_business_context, save_business_context, update_business_context exist
+- test_imemory_repository_has_conversation_methods: Verify log_interaction, load_conversation_history, search_conversations exist
+- test_imemory_repository_has_preference_methods: Verify load_user_preferences, save_user_preferences, update_preference exist
+
+AC #3 (Module Structure):
+- test_repository_module_exports: Verify from src.domain.repositories import ITaskRepository, IMemoryRepository works
+- test_repository_init_file_exports: Verify __init__.py properly exports both interfaces
+
+AC #4 (ABC Usage):
+- test_concrete_task_repo_must_implement_all_methods: Create incomplete implementation, verify TypeError on instantiation
+- test_concrete_memory_repo_must_implement_all_methods: Same for IMemoryRepository
+- test_abstract_methods_decorated: Verify all methods have @abstractmethod decorator using inspect
+
+AC #5 (Type Safety):
+- test_itask_repository_type_hints_complete: Verify all methods have complete type hints (no missing annotations)
+- test_imemory_repository_type_hints_complete: Same for IMemoryRepository
+
+AC #6 (Domain Purity):
+- test_repository_interfaces_no_external_imports: Parse source files, verify zero imports from infrastructure/application/presentation layers
+- test_repository_interfaces_only_domain_imports: Verify only imports from abc, typing, and domain layer
+
+AC #7 (Comprehensive Tests):
+- test_mock_task_repository_implements_interface: Create complete mock implementation, verify it works
+- test_mock_task_repository_save_and_find: Test mock repo can save/retrieve Task entities
+- test_mock_memory_repository_implements_interface: Same for memory repo
+- test_mock_memory_repository_save_and_load_context: Test mock can save/load business context
+
+Additional coverage tests:
+- test_repository_interfaces_coverage_100_percent: Verify test coverage reaches 100% for repository interface module
+- test_task_repository_docstrings_present: Verify all methods have docstrings
+- test_memory_repository_docstrings_present: Same for memory repo
+    </ideas>
+  </tests>
+</story-context>
