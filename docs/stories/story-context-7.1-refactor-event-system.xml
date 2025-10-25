@@ -1,0 +1,239 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>EPIC-5R Phase 5</epicId>
+    <storyId>7.1</storyId>
+    <title>Refactor Event System</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-7.1-refactor-event-system.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer implementing EPIC-5R (Architectural Refactoring)</asA>
+    <iWant>to refactor the existing event system to use Hexagonal/Clean Architecture with proper domain events, event handlers in application layer, and event dispatcher using repository pattern</iWant>
+    <soThat>the event system becomes maintainable, testable, and compliant with clean architecture principles while preserving backward compatibility via Strangler Fig pattern</soThat>
+    <tasks>
+      - Create domain events (TaskCreated, TaskCompleted, TaskDeleted, TaskUpdated)
+      - Implement event handlers in application layer
+      - Create EventDispatcher service using repository pattern
+      - Implement event repository with JSONL storage
+      - Add feature flag system (USE_NEW_EVENT_SYSTEM)
+      - Write 25+ comprehensive tests
+      - Ensure zero regressions (72 existing event tests pass)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1" title="Domain Events Created">
+      - src/domain/events/__init__.py created
+      - src/domain/events/base_event.py with DomainEvent base class
+      - src/domain/events/task_events.py with TaskCreated, TaskCompleted, TaskDeleted, TaskUpdated
+      - All events inherit from DomainEvent
+      - All events immutable (frozen dataclasses)
+      - All events have type hints
+      - All events validate themselves in __post_init__
+    </criterion>
+    <criterion id="AC2" title="Event Handler Interfaces">
+      - src/application/event_handlers/__init__.py created
+      - src/application/event_handlers/base_handler.py with IEventHandler interface
+      - src/application/event_handlers/task_event_handlers.py with handlers for each event type
+      - All handlers implement IEventHandler.handle(event: DomainEvent) -> bool
+      - All handlers use dependency injection
+    </criterion>
+    <criterion id="AC3" title="Event Dispatcher Refactored">
+      - src/application/services/event_dispatcher_service.py created
+      - Uses IEventRepository for persistence
+      - Handler registration via constructor injection
+      - dispatch(event: DomainEvent) -> bool method
+      - dispatch_async(event: DomainEvent) -> Future[bool] method
+      - Event history tracked in repository
+      - Performance logging (dispatch time < 10ms target)
+    </criterion>
+    <criterion id="AC4" title="Repository Implementation">
+      - src/domain/repositories/event_repository.py with IEventRepository interface
+      - Interface defines: save_event(), find_by_id(), find_by_type(), find_by_date_range(), get_recent_events()
+      - src/infrastructure/persistence/repositories/json_event_repository.py implements IEventRepository
+      - Uses JsonStorage utility from Story 5.4
+      - JSONL format for event log
+      - Daily rotation (one file per day)
+      - Graceful error handling with logging
+    </criterion>
+    <criterion id="AC5" title="Feature Flag System">
+      - src/config.py updated with USE_NEW_EVENT_SYSTEM = False (default)
+      - Dual-path routing in event entry points
+      - Feature flag can be overridden via environment variable
+      - Logging indicates which path is active
+    </criterion>
+    <criterion id="AC6" title="Strangler Fig Pattern">
+      - Zero modifications to existing src/events/*.py files
+      - Old event system continues to work (when flag = False)
+      - New event system works independently (when flag = True)
+      - Can switch between implementations at runtime
+      - Migration guide created in docs/migration/event-system-migration.md
+      - All 72 existing tests still pass
+    </criterion>
+    <criterion id="AC7" title="Comprehensive Tests">
+      - 25+ tests in tests/application/events/test_event_system.py
+      - Domain event tests: tests/domain/events/test_task_events.py (10+ tests)
+      - Handler tests: tests/application/event_handlers/test_task_event_handlers.py (10+ tests)
+      - Repository tests: tests/infrastructure/persistence/test_json_event_repository.py (5+ tests)
+      - Integration tests: tests/integration/test_event_system_integration.py (5+ tests)
+      - All tests pass (100%)
+      - All 72 existing event tests still pass
+      - Test coverage ≥ 90% for new code
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/CLAUDE.md" title="Engineering Standards" section="Hexagonal Architecture" snippet="Mandatory standards for all new code: domain-driven design, clean architecture layers, repository pattern, SOLID principles, immutability, type safety, comprehensive logging"/>
+      <doc path="docs/solution-architecture.md" title="Solution Architecture" section="Hexagonal Architecture" snippet="Three-layer architecture: Domain (entities, value objects, repos), Application (services, handlers), Infrastructure (persistence, external APIs). Dependency flow: Presentation -> Application -> Domain <- Infrastructure"/>
+      <doc path="docs/epics.md" title="EPIC-5R Phase 5" section="Events & Coordination" snippet="Refactor events/, notifications.py, coordination.py to use new architecture. Event system first (Story 7.1), then notification system (7.2), then coordination (7.3). Total 18 points"/>
+      <doc path="docs/PRODUCT-BACKLOG.md" title="Product Backlog" section="EPIC-5R Phase 5" snippet="Story 7.1 (8 pts): Domain events, event handlers, dispatcher service, repository pattern. Story 7.2 (5 pts): NotificationService. Story 7.3 (5 pts): CoordinationService"/>
+      <doc path="docs/stories/story-5.4-json-storage-utility.md" title="Story 5.4 JsonStorage Utility" section="Implementation" snippet="JsonStorage class provides save_json(), load_json(), append_jsonl(), read_jsonl() methods with error handling and logging"/>
+      <doc path="docs/stories/story-5.3-repository-interfaces.md" title="Story 5.3 Repository Interfaces" section="Pattern" snippet="IRepository pattern with ABC, dependency injection, domain purity. No direct file I/O in domain layer"/>
+    </docs>
+    <code>
+      <artifact path="mission-control/src/events/" kind="legacy-module" symbol="event_registry.py, event_queue.py, event_dispatcher.py, event_watchers.py" lines="" reason="Existing event system to preserve via Strangler Fig pattern. Do NOT modify these files"/>
+      <artifact path="mission-control/src/domain/value_objects/" kind="domain-layer" symbol="Priority, Status, EnergyLevel, Context, TimeBlock" lines="" reason="Domain value objects from Story 5.1, used in domain events"/>
+      <artifact path="mission-control/src/domain/entities/task.py" kind="domain-layer" symbol="Task entity" lines="" reason="Task entity from Story 5.2, used in task-related events"/>
+      <artifact path="mission-control/src/domain/repositories/" kind="domain-layer" symbol="ITaskRepository, IMemoryRepository" lines="" reason="Repository interface pattern from Story 5.3, model for IEventRepository"/>
+      <artifact path="mission-control/src/infrastructure/persistence/storage/json_storage.py" kind="infrastructure-layer" symbol="JsonStorage" lines="" reason="JsonStorage utility from Story 5.4, used by JsonEventRepository"/>
+      <artifact path="mission-control/src/config.py" kind="presentation-layer" symbol="USE_NEW_ARCHITECTURE" lines="" reason="Feature flag pattern from Story 6.5, model for USE_NEW_EVENT_SYSTEM"/>
+      <artifact path="mission-control/tests/test_event_*.py" kind="tests" symbol="72 existing event tests" lines="" reason="Must all still pass (zero regressions)"/>
+    </code>
+    <dependencies>
+      <python>
+        abc==built-in (ABC for interfaces)
+        dataclasses==built-in (frozen dataclasses for immutability)
+        typing==built-in (type hints, Protocol, Optional, List, Dict)
+        datetime==built-in (timestamps for events)
+        uuid==built-in (event IDs)
+        asyncio==built-in (async event dispatch)
+        json==built-in (event serialization)
+        pathlib==built-in (file paths)
+        pytest~=7.4.0 (testing framework)
+        pytest-asyncio~=0.21.0 (async test support)
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    1. Hexagonal Architecture: Strict layer boundaries - domain knows nothing about infrastructure
+    2. Strangler Fig Pattern: Zero modifications to existing src/events/*.py files
+    3. Feature Flag: USE_NEW_EVENT_SYSTEM defaults to False (opt-in migration)
+    4. Immutability: All domain events are frozen dataclasses
+    5. Type Safety: Full type hints on all functions, classes, and methods
+    6. Repository Pattern: All persistence via IEventRepository interface
+    7. Dependency Injection: Handlers receive dependencies in constructor
+    8. SOLID Principles: Especially SRP (Single Responsibility), DIP (Dependency Inversion)
+    9. Performance: Dispatch time must be < 10ms (no degradation from baseline)
+    10. Zero Regressions: All 72 existing event tests must still pass
+    11. Logging Standards: Entry/exit logging for all methods per CLAUDE.md
+    12. Error Handling: Graceful degradation, no unhandled exceptions
+    13. JSONL Format: Append-only event log for audit trail
+    14. Daily Rotation: One event log file per day (events-YYYY-MM-DD.jsonl)
+    15. Test Coverage: ≥ 90% coverage for all new code
+  </constraints>
+
+  <interfaces>
+    <interface name="DomainEvent" kind="base-class" signature="@dataclass(frozen=True) class DomainEvent(ABC)" path="src/domain/events/base_event.py">
+      Fields: event_id (str), event_type (str), timestamp (datetime), aggregate_id (str), metadata (Dict[str, Any])
+      Methods: to_dict() -> Dict[str, Any]
+    </interface>
+    <interface name="TaskCreated" kind="domain-event" signature="@dataclass(frozen=True) class TaskCreated(DomainEvent)" path="src/domain/events/task_events.py">
+      Fields: task_id (str), title (str), priority (Priority), status (Status), timestamp (datetime), metadata (Dict)
+      Validation: __post_init__ checks task_id and title are non-empty
+    </interface>
+    <interface name="TaskCompleted" kind="domain-event" signature="@dataclass(frozen=True) class TaskCompleted(DomainEvent)" path="src/domain/events/task_events.py">
+      Fields: task_id (str), completed_date (datetime), completion_notes (str), timestamp (datetime), metadata (Dict)
+    </interface>
+    <interface name="TaskDeleted" kind="domain-event" signature="@dataclass(frozen=True) class TaskDeleted(DomainEvent)" path="src/domain/events/task_events.py">
+      Fields: task_id (str), reason (str), timestamp (datetime), metadata (Dict)
+    </interface>
+    <interface name="TaskUpdated" kind="domain-event" signature="@dataclass(frozen=True) class TaskUpdated(DomainEvent)" path="src/domain/events/task_events.py">
+      Fields: task_id (str), changes (Dict[str, Any]), old_values (Dict), new_values (Dict), timestamp (datetime), metadata (Dict)
+    </interface>
+    <interface name="IEventHandler" kind="abc-interface" signature="class IEventHandler(ABC)" path="src/application/event_handlers/base_handler.py">
+      Methods: handle(event: DomainEvent) -> bool
+    </interface>
+    <interface name="IEventRepository" kind="abc-interface" signature="class IEventRepository(ABC)" path="src/domain/repositories/event_repository.py">
+      Methods: save_event(event: DomainEvent) -> bool, find_by_id(event_id: str) -> Optional[DomainEvent], find_by_type(event_type: str, limit: int = 100) -> List[DomainEvent], find_by_date_range(start: datetime, end: datetime) -> List[DomainEvent], get_recent_events(limit: int = 100) -> List[DomainEvent]
+    </interface>
+    <interface name="EventDispatcherService" kind="application-service" signature="class EventDispatcherService" path="src/application/services/event_dispatcher_service.py">
+      Constructor: __init__(event_repo: IEventRepository, handlers: Dict[str, IEventHandler])
+      Methods: dispatch(event: DomainEvent) -> bool, dispatch_async(event: DomainEvent) -> Future[bool], get_event_history(limit: int = 100) -> List[DomainEvent]
+    </interface>
+    <interface name="JsonEventRepository" kind="infrastructure-impl" signature="class JsonEventRepository(IEventRepository)" path="src/infrastructure/persistence/repositories/json_event_repository.py">
+      Constructor: __init__(storage_dir: Path)
+      Uses: JsonStorage utility for file operations
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing follows CLAUDE.md standards: pytest framework, arrange-act-assert pattern, descriptive test names (test_feature_scenario__expected), mocks for external dependencies, 90%+ coverage target, entry/exit logging verification, performance validation (<10ms dispatch), integration tests for full flow, regression tests for backward compatibility.
+    </standards>
+    <locations>
+      tests/domain/events/ - Domain event unit tests
+      tests/application/event_handlers/ - Event handler unit tests
+      tests/application/services/ - Event dispatcher service tests
+      tests/infrastructure/persistence/repositories/ - Repository implementation tests
+      tests/integration/ - End-to-end event flow tests
+      tests/test_event_*.py - Existing 72 event tests (must not modify)
+    </locations>
+    <ideas>
+      AC1 Domain Events:
+      - test_task_created_with_valid_data__creates_event
+      - test_task_created_immutable__cannot_modify_after_creation
+      - test_task_created_with_empty_task_id__raises_validation_error
+      - test_task_completed_to_dict__serializes_correctly
+      - test_task_deleted_with_reason__stores_reason
+      - test_task_updated_with_changes__tracks_old_and_new_values
+      - test_domain_event_timestamp__auto_generated
+      - test_domain_event_metadata__optional_dict
+
+      AC2 Event Handlers:
+      - test_task_created_handler_handle__logs_creation
+      - test_task_completed_handler_handle__updates_stats
+      - test_task_deleted_handler_handle__cleanup_references
+      - test_task_updated_handler_handle__tracks_history
+      - test_handler_with_invalid_event__returns_false
+      - test_handler_with_mock_repository__dependency_injection
+
+      AC3 Event Dispatcher:
+      - test_dispatcher_dispatch_with_registered_handler__succeeds
+      - test_dispatcher_dispatch_with_no_handler__graceful_handling
+      - test_dispatcher_dispatch_async__concurrent_handling
+      - test_dispatcher_get_event_history__retrieves_recent
+      - test_dispatcher_performance__under_10ms
+
+      AC4 Repository:
+      - test_json_event_repository_save_event__creates_jsonl_file
+      - test_json_event_repository_find_by_id__retrieves_event
+      - test_json_event_repository_find_by_type__filters_correctly
+      - test_json_event_repository_find_by_date_range__date_filtering
+      - test_json_event_repository_get_recent_events__limits_and_orders
+
+      AC5 Feature Flag:
+      - test_feature_flag_defaults_to_false
+      - test_feature_flag_override_via_env_variable
+      - test_dual_path_routing_with_flag_false__uses_old_system
+      - test_dual_path_routing_with_flag_true__uses_new_system
+
+      AC6 Strangler Fig:
+      - test_old_event_system_still_works__flag_false
+      - test_new_event_system_works__flag_true
+      - test_can_switch_at_runtime
+      - test_all_72_existing_tests_still_pass
+
+      AC7 Integration:
+      - test_end_to_end_event_flow__create_dispatch_handle_persist
+      - test_concurrent_event_handling__no_race_conditions
+      - test_event_history_across_sessions
+      - test_daily_file_rotation__creates_new_file_per_day
+      - test_performance_benchmark__dispatch_under_10ms
+    </ideas>
+  </tests>
+</story-context>
