@@ -1,0 +1,370 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/5.6" v="1.0">
+  <metadata>
+    <epicId>5</epicId>
+    <storyId>5.6</storyId>
+    <title>Implement Memory Repositories</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-5.6-memory-repositories.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>a concrete JsonMemoryRepository implementing IMemoryRepository from Story 5.3</iWant>
+    <soThat>memory operations (business context, conversation history, preferences) can be accessed through the repository pattern while wrapping existing memory.py functions via Strangler Fig pattern</soThat>
+    <tasks>
+- Task 1: Create repository module structure (AC: #1)
+- Task 2: Implement JsonMemoryRepository class skeleton (AC: #1)
+- Task 3: Implement business context operations (AC: #2)
+- Task 4: Implement conversation history operations (AC: #3)
+- Task 5: Implement preference operations (AC: #4)
+- Task 6: Implement feature flag system (AC: #5)
+- Task 7: Ensure backward compatibility (AC: #6)
+- Task 8: Write comprehensive tests (AC: #7)</tasks>
+  </story>
+
+  <acceptanceCriteria>
+AC #1: JsonMemoryRepository Class Created
+  - Implements IMemoryRepository interface from Story 5.3
+  - Located in src/infrastructure/persistence/repositories/memory_repository_json.py
+  - Constructor accepts storage paths for business context, conversation logs, preferences
+  - Wraps existing src/memory.py functions using Strangler Fig pattern
+  - Zero domain logic (pure infrastructure concern, delegation to legacy)
+
+AC #2: Business Context Operations (3 methods)
+  - load_business_context() -> Dict[str, Any] - Wraps memory.load_business_context()
+  - save_business_context(context: Dict[str, Any]) -> bool - Wraps memory.save_business_context()
+  - update_business_context(section: str, data: Dict[str, Any]) -> bool - Wraps memory.update_business_context()
+  - All methods delegate to existing memory.py implementations
+  - Return types match IMemoryRepository interface contract
+
+AC #3: Conversation History Operations (3 methods)
+  - log_interaction(agent: str, role: str, content: str, metadata: Optional[Dict]) -> bool - Wraps memory.log_interaction()
+  - load_conversation_history(date: Optional[str], limit: Optional[int]) -> List[Dict] - Wraps memory.load_conversation_history()
+  - search_conversations(query: str, days: int) -> List[Dict] - Wraps memory.search_conversations()
+  - All methods delegate to existing memory.py implementations
+  - Maintain backward compatibility with existing callers
+
+AC #4: Preference Operations (3 methods)
+  - load_user_preferences() -> Dict[str, Any] - Wraps memory.load_user_preferences()
+  - save_user_preferences(prefs: Dict[str, Any]) -> bool - Wraps memory.save_user_preferences()
+  - update_preference(category: str, key: str, value: Any, confidence: float) -> bool - Wraps memory.update_preference()
+  - All methods delegate to existing memory.py implementations
+  - Preserve confidence scoring and merge behavior
+
+AC #5: Feature Flag System
+  - Add USE_NEW_MEMORY_REPOSITORY feature flag in settings/config
+  - Default: False (use legacy memory.py directly)
+  - When True: route through JsonMemoryRepository
+  - Allow runtime toggling for A/B testing and rollback
+  - Document flag in README/configuration docs
+
+AC #6: Backward Compatibility Guarantee
+  - All existing memory.py functions continue to work unchanged
+  - All existing code calling memory.py functions works without modification
+  - Tests for legacy memory.py still pass (672+ existing tests)
+  - Zero regressions in functionality or performance
+  - JsonMemoryRepository is additive, not destructive
+
+AC #7: Comprehensive Tests (25+ tests)
+  - Unit tests in tests/infrastructure/persistence/repositories/test_memory_repository_json.py
+  - Test all 9 IMemoryRepository methods with delegation verification
+  - Test business context operations (load, save, update)
+  - Test conversation history operations (log, load, search)
+  - Test preference operations (load, save, update)
+  - Test feature flag toggling (legacy vs new)
+  - Mock memory.py functions to verify delegation (not reimplementation)
+  - Integration tests verify end-to-end with real memory.py
+  - 100% coverage for repository implementation
+  - All 672+ existing tests still passing (zero regressions)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/stories/story-5.3-repository-interfaces.md</path>
+        <title>Story 5.3: Create Repository Interfaces</title>
+        <section>IMemoryRepository Interface</section>
+        <snippet>Defines IMemoryRepository abstract base class with 9 methods: 3 for business context (load, save, update), 3 for conversation history (log, load, search), 3 for preferences (load, save, update). All methods properly typed with ABC decorators.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>PROJECT RULES - For Claude Agents</title>
+        <section>Strangler Fig Pattern</section>
+        <snippet>Use Strangler Fig pattern: build new alongside old, feature flags control implementation, comprehensive tests prevent regressions, remove old only when new is validated.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>EPIC-5R: Architectural Refactoring</title>
+        <section>Phase 2: Infrastructure (Story 5.6)</section>
+        <snippet>Story 5.6: Implement Memory Repositories (8 pts) - Split memory.py. Use Strangler Fig to wrap existing memory.py functions through repository pattern without breaking 672+ existing tests.</snippet>
+      </doc>
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Mission Control - Solution Architecture</title>
+        <section>Hexagonal/Clean Architecture</section>
+        <snippet>Repository pattern separates domain from infrastructure. Domain defines interfaces (IMemoryRepository), infrastructure provides implementations (JsonMemoryRepository). Infrastructure depends on domain, never reverse.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-2.1.md</path>
+        <title>Story 2.1: Business Context Storage</title>
+        <section>Implementation Details</section>
+        <snippet>memory.py implements 5 business context functions: load_business_context(), save_business_context(), update_business_context(), get_context_summary(), get_context_for_prompt(). Uses JSON storage at data/memory/business_context.json with backup on write.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-2.2.md</path>
+        <title>Story 2.2: Conversation History Logging</title>
+        <section>Implementation Details</section>
+        <snippet>memory.py implements 5 conversation functions: log_interaction(), load_conversation_history(), get_recent_interactions(), search_conversations(), get_session_history(). Uses JSONL format at data/logs/conversations-YYYY-MM-DD.jsonl with daily rotation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-2.3.md</path>
+        <title>Story 2.3: Preference Learning System</title>
+        <section>Implementation Details</section>
+        <snippet>memory.py implements 8 preference functions: load_user_preferences(), save_user_preferences(), update_preference(), get_preference(), get_preferences_summary(), get_preferences_for_prompt(), merge_preferences(), analyze_conversation_for_preferences(). Uses confidence scoring (0.0-1.0) and nested category structure.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>mission-control/src/memory.py</path>
+        <kind>module</kind>
+        <symbol>legacy memory functions (20+ functions, 1500 lines)</symbol>
+        <lines>1-1500</lines>
+        <reason>CRITICAL: This is the existing implementation that must be wrapped using Strangler Fig pattern. All functions must continue to work unchanged. JsonMemoryRepository delegates to these functions.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/repositories/memory_repository.py</path>
+        <kind>interface</kind>
+        <symbol>IMemoryRepository</symbol>
+        <lines>1-80</lines>
+        <reason>Domain interface that JsonMemoryRepository must implement. Defines contract with 9 abstract methods for business context, conversation history, and preferences.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/repositories/task_repository.py</path>
+        <kind>interface</kind>
+        <symbol>ITaskRepository</symbol>
+        <lines>1-60</lines>
+        <reason>Example repository interface pattern from Story 5.3. Shows proper ABC usage and type hints for repository pattern.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/infrastructure/persistence/repositories/task_repository_json.py</path>
+        <kind>repository</kind>
+        <symbol>JsonTaskRepository</symbol>
+        <lines>1-300</lines>
+        <reason>Example repository implementation from Story 5.5. Shows proper delegation pattern, error handling, and test strategy for infrastructure layer.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/infrastructure/persistence/json_storage.py</path>
+        <kind>utility</kind>
+        <symbol>JsonStorage</symbol>
+        <lines>1-200</lines>
+        <reason>JSON storage utility from Story 5.4. Can be used if repository needs file I/O (but likely delegates to memory.py which already handles storage).</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/tests/test_memory.py</path>
+        <kind>tests</kind>
+        <symbol>legacy memory tests (672+ tests)</symbol>
+        <lines>1-2000+</lines>
+        <reason>CRITICAL: These tests must ALL pass unchanged after Story 5.6 implementation. Validates backward compatibility guarantee (AC #6).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="abc" version="stdlib">Abstract base class for IMemoryRepository interface</package>
+        <package name="typing" version="stdlib">Type hints: Dict, List, Optional, Any</package>
+        <package name="pytest" version=">=8.0.0">Testing framework</package>
+        <package name="unittest.mock" version="stdlib">Mock memory.py functions for delegation verification</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- STRANGLER FIG PATTERN (CRITICAL): Do NOT reimplement memory.py functions. JsonMemoryRepository MUST delegate to existing memory.py functions. This is a wrapper, not a rewrite.
+- ZERO REGRESSIONS: All 672+ existing memory tests (from Stories 2.1, 2.2, 2.3) must pass unchanged. Run full regression suite before marking complete.
+- BACKWARD COMPATIBILITY: All existing code calling memory.py directly must continue to work without modification. Repository is additive, not destructive.
+- HEXAGONAL ARCHITECTURE: Repository belongs in infrastructure layer (src/infrastructure/persistence/repositories/). Implements domain interface (IMemoryRepository) but contains zero domain logic.
+- FEATURE FLAG REQUIRED: USE_NEW_MEMORY_REPOSITORY flag controls whether to use repository pattern or legacy direct access. Default must be False (conservative rollout).
+- TYPE SAFETY: All methods must have complete type hints matching IMemoryRepository interface contract exactly.
+- ERROR HANDLING: Preserve exact error behavior from legacy memory.py (same exceptions, same error messages, same logging).
+- PERFORMANCE: Zero performance regression. Repository delegation overhead must be negligible (<1ms per call).
+- TESTING STRATEGY: Mock memory.py functions to verify delegation (not reimplementation). Integration tests use real memory.py to verify end-to-end behavior.
+- FILE SIZE: Target <400 lines for repository implementation (9 methods × ~20-30 lines each + boilerplate).
+- DOCUMENTATION: Docstrings must explain Strangler Fig delegation pattern and future migration path.
+- LOGGING: Add debug-level logging for repository method calls (useful for troubleshooting feature flag behavior).
+- IMMUTABILITY: Do NOT modify memory.py file. All changes must be in new repository file.
+- GRADUAL MIGRATION: Repository wraps legacy now, will replace legacy later (Phase 3 of Strangler Fig).
+- NO GOLD PLATING: Implement ONLY what's needed for IMemoryRepository interface. No extra features, no refactoring of legacy code.
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>IMemoryRepository.load_business_context</name>
+      <kind>method signature</kind>
+      <signature>def load_business_context(self) -> Dict[str, Any]</signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+    <interface>
+      <name>IMemoryRepository.save_business_context</name>
+      <kind>method signature</kind>
+      <signature>def save_business_context(self, context: Dict[str, Any]) -> bool</signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+    <interface>
+      <name>IMemoryRepository.update_business_context</name>
+      <kind>method signature</kind>
+      <signature>def update_business_context(self, section: str, data: Dict[str, Any]) -> bool</signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+    <interface>
+      <name>IMemoryRepository.log_interaction</name>
+      <kind>method signature</kind>
+      <signature>def log_interaction(self, agent: str, role: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> bool</signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+    <interface>
+      <name>IMemoryRepository.load_conversation_history</name>
+      <kind>method signature</kind>
+      <signature>def load_conversation_history(self, date: Optional[str] = None, limit: Optional[int] = None) -> List[Dict[str, Any]]</signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+    <interface>
+      <name>IMemoryRepository.search_conversations</name>
+      <kind>method signature</kind>
+      <signature>def search_conversations(self, query: str, days: int = 7) -> List[Dict[str, Any]]</signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+    <interface>
+      <name>IMemoryRepository.load_user_preferences</name>
+      <kind>method signature</kind>
+      <signature>def load_user_preferences(self) -> Dict[str, Any]</signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+    <interface>
+      <name>IMemoryRepository.save_user_preferences</name>
+      <kind>method signature</kind>
+      <signature>def save_user_preferences(self, prefs: Dict[str, Any]) -> bool</signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+    <interface>
+      <name>IMemoryRepository.update_preference</name>
+      <kind>method signature</kind>
+      <signature>def update_preference(self, category: str, key: str, value: Any, confidence: float = 1.0) -> bool</signature>
+      <path>mission-control/src/domain/repositories/memory_repository.py</path>
+    </interface>
+    <interface>
+      <name>memory.load_business_context (legacy)</name>
+      <kind>function</kind>
+      <signature>def load_business_context() -> Dict[str, Any]</signature>
+      <path>mission-control/src/memory.py:107</path>
+    </interface>
+    <interface>
+      <name>memory.save_business_context (legacy)</name>
+      <kind>function</kind>
+      <signature>def save_business_context(context: Dict[str, Any]) -> bool</signature>
+      <path>mission-control/src/memory.py:144</path>
+    </interface>
+    <interface>
+      <name>memory.update_business_context (legacy)</name>
+      <kind>function</kind>
+      <signature>def update_business_context(section: str, data: Dict[str, Any]) -> bool</signature>
+      <path>mission-control/src/memory.py:192</path>
+    </interface>
+    <interface>
+      <name>memory.log_interaction (legacy)</name>
+      <kind>function</kind>
+      <signature>def log_interaction(agent: str, role: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> bool</signature>
+      <path>mission-control/src/memory.py:342</path>
+    </interface>
+    <interface>
+      <name>memory.load_conversation_history (legacy)</name>
+      <kind>function</kind>
+      <signature>def load_conversation_history(date: Optional[str] = None, limit: Optional[int] = None) -> List[Dict[str, Any]]</signature>
+      <path>mission-control/src/memory.py:397</path>
+    </interface>
+    <interface>
+      <name>memory.search_conversations (legacy)</name>
+      <kind>function</kind>
+      <signature>def search_conversations(query: str, days: int = 7) -> List[Dict[str, Any]]</signature>
+      <path>mission-control/src/memory.py:507</path>
+    </interface>
+    <interface>
+      <name>memory.load_user_preferences (legacy)</name>
+      <kind>function</kind>
+      <signature>def load_user_preferences() -> Dict[str, Any]</signature>
+      <path>mission-control/src/memory.py:612</path>
+    </interface>
+    <interface>
+      <name>memory.save_user_preferences (legacy)</name>
+      <kind>function</kind>
+      <signature>def save_user_preferences(prefs: Dict[str, Any]) -> bool</signature>
+      <path>mission-control/src/memory.py:650</path>
+    </interface>
+    <interface>
+      <name>memory.update_preference (legacy)</name>
+      <kind>function</kind>
+      <signature>def update_preference(category: str, key: str, value: Any, confidence: float = 1.0) -> bool</signature>
+      <path>mission-control/src/memory.py:698</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+- Framework: pytest with unittest.mock for mocking legacy functions
+- Coverage: 100% for repository implementation (all 9 methods + constructor)
+- Delegation Verification: Mock memory.py functions and assert they are called with correct arguments
+- Integration Tests: Use real memory.py to verify end-to-end behavior matches legacy
+- Regression Tests: Run ALL 672+ existing memory tests to ensure zero regressions
+- Test Organization: Unit tests in tests/infrastructure/persistence/repositories/test_memory_repository_json.py
+- Naming Convention: test_{method_name}_{scenario}__expected_behavior
+- Fixtures: Use tmp_path for integration tests, mock for unit tests
+- Performance: Verify delegation overhead is <1ms per call
+    </standards>
+    <locations>
+- tests/infrastructure/persistence/repositories/test_memory_repository_json.py (NEW - 25+ tests)
+- tests/test_memory.py (EXISTING - 672+ tests, must all pass)
+- tests/test_conversation_history.py (EXISTING - 22 tests, must all pass)
+- tests/test_preferences.py (EXISTING - 32 tests, must all pass)
+    </locations>
+    <ideas>
+AC #1 Tests (3 tests):
+- test_repository_implements_interface - verify JsonMemoryRepository is instance of IMemoryRepository
+- test_constructor_accepts_storage_paths - verify constructor parameters
+- test_repository_has_all_interface_methods - verify all 9 methods exist with correct signatures
+
+AC #2 Tests (3 tests):
+- test_load_business_context_delegates_to_memory - mock memory.load_business_context, verify called
+- test_save_business_context_delegates_to_memory - mock memory.save_business_context, verify called with correct args
+- test_update_business_context_delegates_to_memory - mock memory.update_business_context, verify called with correct args
+
+AC #3 Tests (3 tests):
+- test_log_interaction_delegates_to_memory - mock memory.log_interaction, verify delegation
+- test_load_conversation_history_delegates_to_memory - mock memory.load_conversation_history, verify delegation
+- test_search_conversations_delegates_to_memory - mock memory.search_conversations, verify delegation
+
+AC #4 Tests (3 tests):
+- test_load_user_preferences_delegates_to_memory - mock memory.load_user_preferences, verify delegation
+- test_save_user_preferences_delegates_to_memory - mock memory.save_user_preferences, verify delegation
+- test_update_preference_delegates_to_memory - mock memory.update_preference, verify delegation preserves confidence
+
+AC #5 Tests (2 tests):
+- test_feature_flag_false_uses_legacy_wrapper - verify flag=False bypasses repository
+- test_feature_flag_true_uses_repository - verify flag=True routes through repository
+
+AC #6 Tests (2 tests):
+- test_all_legacy_tests_still_pass - run full regression suite (672+ tests)
+- test_legacy_callers_work_unchanged - verify startup.py, hooks, main.py still work
+
+AC #7 Tests (9 integration tests):
+- test_business_context_round_trip_via_repository - save then load, verify data preserved
+- test_conversation_logging_via_repository - log interaction, load history, verify present
+- test_preference_update_via_repository - update preference, load, verify changed
+- test_repository_preserves_jsonl_format - verify JSONL format still works
+- test_repository_preserves_confidence_scoring - verify confidence (0.0-1.0) still works
+- test_repository_handles_missing_files - verify graceful handling like legacy
+- test_repository_handles_corrupted_json - verify error handling like legacy
+- test_repository_performance_overhead - verify <1ms delegation overhead
+- test_repository_error_messages_match_legacy - verify same exceptions/messages
+    </ideas>
+  </tests>
+</story-context>
