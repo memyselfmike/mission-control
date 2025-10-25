@@ -1,0 +1,336 @@
+<story-context id="story-6.5-cli-entry-point" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6.5</storyId>
+    <title>Refactor CLI Entry Point</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-6.5-cli-entry-point.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>the main CLI entry point refactored to use the new Hexagonal Architecture</iWant>
+    <soThat>I can switch between old and new implementations with a feature flag while maintaining backward compatibility using the Strangler Fig pattern</soThat>
+    <tasks>
+      1. Create CLI module structure (src/presentation/cli/)
+      2. Implement daily_planning command
+      3. Implement morning_briefing command
+      4. Implement eod_wrapup command
+      5. Implement list_tasks command
+      6. Create feature flag system (config.py with USE_NEW_ARCHITECTURE)
+      7. Update main.py for dual paths (old vs new)
+      8. Create comprehensive tests (20+ tests)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <description>CLI Commands Module Created</description>
+      <details>
+        - Create src/presentation/cli/ directory
+        - Create src/presentation/cli/commands.py with 4 command functions
+        - Commands: daily_planning(), morning_briefing(), eod_wrapup(), list_tasks()
+        - Each command uses new architecture: formatters → services → repositories
+        - Zero modifications to existing workflow files or legacy code
+      </details>
+    </criterion>
+    <criterion id="AC2">
+      <description>Full Dependency Chain Wired</description>
+      <details>
+        - Commands call formatters from Story 6.4 (presentation layer)
+        - Formatters receive data from services in Stories 6.1, 6.2, 6.3 (application layer)
+        - Services use repositories from Stories 5.4, 5.5, 5.6 (infrastructure layer)
+        - Services use domain entities from Stories 5.1, 5.2 (domain layer)
+        - Complete Hexagonal Architecture flow: CLI → Presentation → Application → Domain → Infrastructure
+      </details>
+    </criterion>
+    <criterion id="AC3">
+      <description>Feature Flag System Implemented</description>
+      <details>
+        - Create src/config.py with USE_NEW_ARCHITECTURE flag (default: False)
+        - Flag controls which implementation is active (old procedural vs new hexagonal)
+        - When False: Use existing workflows/memory.py functions (no change to current behavior)
+        - When True: Use new commands.py with full hexagonal stack
+        - Flag easily toggled for testing and gradual migration
+      </details>
+    </criterion>
+    <criterion id="AC4">
+      <description>Main Entry Point Updated</description>
+      <details>
+        - Update main.py to support both old and new code paths
+        - Route to old code when USE_NEW_ARCHITECTURE = False (default)
+        - Route to new commands when USE_NEW_ARCHITECTURE = True
+        - Graceful fallback if new architecture fails (log error, use old code)
+        - No breaking changes to existing functionality
+      </details>
+    </criterion>
+    <criterion id="AC5">
+      <description>Strangler Fig Pattern Enforced</description>
+      <details>
+        - Zero modifications to existing src/workflows.py, src/prioritization.py, src/morning_briefing.py, src/eod_wrapup.py
+        - Zero modifications to existing src/memory.py (except adding new repository-based alternatives)
+        - New code lives in separate modules: src/presentation/cli/, src/application/, src/domain/, src/infrastructure/
+        - Old code remains fully functional and unchanged
+        - Clear migration path: build new alongside old, switch when ready, remove old later
+      </details>
+    </criterion>
+    <criterion id="AC6">
+      <description>Type Safety and Documentation</description>
+      <details>
+        - Complete type hints on all command functions (Task, List[Task], str, None)
+        - Comprehensive docstrings (module-level and function-level)
+        - Feature flag documented in config.py with usage examples
+        - Migration guide in story notes (how to switch implementations)
+        - No Any types except where legacy interfaces require flexibility
+      </details>
+    </criterion>
+    <criterion id="AC7">
+      <description>Comprehensive Unit Tests</description>
+      <details>
+        - 20+ unit tests in tests/presentation/cli/test_commands.py
+        - Each command has 4-6 tests (basic flow, edge cases, error handling, feature flag)
+        - Tests verify both old and new implementations work independently
+        - Tests verify feature flag switching (False → old, True → new)
+        - Tests use mocks for services/repositories (unit test isolation)
+        - Test coverage >= 80% for CLI layer
+        - Zero regressions in existing tests (run full test suite: 556+ tests)
+      </details>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Engineering Rules</title>
+        <section>ADR-009: Hexagonal/Clean Architecture</section>
+        <snippet>Hexagonal Architecture principles with strict layer boundaries. Presentation layer is OUTERMOST, depends only on Application and Domain layers, contains zero business logic.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Project Engineering Rules</title>
+        <section>Strangler Fig Pattern</section>
+        <snippet>Build new system alongside old system. Feature flags control which is active. Old code remains untouched and functional. Gradual migration without "big bang" risk.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>EPIC-5R Phase 4: Presentation Layer (8 pts)</section>
+        <snippet>Story 6.4: Create Formatters (3 pts), Story 6.5: Refactor CLI Entry Point (5 pts). Complete presentation layer with CLI commands wiring full dependency chain.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-6.4-create-formatters.md</path>
+        <title>Story 6.4: Create Formatters</title>
+        <section>Formatter Functions</section>
+        <snippet>TaskFormatter (format_task, format_task_list, format_task_summary), PlanningFormatter (format_daily_plan, format_priority_matrix, format_time_blocks, format_must_wins), BriefingFormatter (format_morning_briefing, format_briefing_section, format_task_priorities), StatusFormatter (format_task_status, format_progress_summary, format_completion_report)</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-6.1-task-management-use-cases.md</path>
+        <title>Story 6.1: Task Management Use Cases</title>
+        <section>Application Services</section>
+        <snippet>TaskManagementService with use cases: create_task, complete_task, update_task, delete_task, get_task_by_id, list_tasks, find_tasks_by_status, find_tasks_by_priority</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-6.2-planning-services.md</path>
+        <title>Story 6.2: Planning Services</title>
+        <section>Planning Service Methods</section>
+        <snippet>PlanningService methods: get_daily_plan(), prioritize_tasks(), create_time_blocks(), get_must_wins(). Uses Eisenhower Matrix and MIT frameworks.</snippet>
+      </doc>
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Solution Architecture</title>
+        <section>Hexagonal Architecture Flow</section>
+        <snippet>User → CLI Commands → Application Services → Domain Logic → Infrastructure Repositories. Presentation layer formats output using Rich CLI. Zero business logic in CLI.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>mission-control/src/application/services/daily_planning_service.py</path>
+        <kind>service</kind>
+        <symbol>DailyPlanningService</symbol>
+        <lines>1-end</lines>
+        <reason>Application layer service for daily planning workflow. CLI command will call this service to get daily plan data.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/application/services/morning_briefing_service.py</path>
+        <kind>service</kind>
+        <symbol>MorningBriefingService</symbol>
+        <lines>1-end</lines>
+        <reason>Application layer service for morning briefing. CLI command will call this service to get briefing data.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/application/services/eod_wrapup_service.py</path>
+        <kind>service</kind>
+        <symbol>EODWrapupService</symbol>
+        <lines>1-end</lines>
+        <reason>Application layer service for end-of-day wrap-up. CLI command will call this service to get wrap-up data.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/application/use_cases/task_management/list_tasks_use_case.py</path>
+        <kind>use_case</kind>
+        <symbol>ListTasksUseCase</symbol>
+        <lines>1-end</lines>
+        <reason>Application layer use case for listing tasks. CLI list_tasks command will call this to retrieve task list.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/entities/task.py</path>
+        <kind>entity</kind>
+        <symbol>Task</symbol>
+        <lines>1-end</lines>
+        <reason>Domain entity representing a task. CLI commands will receive Task instances from services and pass to formatters.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/priority.py</path>
+        <kind>value_object</kind>
+        <symbol>Priority</symbol>
+        <lines>1-end</lines>
+        <reason>Domain value object for task priority. Used in task filtering and display.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/status.py</path>
+        <kind>value_object</kind>
+        <symbol>Status</symbol>
+        <lines>1-end</lines>
+        <reason>Domain value object for task status. Used in task filtering and display.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/workflows.py</path>
+        <kind>legacy_code</kind>
+        <symbol>run_daily_planning</symbol>
+        <lines>1-end</lines>
+        <reason>LEGACY: Old procedural daily planning function. Do NOT modify. New CLI command is alternative implementation.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/morning_briefing.py</path>
+        <kind>legacy_code</kind>
+        <symbol>generate_morning_briefing</symbol>
+        <lines>1-end</lines>
+        <reason>LEGACY: Old procedural briefing function. Do NOT modify. New CLI command is alternative implementation.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/eod_wrapup.py</path>
+        <kind>legacy_code</kind>
+        <symbol>run_eod_wrapup</symbol>
+        <lines>1-end</lines>
+        <reason>LEGACY: Old procedural wrap-up function. Do NOT modify. New CLI command is alternative implementation.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/main.py</path>
+        <kind>entry_point</kind>
+        <symbol>main</symbol>
+        <lines>1-end</lines>
+        <reason>Main CLI entry point. MODIFY to add feature flag routing logic (old vs new implementation paths).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="rich" version=">=13.9.0">Rich CLI formatting library for beautiful terminal output</package>
+        <package name="typing" version="stdlib">Type hints for function signatures</package>
+        <package name="datetime" version="stdlib">Date/time handling for planning workflows</package>
+        <package name="os" version="stdlib">Environment variable access for feature flag override</package>
+        <package name="logging" version="stdlib">Logging for feature flag status and errors</package>
+        <package name="pytest" version=">=8.0.0">Testing framework (dev dependency)</package>
+        <package name="pytest-mock" version="latest">Mocking library for unit tests (dev dependency)</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="1">Hexagonal/Clean Architecture: Presentation layer is OUTERMOST layer, depends ONLY on Application and Presentation (formatters). NO direct dependencies on Infrastructure or Domain layers.</constraint>
+    <constraint id="2">Strangler Fig Pattern: Build new code alongside old code. ZERO modifications to legacy files (workflows.py, prioritization.py, morning_briefing.py, eod_wrapup.py, memory.py).</constraint>
+    <constraint id="3">Feature Flag Default: USE_NEW_ARCHITECTURE must default to False to maintain backward compatibility. Users opt-in to new implementation.</constraint>
+    <constraint id="4">Graceful Degradation: If new implementation fails, automatically fallback to old implementation with error logging. System must remain operational.</constraint>
+    <constraint id="5">SOLID Principles: Each CLI command handles ONE workflow (SRP). Commands depend on service abstractions, not concrete implementations (DIP).</constraint>
+    <constraint id="6">Zero Business Logic: CLI commands are pure presentation layer. All business logic stays in application/domain layers. Commands only route, format, display.</constraint>
+    <constraint id="7">Type Safety: Complete type hints required on all functions. Use domain types (Task, List[Task], Priority, Status) not Dict[str, Any].</constraint>
+    <constraint id="8">Comprehensive Testing: 20+ tests minimum. Each command needs 4-6 tests. Test both old and new paths. Mock services for unit test isolation.</constraint>
+    <constraint id="9">No Regressions: All 556+ existing tests must pass. Zero breaking changes to current functionality when USE_NEW_ARCHITECTURE=False.</constraint>
+    <constraint id="10">Documentation: Every function needs docstring with usage example. config.py needs migration guide explaining flag usage and rollout strategy.</constraint>
+    <constraint id="11">Environment Override: Feature flag must support environment variable override (ENV: USE_NEW_ARCHITECTURE=true) for testing in different environments.</constraint>
+    <constraint id="12">Logging: Log which implementation is active (old vs new) at startup for debugging. Log any fallback events with stack traces.</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>daily_planning</name>
+      <kind>CLI command function</kind>
+      <signature>def daily_planning() -> str</signature>
+      <path>src/presentation/cli/commands.py</path>
+      <description>CLI command for daily planning workflow. Calls DailyPlanningService, formats with PlanningFormatter, returns Rich-formatted string.</description>
+    </interface>
+    <interface>
+      <name>morning_briefing</name>
+      <kind>CLI command function</kind>
+      <signature>def morning_briefing() -> str</signature>
+      <path>src/presentation/cli/commands.py</path>
+      <description>CLI command for morning briefing. Calls MorningBriefingService, formats with BriefingFormatter, returns Rich-formatted string.</description>
+    </interface>
+    <interface>
+      <name>eod_wrapup</name>
+      <kind>CLI command function</kind>
+      <signature>def eod_wrapup() -> str</signature>
+      <path>src/presentation/cli/commands.py</path>
+      <description>CLI command for end-of-day wrap-up. Calls EODWrapupService, formats with StatusFormatter, returns Rich-formatted string.</description>
+    </interface>
+    <interface>
+      <name>list_tasks</name>
+      <kind>CLI command function</kind>
+      <signature>def list_tasks(status: Optional[Status] = None, priority: Optional[Priority] = None, tags: Optional[List[str]] = None) -> str</signature>
+      <path>src/presentation/cli/commands.py</path>
+      <description>CLI command for listing tasks with optional filters. Calls ListTasksUseCase, formats with TaskFormatter, returns Rich-formatted string.</description>
+    </interface>
+    <interface>
+      <name>USE_NEW_ARCHITECTURE</name>
+      <kind>Feature flag constant</kind>
+      <signature>USE_NEW_ARCHITECTURE: bool = False</signature>
+      <path>src/config.py</path>
+      <description>Feature flag controlling old vs new implementation. False (default) = use legacy code, True = use new hexagonal architecture. Supports environment variable override.</description>
+    </interface>
+    <interface>
+      <name>main routing logic</name>
+      <kind>Conditional routing</kind>
+      <signature>if USE_NEW_ARCHITECTURE: use_new_commands() else: use_legacy_workflows()</signature>
+      <path>main.py</path>
+      <description>Main entry point routing logic. Checks feature flag and routes to appropriate implementation (old or new). Includes graceful fallback on errors.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Tests use pytest framework with pytest-mock for mocking. Unit tests isolate CLI commands by mocking services and formatters. Each command has 4-6 tests covering basic flow, edge cases (empty data), error handling, and feature flag behavior. Integration tests verify full stack (CLI → Services → Repositories). All tests must pass with both USE_NEW_ARCHITECTURE=True and False. Test coverage target: 80%+ for presentation layer. Use fixtures for common test data (sample tasks, dates). Mock external dependencies (Rich Console, file I/O). Verify Rich markup in outputs (check for [bold], [green], etc).
+    </standards>
+    <locations>
+      tests/presentation/cli/test_commands.py (new, 20+ tests)
+      tests/presentation/cli/test_feature_flag.py (new, 4+ tests)
+      All existing tests in tests/ (must continue passing, 556+ tests)
+    </locations>
+    <ideas>
+      <idea ac="AC1" description="Test daily_planning command basic flow: mock service, call command, verify formatter called with service data, verify Rich output returned"/>
+      <idea ac="AC1" description="Test morning_briefing command basic flow: mock service, call command, verify briefing formatter called, verify output contains greeting and tasks"/>
+      <idea ac="AC1" description="Test eod_wrapup command basic flow: mock service, call command, verify status formatter called, verify completion summary in output"/>
+      <idea ac="AC1" description="Test list_tasks command basic flow: mock use case, call command with no filters, verify task formatter called, verify task list in output"/>
+      <idea ac="AC1" description="Test list_tasks with status filter: call with status=IN_PROGRESS, verify use case called with correct filter, verify filtered results"/>
+      <idea ac="AC1" description="Test list_tasks with priority filter: call with priority=P0, verify use case called with correct filter, verify high-priority tasks only"/>
+      <idea ac="AC2" description="Integration test: daily_planning calls real PlanningService (mocked repos), verify full dependency chain executes correctly"/>
+      <idea ac="AC2" description="Test command error handling: mock service raises exception, verify command handles gracefully, returns error message"/>
+      <idea ac="AC3" description="Test USE_NEW_ARCHITECTURE=False: verify main.py routes to legacy workflows.py functions, not new commands"/>
+      <idea ac="AC3" description="Test USE_NEW_ARCHITECTURE=True: verify main.py routes to new commands.py functions, not legacy code"/>
+      <idea ac="AC3" description="Test environment variable override: set ENV USE_NEW_ARCHITECTURE=true, verify flag reads as True despite code default False"/>
+      <idea ac="AC3" description="Test feature flag validation: set invalid value (not bool), verify raises error or defaults to False"/>
+      <idea ac="AC4" description="Test graceful fallback: USE_NEW_ARCHITECTURE=True, new command fails, verify main.py catches exception and calls old implementation"/>
+      <idea ac="AC4" description="Test logging: verify main.py logs which implementation is active (old vs new) at startup"/>
+      <idea ac="AC5" description="Test Strangler Fig: verify legacy files (workflows.py, memory.py) unchanged by comparing git diff (should be zero changes)"/>
+      <idea ac="AC5" description="Test old code still works: call legacy workflows directly, verify they execute without errors (backward compatibility)"/>
+      <idea ac="AC6" description="Test type hints: use mypy or similar to verify all command functions have complete type annotations"/>
+      <idea ac="AC6" description="Test docstrings: verify each command has docstring with description and usage example"/>
+      <idea ac="AC7" description="Test empty data handling: call daily_planning with no tasks, verify formatter handles empty list, returns valid output"/>
+      <idea ac="AC7" description="Test edge case: call eod_wrapup with zero completed tasks, verify summary shows 0/N completion"/>
+      <idea ac="AC7" description="Test mock isolation: verify tests mock services completely, no real file I/O or database calls during unit tests"/>
+      <idea ac="AC7" description="Test Rich formatting: verify command outputs contain expected Rich markup ([bold], [green], etc.) for styled terminal display"/>
+      <idea ac="AC7" description="Regression test: run full test suite (556+ tests), verify all existing tests still pass with new code present"/>
+      <idea ac="AC7" description="Test coverage: run pytest --cov, verify CLI layer coverage >= 80%, identify untested code paths"/>
+    </ideas>
+  </tests>
+</story-context>
