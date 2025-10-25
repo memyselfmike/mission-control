@@ -1,0 +1,378 @@
+<story-context id="story-5.4-json-storage-utility" v="1.0">
+  <metadata>
+    <epicId>5R</epicId>
+    <storyId>5.4</storyId>
+    <title>Create JSON Storage Utility</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-5.4-json-storage-utility.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>a low-level JSON storage utility with robust error handling and atomic writes</iWant>
+    <soThat>all repository implementations can safely persist data without duplicating file I/O logic</soThat>
+    <tasks>
+      <task id="1">Create infrastructure persistence module structure</task>
+      <task id="2">Implement JSON file read operations</task>
+      <task id="3">Implement JSON file write operations</task>
+      <task id="4">Implement backup functionality</task>
+      <task id="5">Implement JSONL operations</task>
+      <task id="6">Add custom exceptions</task>
+      <task id="7">Add logging configuration</task>
+      <task id="8">Create comprehensive test suite</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">
+      <description>JSON File I/O: Utility provides read_json(path) and write_json(path, data) methods</description>
+      <details>
+        - Handles missing files gracefully (returns None or empty dict)
+        - Validates JSON structure on read
+        - Pretty-prints JSON on write (indent=2)
+        - Atomic writes (write to temp file, then rename)
+      </details>
+    </criterion>
+    <criterion id="2">
+      <description>JSONL Operations: Utility provides append_jsonl(path, entry) method</description>
+      <details>
+        - Appends single-line JSON entries to log files
+        - Creates file if it doesn't exist
+        - Thread-safe appends
+        - Validates entry is JSON-serializable before writing
+      </details>
+    </criterion>
+    <criterion id="3">
+      <description>Backup on Write: All write operations create automatic backups</description>
+      <details>
+        - Backup naming: {filename}.backup.{timestamp}.json
+        - Configurable retention (default: keep last 5 backups)
+        - Backup cleanup runs automatically during writes
+      </details>
+    </criterion>
+    <criterion id="4">
+      <description>Error Handling: Comprehensive error handling for all file operations</description>
+      <details>
+        - JSONDecodeError → log warning, return None or raise custom exception
+        - PermissionError → raise with helpful message
+        - FileNotFoundError → handle gracefully based on operation
+        - IOError → log and re-raise with context
+      </details>
+    </criterion>
+    <criterion id="5">
+      <description>Type Safety: Full type hints throughout</description>
+      <details>
+        - Type: JsonDict = Dict[str, Any]
+        - Methods accept/return JsonDict or None
+        - Pydantic models supported (via .dict())
+      </details>
+    </criterion>
+    <criterion id="6">
+      <description>Logging: Structured logging for all operations</description>
+      <details>
+        - INFO: successful reads/writes with file paths
+        - WARNING: recoverable errors (missing files, invalid JSON)
+        - ERROR: unrecoverable errors with stack traces
+        - DEBUG: detailed operation info (file sizes, backup counts)
+      </details>
+    </criterion>
+    <criterion id="7">
+      <description>Test Coverage: 15+ tests covering all functionality</description>
+      <details>
+        - Happy path: read/write/append operations
+        - Error cases: invalid JSON, missing files, permission errors
+        - Edge cases: empty files, corrupted data, concurrent writes
+        - Backup functionality: creation, retention, cleanup
+        - Thread safety: concurrent append operations
+      </details>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Mission Control - Epic Breakdown</title>
+        <section>EPIC-5R: Architectural Refactoring - Phase 2: Infrastructure</section>
+        <snippet>Story 5.4: Create JSON Storage Utility (3 pts) - Low-level utility for JSON file I/O operations. Methods: read_json(), write_json(), append_jsonl(), backup_file(). Error handling, atomic writes, backup on write.</snippet>
+      </doc>
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Mission Control - Solution Architecture</title>
+        <section>4. Data Architecture - File-based Storage</section>
+        <snippet>Mission Control uses file-based JSON storage for MVP. All data persists locally in data/ directory. JSON for state (agent registry, business context), JSONL for logs (conversation history).</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>PROJECT RULES - For Claude Agents</title>
+        <section>9. Quality Standards - Code Quality</section>
+        <snippet>All code must have docstrings, handle errors gracefully (no unhandled exceptions), use type hints (Python 3.13+ style), and return meaningful values.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-5.1-domain-value-objects.md</path>
+        <title>Story 5.1: Create Domain Value Objects</title>
+        <section>Completed - Domain Foundation</section>
+        <snippet>Created Priority, Status, EnergyLevel enums and Context, TimeBlock value objects. 30 tests passing, 100% coverage. Establishes domain layer foundation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-5.2-task-entity.md</path>
+        <title>Story 5.2: Create Task Entity</title>
+        <section>Completed - Domain Entity</section>
+        <snippet>Created Task entity with encapsulated behavior (mark_complete, block, defer_until, is_overdue). 44 tests passing, uses value objects from 5.1.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-5.3-repository-interfaces.md</path>
+        <title>Story 5.3: Create Repository Interfaces</title>
+        <section>Completed - Repository Pattern</section>
+        <snippet>Created ITaskRepository and IMemoryRepository interfaces using ABC. 25 tests passing. These interfaces will be implemented using the JSON storage utility from this story.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>mission-control/src/domain/repositories/task_repository.py</path>
+        <kind>interface</kind>
+        <symbol>ITaskRepository</symbol>
+        <lines>1-50</lines>
+        <reason>Repository interface that will use JsonStorage for persistence. Defines 7 methods (save, find_by_id, find_all, update, delete, find_by_status, find_by_priority).</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/repositories/memory_repository.py</path>
+        <kind>interface</kind>
+        <symbol>IMemoryRepository</symbol>
+        <lines>1-60</lines>
+        <reason>Repository interface that will use JsonStorage for business context and JsonL for conversation logs. Defines 9 methods.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/memory.py</path>
+        <kind>module</kind>
+        <symbol>load_business_context, save_business_context, log_interaction</symbol>
+        <lines>1-1500</lines>
+        <reason>Legacy memory module with direct file I/O. Will be replaced by repository pattern using JsonStorage utility.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/entities/task.py</path>
+        <kind>entity</kind>
+        <symbol>Task</symbol>
+        <lines>1-250</lines>
+        <reason>Domain entity that will be persisted via TaskRepository using JsonStorage. Shows JSON serialization requirements.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="python" version=">=3.13" />
+        <stdlib>
+          <module name="json">JSON encoding/decoding</module>
+          <module name="pathlib">Path operations (Path class)</module>
+          <module name="datetime">Timestamp generation for backups</module>
+          <module name="logging">Structured logging</module>
+          <module name="tempfile">Temporary file creation for atomic writes</module>
+          <module name="threading">Thread locks for JSONL append safety</module>
+        </stdlib>
+        <typing>
+          <module name="typing">Dict, Any, Optional type hints</module>
+        </typing>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="1">Infrastructure Layer: This utility is in the infrastructure layer and has ZERO dependencies on domain or application layers.</constraint>
+    <constraint id="2">Pure Python: No external dependencies beyond Python standard library. Must work with Python 3.13+.</constraint>
+    <constraint id="3">Atomic Writes: All write operations must be atomic (write to temp file, then rename) to prevent data corruption.</constraint>
+    <constraint id="4">Thread Safety: JSONL append operations must be thread-safe using locks or atomic file operations.</constraint>
+    <constraint id="5">Error Handling: All file I/O errors must be caught and handled gracefully with appropriate logging.</constraint>
+    <constraint id="6">Type Safety: Full type hints required on all public methods and functions.</constraint>
+    <constraint id="7">Logging: Use module-level logger (logging.getLogger(__name__)) with structured messages including file paths and operation types.</constraint>
+    <constraint id="8">Backup Strategy: Automatic backups on write with configurable retention (default 5). Cleanup runs during writes.</constraint>
+    <constraint id="9">Hexagonal Architecture: This is a low-level infrastructure utility. Repository implementations will depend on it, not vice versa.</constraint>
+    <constraint id="10">Test Coverage: Target 100% coverage for this critical utility. All error paths must be tested.</constraint>
+    <constraint id="11">Docstrings: All public methods require comprehensive docstrings with Args, Returns, Raises sections.</constraint>
+    <constraint id="12">File Permissions: Handle PermissionError gracefully with helpful error messages indicating file path and required permissions.</constraint>
+    <constraint id="13">JSON Validation: Validate JSON structure on read and raise InvalidJsonError (custom exception) on parse failures.</constraint>
+    <constraint id="14">Directory Creation: Auto-create parent directories when writing files if they don't exist.</constraint>
+    <constraint id="15">Performance: File I/O operations should log at DEBUG level to avoid performance impact in production.</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>JsonStorage.read_json</name>
+      <kind>static method</kind>
+      <signature>
+        @staticmethod
+        def read_json(path: Path) -> Optional[JsonDict]:
+            """
+            Read and parse JSON file.
+
+            Args:
+                path: Path to JSON file
+
+            Returns:
+                Parsed JSON as dict, or None if file doesn't exist
+
+            Raises:
+                InvalidJsonError: If JSON is malformed
+                StoragePermissionError: If file cannot be read due to permissions
+            """
+      </signature>
+      <path>src/infrastructure/persistence/json_storage.py</path>
+    </interface>
+
+    <interface>
+      <name>JsonStorage.write_json</name>
+      <kind>static method</kind>
+      <signature>
+        @staticmethod
+        def write_json(path: Path, data: JsonDict, backup: bool = True) -> None:
+            """
+            Write JSON data to file atomically with optional backup.
+
+            Args:
+                path: Path to JSON file
+                data: Dict to serialize as JSON
+                backup: Whether to create backup before write (default: True)
+
+            Raises:
+                StoragePermissionError: If file cannot be written
+                IOError: If write operation fails
+            """
+      </signature>
+      <path>src/infrastructure/persistence/json_storage.py</path>
+    </interface>
+
+    <interface>
+      <name>JsonStorage.append_jsonl</name>
+      <kind>static method</kind>
+      <signature>
+        @staticmethod
+        def append_jsonl(path: Path, entry: JsonDict) -> None:
+            """
+            Append JSON entry to JSONL file (thread-safe).
+
+            Args:
+                path: Path to JSONL file
+                entry: Dict to append as JSON line
+
+            Raises:
+                StorageException: If entry is not JSON-serializable
+                StoragePermissionError: If file cannot be written
+            """
+      </signature>
+      <path>src/infrastructure/persistence/json_storage.py</path>
+    </interface>
+
+    <interface>
+      <name>JsonStorage._create_backup</name>
+      <kind>static method</kind>
+      <signature>
+        @staticmethod
+        def _create_backup(path: Path) -> Path:
+            """
+            Create timestamped backup of file.
+
+            Args:
+                path: Path to file to backup
+
+            Returns:
+                Path to created backup file
+
+            Raises:
+                IOError: If backup creation fails
+            """
+      </signature>
+      <path>src/infrastructure/persistence/json_storage.py</path>
+    </interface>
+
+    <interface>
+      <name>JsonStorage._cleanup_old_backups</name>
+      <kind>static method</kind>
+      <signature>
+        @staticmethod
+        def _cleanup_old_backups(path: Path, keep: int = 5) -> None:
+            """
+            Remove old backup files, keeping only N most recent.
+
+            Args:
+                path: Path to original file (backups share same directory)
+                keep: Number of backups to retain (default: 5)
+            """
+      </signature>
+      <path>src/infrastructure/persistence/json_storage.py</path>
+    </interface>
+
+    <interface>
+      <name>StorageException</name>
+      <kind>exception class</kind>
+      <signature>
+        class StorageException(Exception):
+            """Base exception for storage operations."""
+            pass
+      </signature>
+      <path>src/infrastructure/persistence/exceptions.py</path>
+    </interface>
+
+    <interface>
+      <name>InvalidJsonError</name>
+      <kind>exception class</kind>
+      <signature>
+        class InvalidJsonError(StorageException):
+            """Raised when JSON parsing fails."""
+            pass
+      </signature>
+      <path>src/infrastructure/persistence/exceptions.py</path>
+    </interface>
+
+    <interface>
+      <name>StoragePermissionError</name>
+      <kind>exception class</kind>
+      <signature>
+        class StoragePermissionError(StorageException):
+            """Raised when file permissions prevent I/O operation."""
+            pass
+      </signature>
+      <path>src/infrastructure/persistence/exceptions.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Mission Control uses pytest for testing. Tests are organized in tests/ directory mirroring src/ structure. Each module has corresponding test_*.py file. Target coverage: 100% for critical utilities like JsonStorage. Tests use fixtures for file setup/teardown, mocks for error simulation, and concurrent execution for thread safety validation. All tests must pass before story completion.
+    </standards>
+
+    <locations>
+      tests/infrastructure/persistence/test_json_storage.py (new file)
+      tests/infrastructure/persistence/__init__.py (create if needed)
+    </locations>
+
+    <ideas>
+      <test id="1" ac="1">test_read_json_success: Read valid JSON file, verify dict returned</test>
+      <test id="2" ac="1">test_read_json_missing_file: Read nonexistent file, verify None returned</test>
+      <test id="3" ac="1">test_read_json_invalid_json: Read malformed JSON, verify InvalidJsonError raised</test>
+      <test id="4" ac="1">test_read_json_permission_error: Mock PermissionError, verify StoragePermissionError raised</test>
+      <test id="5" ac="1">test_write_json_success: Write dict to file, verify pretty-printed with indent=2</test>
+      <test id="6" ac="1">test_write_json_atomic: Verify write uses temp file and rename (check file operations)</test>
+      <test id="7" ac="1">test_write_json_creates_directories: Write to nonexistent directory, verify auto-created</test>
+      <test id="8" ac="2">test_append_jsonl_success: Append entry to JSONL, verify single line added</test>
+      <test id="9" ac="2">test_append_jsonl_creates_file: Append to nonexistent file, verify file created</test>
+      <test id="10" ac="2">test_append_jsonl_thread_safe: Concurrent appends from multiple threads, verify all entries present</test>
+      <test id="11" ac="2">test_append_jsonl_invalid_data: Try to append non-serializable object, verify StorageException raised</test>
+      <test id="12" ac="3">test_backup_created: Write with backup=True, verify backup file exists with correct naming</test>
+      <test id="13" ac="3">test_backup_retention: Create 10 backups, write again, verify only 5 most recent remain</test>
+      <test id="14" ac="3">test_backup_cleanup: Verify cleanup runs automatically during writes</test>
+      <test id="15" ac="3">test_no_backup_when_disabled: Write with backup=False, verify no backup created</test>
+      <test id="16" ac="4">test_error_handling_json_decode: Corrupt JSON file, verify warning logged and exception raised</test>
+      <test id="17" ac="4">test_error_handling_permission: Mock permission error, verify helpful error message</test>
+      <test id="18" ac="4">test_error_handling_io_error: Mock IOError, verify re-raised with context</test>
+      <test id="19" ac="5">test_type_hints_present: Verify all public methods have type hints using inspect</test>
+      <test id="20" ac="6">test_logging_read_success: Read file, verify INFO log with file path</test>
+      <test id="21" ac="6">test_logging_read_missing: Read missing file, verify INFO log (not WARNING)</test>
+      <test id="22" ac="6">test_logging_write_success: Write file, verify INFO log with operation details</test>
+      <test id="23" ac="6">test_logging_error: Trigger error, verify ERROR log with stack trace</test>
+      <test id="24" ac="7">test_integration_read_modify_write: Full cycle - read, modify, write, read again</test>
+      <test id="25" ac="7">test_integration_backup_recovery: Write file, corrupt it, restore from backup</test>
+    </ideas>
+  </tests>
+</story-context>
