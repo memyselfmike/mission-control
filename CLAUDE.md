@@ -57,21 +57,75 @@ docs/archive/
 └── misc/                      [Cleanup reports, audits, one-off documents]
 ```
 
-### 1.2 File Placement Rules
+### 1.2 Repository Structure (CRITICAL)
 
-**Rule 1.2.1:** NEVER create markdown files at project root except README.md, PRODUCT-BACKLOG.md, and .claudecontext.md
+**Mission Control uses a parent + submodule architecture:**
 
-**Rule 1.2.2:** Sprint summaries ALWAYS go to `docs/archive/sprint-summaries/` (never root, never docs/)
+**Parent Repository:**
+- **URL:** https://github.com/memyselfmike/mission-control.git
+- **Purpose:** Documentation, planning, project management
+- **Contains:** All docs, backlog, planning files, CLAUDE.md
+- **Does NOT contain:** Application code or tests
 
-**Rule 1.2.3:** Story files ONLY exist in `docs/stories/` - use format `story-{EPIC}.{NUM}-{slug}.md`
+**Submodule Repository:**
+- **URL:** https://github.com/memyselfmike/gao-mission-control.git
+- **Path:** `mission-control/` (subfolder in parent repo)
+- **Purpose:** All application code and tests
+- **Contains:** `src/`, `tests/`, `main.py`, etc.
 
-**Rule 1.2.4:** Story implementation notes, design alternatives, and artifacts go to `docs/archive/story-artifacts/`
+**Reference Repositories (Not Tracked):**
+The following folders are cloned for development reference and are ignored by git:
+- `BMAD-METHOD/` - BMAD Method framework reference
+- `big-3-super-agent/` - Example agent code
+- `claude-agent-sdk-intro/` - SDK learning examples
+- `bmad/` - Additional BMAD reference code
 
-**Rule 1.2.5:** QA reports and test results go to `docs/archive/qa-reports/`
+**Rule 1.2.1:** ALL code goes in `mission-control/` submodule
+**Rule 1.2.2:** ALL documentation goes in parent repo (outside `mission-control/`)
+**Rule 1.2.3:** ALL tests go in `mission-control/tests/`
+**Rule 1.2.4:** Reference repos are for reading only, never commit to parent repo
 
-**Rule 1.2.6:** Bug fix summaries go to `docs/archive/bug-fixes/`
+**Working with Submodules:**
+```bash
+# Clone parent repo with submodules
+git clone --recursive https://github.com/memyselfmike/mission-control.git
 
-**Rule 1.2.7:** All audit reports, cleanup summaries, and one-off docs go to `docs/archive/misc/`
+# Update submodule to latest
+cd mission-control
+git pull
+
+# Commit changes in submodule
+cd mission-control
+git add .
+git commit -m "Story X.Y: [description]"
+git push
+
+# Update parent repo to track new submodule commit
+cd ..
+git add mission-control
+git commit -m "Update mission-control submodule to [commit-hash]"
+git push
+```
+
+### 1.3 File Placement Rules
+
+**Rule 1.3.1:** NEVER create markdown files at project root except README.md, PRODUCT-BACKLOG.md, and CLAUDE.md
+
+**Rule 1.3.2:** Sprint summaries ALWAYS go to `docs/archive/sprint-summaries/` (never root, never docs/)
+
+**Rule 1.3.3:** Story files ONLY exist in `docs/stories/` - use format `story-{EPIC}.{NUM}-{slug}.md`
+
+**Rule 1.3.4:** Story implementation notes, design alternatives, and artifacts go to `docs/archive/story-artifacts/`
+
+**Rule 1.3.5:** QA reports and test results go to `docs/archive/qa-reports/`
+
+**Rule 1.3.6:** Bug fix summaries go to `docs/archive/bug-fixes/`
+
+**Rule 1.3.7:** All audit reports, cleanup summaries, and one-off docs go to `docs/archive/misc/`
+
+**Rule 1.3.8:** Python code files ONLY in `mission-control/src/` (submodule)
+
+**Rule 1.3.9:** Test files ONLY in `mission-control/tests/` (submodule)
 
 ---
 
@@ -471,7 +525,7 @@ Before considering any work "done," verify:
 
 **This document is AUTHORITATIVE for all Claude agents working on Mission Control.**
 
-**Last Updated:** 2025-10-17
+**Last Updated:** 2025-10-25
 **Next Review:** When project structure significantly changes
 **Authority:** Mike (Product Owner)
 
