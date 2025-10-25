@@ -1,0 +1,404 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>5</epicId>
+    <storyId>5.2</storyId>
+    <title>Create Task Entity</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-22</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-5.2-task-entity.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>a proper Task entity with encapsulated behavior and type-safe fields using value objects</iWant>
+    <soThat>the refactored codebase replaces Dict[str, Any] with a rich domain model that follows OOP principles and Clean Architecture</soThat>
+    <tasks>
+      <task id="1" ac="1">
+        <description>Create entity structure and basic fields</description>
+        <subtasks>
+          <subtask id="1.1">Create src/domain/entities/ directory</subtask>
+          <subtask id="1.2">Create src/domain/entities/__init__.py</subtask>
+          <subtask id="1.3">Create src/domain/entities/task.py with Task class skeleton</subtask>
+          <subtask id="1.4">Add all fields with proper type hints (use value objects from Story 5.1)</subtask>
+          <subtask id="1.5">Add __init__ method with validation</subtask>
+        </subtasks>
+      </task>
+      <task id="2" ac="2">
+        <description>Implement state transition methods</description>
+        <subtasks>
+          <subtask id="2.1">Implement mark_in_progress() with validation</subtask>
+          <subtask id="2.2">Implement mark_complete() with timestamp and actual time</subtask>
+          <subtask id="2.3">Implement block(reason) with validation</subtask>
+          <subtask id="2.4">Implement defer_until(date) with validation</subtask>
+          <subtask id="2.5">Implement cancel() method</subtask>
+          <subtask id="2.6">Implement can_transition_to(new_status) using Status.can_transition_to</subtask>
+        </subtasks>
+      </task>
+      <task id="3" ac="2,6">
+        <description>Implement query/calculation methods</description>
+        <subtasks>
+          <subtask id="3.1">Implement is_overdue() -&gt; bool</subtask>
+          <subtask id="3.2">Implement is_must_win_today() -&gt; bool</subtask>
+          <subtask id="3.3">Implement calculate_time_variance() -&gt; Optional[int]</subtask>
+          <subtask id="3.4">Implement get_days_until_due() -&gt; Optional[int]</subtask>
+          <subtask id="3.5">Implement categorization methods (is_deep_work, is_admin, etc.)</subtask>
+        </subtasks>
+      </task>
+      <task id="4" ac="3">
+        <description>Implement validation logic</description>
+        <subtasks>
+          <subtask id="4.1">Add title validation (__post_init__ or __init__)</subtask>
+          <subtask id="4.2">Add blocked_reason validation (if BLOCKED, reason required)</subtask>
+          <subtask id="4.3">Add completed_date validation (if COMPLETED, date required)</subtask>
+          <subtask id="4.4">Add estimated_time validation (must be positive)</subtask>
+          <subtask id="4.5">Add state transition validation in all mutation methods</subtask>
+        </subtasks>
+      </task>
+      <task id="5" ac="4">
+        <description>Implement factory methods</description>
+        <subtasks>
+          <subtask id="5.1">Add @classmethod create() with defaults and ID generation</subtask>
+          <subtask id="5.2">Add @classmethod from_dict() for deserialization</subtask>
+          <subtask id="5.3">Add to_dict() method for serialization</subtask>
+          <subtask id="5.4">Ensure from_dict &lt;-&gt; to_dict round-trip works perfectly</subtask>
+          <subtask id="5.5">Add validation in factory methods</subtask>
+        </subtasks>
+      </task>
+      <task id="6" ac="5">
+        <description>Implement immutability constraints</description>
+        <subtasks>
+          <subtask id="6.1">Make id immutable (property without setter or frozen)</subtask>
+          <subtask id="6.2">Make created_date immutable</subtask>
+          <subtask id="6.3">Make started_date immutable (first-set-only logic)</subtask>
+          <subtask id="6.4">Make completed_date immutable once set</subtask>
+          <subtask id="6.5">Add tests to verify immutability constraints</subtask>
+        </subtasks>
+      </task>
+      <task id="7" ac="6">
+        <description>Implement tags and notes management</description>
+        <subtasks>
+          <subtask id="7.1">Implement add_tag(tag: str) -&gt; None</subtask>
+          <subtask id="7.2">Implement remove_tag(tag: str) -&gt; bool</subtask>
+          <subtask id="7.3">Implement has_tag(tag: str) -&gt; bool</subtask>
+          <subtask id="7.4">Implement update_notes(notes: str) -&gt; None</subtask>
+          <subtask id="7.5">Add validation for tag operations</subtask>
+        </subtasks>
+      </task>
+      <task id="8" ac="7">
+        <description>Write comprehensive tests</description>
+        <subtasks>
+          <subtask id="8.1">Create tests/domain/entities/test_task.py</subtask>
+          <subtask id="8.2">Write creation tests (5 tests: valid, invalid title, invalid time, etc.)</subtask>
+          <subtask id="8.3">Write state transition tests (6 tests: mark_in_progress, mark_complete, block, defer, cancel, invalid transitions)</subtask>
+          <subtask id="8.4">Write validation tests (5 tests: title validation, blocked_reason, completed_date, time validation, state consistency)</subtask>
+          <subtask id="8.5">Write factory method tests (3 tests: create, from_dict, to_dict round-trip)</subtask>
+          <subtask id="8.6">Write immutability tests (4 tests: id, created_date, started_date, completed_date)</subtask>
+          <subtask id="8.7">Write business logic tests (4 tests: is_overdue, time_variance, categorization, priority checks)</subtask>
+          <subtask id="8.8">Write tag management tests (3 tests: add, remove, has_tag)</subtask>
+          <subtask id="8.9">Run coverage report, verify 90%+ for task.py</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1" priority="critical">
+      <title>Task Entity Created with Rich Domain Model</title>
+      <description>Class Task in src/domain/entities/task.py with 18 fields (id, title, description, status, priority, estimated_time_minutes, actual_time_minutes, energy_required, work_context, linked_goal_id, linked_project_id, due_date, created_date, started_date, completed_date, deferred_until, blocked_reason, notes, tags). Uses value objects Priority, Status, EnergyLevel from Story 5.1. Proper type hints throughout with no Any types. Docstrings for class and all public methods.</description>
+      <testIdeas>
+        <idea>Test Task creation with all required fields and value objects</idea>
+        <idea>Test type hints are present and correct for all fields</idea>
+        <idea>Verify no Dict[str, Any] types used</idea>
+      </testIdeas>
+    </criterion>
+    <criterion id="AC2" priority="critical">
+      <title>Encapsulated Business Logic Methods</title>
+      <description>Nine behavior methods encapsulate business logic: mark_complete(actual_time_minutes), mark_in_progress(), block(reason), defer_until(date), cancel(), is_overdue(), is_must_win_today(), can_transition_to(new_status), calculate_time_variance(). All methods enforce business rules and state transitions properly.</description>
+      <testIdeas>
+        <idea>Test mark_complete() sets status and timestamp correctly</idea>
+        <idea>Test mark_in_progress() sets started_date on first call only</idea>
+        <idea>Test block() requires reason parameter</idea>
+        <idea>Test defer_until() validates date and updates status</idea>
+        <idea>Test is_overdue() returns true for past due date when not complete</idea>
+        <idea>Test is_must_win_today() checks priority correctly</idea>
+      </testIdeas>
+    </criterion>
+    <criterion id="AC3" priority="critical">
+      <title>Self-Validation and Invariants</title>
+      <description>Seven validation rules enforced: title required (minimum 3 characters), blocked tasks require blocked_reason, completed tasks require completed_date, deferred tasks have appropriate status, cannot mark complete if already complete, invalid state transitions raise ValueError, estimated time must be positive if provided.</description>
+      <testIdeas>
+        <idea>Test title validation raises ValueError for short titles</idea>
+        <idea>Test BLOCKED status requires blocked_reason</idea>
+        <idea>Test COMPLETED status requires completed_date</idea>
+        <idea>Test double-complete raises ValueError</idea>
+        <idea>Test invalid state transitions raise ValueError</idea>
+        <idea>Test negative estimated_time raises ValueError</idea>
+      </testIdeas>
+    </criterion>
+    <criterion id="AC4" priority="high">
+      <title>Factory Methods for Common Patterns</title>
+      <description>Three factory methods: Task.create(title, priority, ...) creates new task with defaults and generated ID, Task.from_dict(data) reconstructs from storage, to_dict() serializes for storage. Factory ensures all invariants upheld.</description>
+      <testIdeas>
+        <idea>Test Task.create() generates unique IDs</idea>
+        <idea>Test Task.create() sets default values correctly</idea>
+        <idea>Test Task.from_dict() reconstructs all fields</idea>
+        <idea>Test to_dict() serializes all fields</idea>
+        <idea>Test from_dict() -&gt; to_dict() round-trip preserves data</idea>
+      </testIdeas>
+    </criterion>
+    <criterion id="AC5" priority="high">
+      <title>Immutability Where Appropriate</title>
+      <description>Four immutability constraints: created_date cannot change after set, completed_date cannot change after set, started_date cannot change after first set, id is immutable after creation. Other fields can be updated through proper methods.</description>
+      <testIdeas>
+        <idea>Test id cannot be reassigned after creation</idea>
+        <idea>Test created_date is immutable</idea>
+        <idea>Test started_date set only on first mark_in_progress()</idea>
+        <idea>Test completed_date cannot be changed once set</idea>
+      </testIdeas>
+    </criterion>
+    <criterion id="AC6" priority="medium">
+      <title>Domain Logic for Task Management</title>
+      <description>Five domain logic features: priority comparison (must_win &gt; important &gt; should_do), energy matching (can task be done with current energy level), deadline proximity calculation (days until due), task categorization (is_deep_work, is_admin, is_communication based on work_context), tags management (add_tag, remove_tag, has_tag methods).</description>
+      <testIdeas>
+        <idea>Test priority comparison logic</idea>
+        <idea>Test energy matching returns correct boolean</idea>
+        <idea>Test days_until_due calculation</idea>
+        <idea>Test is_deep_work categorization</idea>
+        <idea>Test add_tag(), remove_tag(), has_tag() methods</idea>
+      </testIdeas>
+    </criterion>
+    <criterion id="AC7" priority="critical">
+      <title>Comprehensive Tests</title>
+      <description>25+ unit tests in tests/domain/entities/test_task.py covering creation (valid/invalid data), all behavior methods, self-validation (invalid states raise ValueError), state transitions (valid and invalid), immutability constraints, factory methods, business logic, and achieving 90%+ test coverage for task.py module.</description>
+      <testIdeas>
+        <idea>Organize tests into classes: TestTaskCreation, TestStateTransitions, TestValidation, TestFactoryMethods, TestImmutability, TestBusinessLogic, TestTagManagement</idea>
+        <idea>Use pytest fixtures for common test data</idea>
+        <idea>Test edge cases: None values, empty strings, boundary conditions</idea>
+        <idea>Run coverage report to verify 90%+ coverage</idea>
+      </testIdeas>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact id="DOC-1" type="architecture">
+        <path>CLAUDE.md</path>
+        <section>Section 2: OBJECT-ORIENTED PROGRAMMING</section>
+        <relevantContent>Defines entity design rules: entities are NOT dumb data holders, they have BEHAVIOR. Business logic belongs IN the entity, not in external functions. Entities validate their own invariants. Use value objects for concepts with identity. Examples show rich domain model vs anemic model, with Task.mark_complete() encapsulating business logic instead of external mark_task_complete(task) function.</relevantContent>
+      </artifact>
+      <artifact id="DOC-2" type="architecture">
+        <path>CLAUDE.md</path>
+        <section>Section 2.3: Entity Design Rules</section>
+        <relevantContent>Rule 2.3.1: Entities have behavior not just data. Rule 2.3.2: Entities validate their own invariants (e.g., title must be 3+ chars, estimated_time must be positive). Rule 2.3.3: Use value objects for identity (Priority enum not string). Shows bad example with anemic domain model vs good example with encapsulated business logic.</relevantContent>
+      </artifact>
+      <artifact id="DOC-3" type="epic-definition">
+        <path>docs/epics.md</path>
+        <section>EPIC-5R: Architectural Refactoring</section>
+        <relevantContent>Phase 1 Foundation (10 pts, Week 1) includes Story 5.1 (Domain Value Objects - 3pts) and Story 5.2 (Task Entity - 5pts). Epic goal is refactoring from procedural functions on dictionaries to proper Hexagonal/Clean Architecture with OOP, repository pattern, and SOLID principles. Success criteria include 90%+ domain test coverage and zero regressions to existing 282+ tests.</relevantContent>
+      </artifact>
+      <artifact id="DOC-4" type="story-context">
+        <path>docs/stories/story-5.1-domain-value-objects.md</path>
+        <section>Summary and File List</section>
+        <relevantContent>Story 5.1 (Status: Done) created 5 value objects: Priority (P0_CRITICAL, P1_HIGH, P2_MEDIUM, P3_LOW), Status (NOT_STARTED, IN_PROGRESS, BLOCKED, COMPLETED, CANCELLED with state transition validation), EnergyLevel (HIGH, MEDIUM, LOW with ordinal comparison), Context (immutable dataclass for business context), TimeBlock (immutable dataclass with start/end validation). All 30 tests passing, 100% coverage achieved.</relevantContent>
+      </artifact>
+      <artifact id="DOC-5" type="current-implementation">
+        <path>docs/stories/story-3.2-task-data-model.md</path>
+        <section>Technical Implementation - Task Data Structure</section>
+        <relevantContent>Current task implementation uses Dict[str, Any] with 18 fields stored in data/tasks/tasks.json. Fields include id, title, description, status (string: "todo", "in_progress", "done", "blocked", "deferred"), priority (string: "must_win_today", "important", "should_do", "nice_to_have"), time estimates, energy levels, context types, linked goals/projects, dates, notes, tags. This procedural approach will be replaced by Task entity with value objects.</relevantContent>
+      </artifact>
+    </docs>
+    <code>
+      <artifact id="CODE-1" type="value-object">
+        <path>mission-control/src/domain/value_objects/priority.py</path>
+        <purpose>Priority enum from Story 5.1 - defines P0_CRITICAL, P1_HIGH, P2_MEDIUM, P3_LOW with comparison operators and from_string() factory. Task entity will use this instead of string literals.</purpose>
+      </artifact>
+      <artifact id="CODE-2" type="value-object">
+        <path>mission-control/src/domain/value_objects/status.py</path>
+        <purpose>Status enum from Story 5.1 - defines NOT_STARTED, IN_PROGRESS, BLOCKED, COMPLETED, CANCELLED with can_transition_to() validation method and is_terminal() check. Task entity will use this for status field and state transitions.</purpose>
+      </artifact>
+      <artifact id="CODE-3" type="value-object">
+        <path>mission-control/src/domain/value_objects/energy_level.py</path>
+        <purpose>EnergyLevel enum from Story 5.1 - defines HIGH, MEDIUM, LOW with ordinal comparison support. Task entity will use this for energy_required field and energy matching logic.</purpose>
+      </artifact>
+      <artifact id="CODE-4" type="value-object">
+        <path>mission-control/src/domain/value_objects/context.py</path>
+        <purpose>Context value object from Story 5.1 - immutable dataclass with category, content, tags, timestamp, source fields. May be used for task context categorization.</purpose>
+      </artifact>
+      <artifact id="CODE-5" type="value-object">
+        <path>mission-control/src/domain/value_objects/time_block.py</path>
+        <purpose>TimeBlock value object from Story 5.1 - immutable dataclass with start_time, end_time, duration_minutes, label. Validates end &gt; start. May be used for time blocking tasks.</purpose>
+      </artifact>
+      <artifact id="CODE-6" type="current-implementation">
+        <path>mission-control/src/tasks.py</path>
+        <purpose>Current task implementation (591 lines) - procedural functions operating on Dict[str, Any]. Functions include create_task(), get_task(), update_task(), mark_task_complete(), get_tasks_by_status(), etc. This will be replaced by Task entity + repository pattern. Must remain functional during Strangler Fig migration.</purpose>
+      </artifact>
+      <artifact id="CODE-7" type="test-reference">
+        <path>mission-control/tests/test_tasks.py</path>
+        <purpose>Existing tests for procedural task system - provides reference for expected behaviors and edge cases that new Task entity must handle. Tests cover creation, updates, queries, state transitions, time tracking.</purpose>
+      </artifact>
+    </code>
+    <dependencies>
+      <artifact id="DEP-1" type="package">
+        <name>Python 3.13+</name>
+        <purpose>Required for modern type hints, dataclasses with frozen support, improved performance</purpose>
+      </artifact>
+      <artifact id="DEP-2" type="package">
+        <name>pytest &gt;= 8.4.2</name>
+        <purpose>Test framework for writing and running 25+ unit tests with fixtures and parametrization</purpose>
+      </artifact>
+      <artifact id="DEP-3" type="package">
+        <name>pytest-asyncio &gt;= 1.2.0</name>
+        <purpose>Async test support (if needed for future async methods)</purpose>
+      </artifact>
+      <artifact id="DEP-4" type="internal">
+        <name>Story 5.1 Value Objects</name>
+        <purpose>CRITICAL DEPENDENCY - Task entity requires Priority, Status, EnergyLevel enums from Story 5.1. Cannot proceed without these value objects.</purpose>
+      </artifact>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="CONST-1" type="architecture" severity="critical">
+      <description>Hexagonal/Clean Architecture - Task entity MUST reside in src/domain/entities/ with ZERO dependencies on infrastructure, application, or presentation layers. Domain layer must be pure business logic only.</description>
+      <validation>No imports from src.infrastructure, src.application, or src.presentation allowed in task.py</validation>
+    </constraint>
+    <constraint id="CONST-2" type="oop" severity="critical">
+      <description>Rich Domain Model - Task entity MUST have behavior, not just data. Business logic (mark_complete, is_overdue, etc.) belongs IN the entity, not in external functions. Violates SOLID if logic externalized.</description>
+      <validation>All task operations (mark_complete, block, defer) must be methods on Task class, not external functions</validation>
+    </constraint>
+    <constraint id="CONST-3" type="type-safety" severity="critical">
+      <description>No Dict[str, Any] - Task entity must use proper types throughout. No Any types allowed. Use value objects (Priority, Status, EnergyLevel) instead of string literals. All methods must have type hints.</description>
+      <validation>Run mypy type checking - must pass with no errors. No Dict[str, Any] in entity code.</validation>
+    </constraint>
+    <constraint id="CONST-4" type="migration" severity="high">
+      <description>Strangler Fig Pattern - Task entity is NEW code built alongside existing src/tasks.py. Do NOT modify existing task functions. No breaking changes to existing 124 tests. Migration happens in Story 5.5 (Repository implementation).</description>
+      <validation>All existing tests must still pass. No changes to src/tasks.py in this story.</validation>
+    </constraint>
+    <constraint id="CONST-5" type="immutability" severity="high">
+      <description>Immutability Constraints - Four fields are immutable: id (never changes), created_date (set on creation), started_date (set on first mark_in_progress), completed_date (set on first mark_complete). Attempting to modify these must fail or be no-op.</description>
+      <validation>Tests verify attempting to modify immutable fields raises error or is ignored</validation>
+    </constraint>
+    <constraint id="CONST-6" type="validation" severity="high">
+      <description>Self-Validation - Task entity must validate ALL invariants in constructor or methods. Cannot create invalid Task object. Examples: title minimum 3 chars, estimated_time positive, BLOCKED requires blocked_reason, COMPLETED requires completed_date.</description>
+      <validation>Tests verify ValueError raised for all invalid states (short title, negative time, etc.)</validation>
+    </constraint>
+    <constraint id="CONST-7" type="file-size" severity="medium">
+      <description>File Size Limit - Entity files must be under 300 lines (per CLAUDE.md Rule). If task.py exceeds 300 lines, extract helper classes or split concerns.</description>
+      <validation>task.py line count &lt; 300 (target: 250-280 lines)</validation>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface id="INT-1" type="value-object">
+      <name>Priority</name>
+      <path>src/domain/value_objects/priority.py</path>
+      <methods>
+        <method>from_string(value: str) -&gt; Priority</method>
+        <method>__lt__, __le__, __gt__, __ge__ (comparison operators)</method>
+        <method>__str__() -&gt; str</method>
+      </methods>
+      <usage>Task entity uses Priority enum for priority field. Replaces string literals like "must_win_today".</usage>
+    </interface>
+    <interface id="INT-2" type="value-object">
+      <name>Status</name>
+      <path>src/domain/value_objects/status.py</path>
+      <methods>
+        <method>from_string(value: str) -&gt; Status</method>
+        <method>can_transition_to(new_status: Status) -&gt; bool</method>
+        <method>is_terminal() -&gt; bool</method>
+        <method>__str__() -&gt; str</method>
+      </methods>
+      <usage>Task entity uses Status enum for status field. can_transition_to() used in Task.can_transition_to() method to validate state changes.</usage>
+    </interface>
+    <interface id="INT-3" type="value-object">
+      <name>EnergyLevel</name>
+      <path>src/domain/value_objects/energy_level.py</path>
+      <methods>
+        <method>from_string(value: str) -&gt; EnergyLevel</method>
+        <method>__lt__, __le__, __gt__, __ge__ (comparison operators)</method>
+        <method>__str__() -&gt; str</method>
+      </methods>
+      <usage>Task entity uses EnergyLevel enum for energy_required field. Comparison operators enable energy matching logic.</usage>
+    </interface>
+    <interface id="INT-4" type="factory">
+      <name>Task.create()</name>
+      <signature>@classmethod create(cls, title: str, priority: Priority = Priority.SHOULD_DO, **kwargs) -&gt; Task</signature>
+      <purpose>Factory method to create new Task with defaults and auto-generated ID. Ensures all invariants upheld. Primary way to create new tasks.</purpose>
+    </interface>
+    <interface id="INT-5" type="factory">
+      <name>Task.from_dict()</name>
+      <signature>@classmethod from_dict(cls, data: Dict[str, Any]) -&gt; Task</signature>
+      <purpose>Deserialize Task from storage (JSON dict). Converts string values to value objects (Priority.from_string, Status.from_string, etc.). Used by repository layer in Story 5.5.</purpose>
+    </interface>
+    <interface id="INT-6" type="serialization">
+      <name>Task.to_dict()</name>
+      <signature>to_dict(self) -&gt; Dict[str, Any]</signature>
+      <purpose>Serialize Task to storage format (JSON-compatible dict). Converts value objects to strings. Used by repository layer in Story 5.5. Must round-trip with from_dict().</purpose>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      <standard id="STD-1">Test framework: pytest (version 8.4.2+)</standard>
+      <standard id="STD-2">Test coverage requirement: 90%+ for task.py module (measured with pytest-cov)</standard>
+      <standard id="STD-3">Test organization: Group tests into classes by feature (TestTaskCreation, TestStateTransitions, TestValidation, TestFactoryMethods, TestImmutability, TestBusinessLogic, TestTagManagement)</standard>
+      <standard id="STD-4">Test naming: test_{method}_{scenario}__{expected_result} format (e.g., test_mark_complete_when_already_complete__raises_error)</standard>
+      <standard id="STD-5">Use Arrange-Act-Assert pattern in all tests for clarity</standard>
+      <standard id="STD-6">Use pytest fixtures for common test data (sample tasks, dates, etc.)</standard>
+      <standard id="STD-7">Test edge cases: None values, empty strings, boundary conditions, invalid states</standard>
+      <standard id="STD-8">Domain tests NEVER touch file system (no file I/O in domain layer tests)</standard>
+    </standards>
+    <locations>
+      <location id="LOC-1">tests/domain/entities/test_task.py (NEW FILE - create directory structure if needed)</location>
+      <location id="LOC-2">tests/domain/entities/__init__.py (NEW FILE - empty init file)</location>
+      <location id="LOC-3">tests/domain/__init__.py (NEW FILE - empty init file if not exists)</location>
+    </locations>
+    <ideas>
+      <category name="Creation Tests (5 tests)" ac="AC1">
+        <idea id="TEST-1">test_create_task_with_valid_data - Verify Task.create() with title, priority, energy creates task with all defaults set correctly (status=NOT_STARTED, timestamps, etc.)</idea>
+        <idea id="TEST-2">test_create_task_with_invalid_title_raises_error - Verify title under 3 chars raises ValueError with descriptive message</idea>
+        <idea id="TEST-3">test_create_task_with_negative_time_raises_error - Verify negative estimated_time_minutes raises ValueError</idea>
+        <idea id="TEST-4">test_create_factory_method_generates_id - Verify Task.create() auto-generates unique ID (TASK-001, TASK-002, etc.)</idea>
+        <idea id="TEST-5">test_create_factory_method_sets_defaults - Verify Task.create() with minimal args sets default priority, energy, status</idea>
+      </category>
+      <category name="State Transition Tests (6 tests)" ac="AC2">
+        <idea id="TEST-6">test_mark_in_progress_updates_status_and_started_date - Verify mark_in_progress() sets status to IN_PROGRESS and started_date to current time</idea>
+        <idea id="TEST-7">test_mark_complete_updates_status_and_completed_date - Verify mark_complete() sets status to COMPLETED, completed_date to current time, and actual_time if provided</idea>
+        <idea id="TEST-8">test_mark_complete_when_already_complete_raises_error - Verify calling mark_complete() twice raises ValueError</idea>
+        <idea id="TEST-9">test_block_task_sets_status_and_reason - Verify block(reason) sets status to BLOCKED and stores blocked_reason</idea>
+        <idea id="TEST-10">test_defer_task_sets_deferred_until_date - Verify defer_until(date) sets deferred_until field and updates status appropriately</idea>
+        <idea id="TEST-11">test_cancel_task_sets_status_to_cancelled - Verify cancel() sets status to CANCELLED</idea>
+      </category>
+      <category name="Validation Tests (5 tests)" ac="AC3">
+        <idea id="TEST-12">test_blocked_task_requires_reason - Verify setting status to BLOCKED without blocked_reason raises ValueError</idea>
+        <idea id="TEST-13">test_completed_task_has_completed_date - Verify completed tasks always have completed_date set (cannot be None)</idea>
+        <idea id="TEST-14">test_title_minimum_length_validation - Verify titles of 0, 1, 2 chars all raise ValueError</idea>
+        <idea id="TEST-15">test_estimated_time_must_be_positive - Verify zero or negative estimated_time_minutes raises ValueError</idea>
+        <idea id="TEST-16">test_invalid_state_transition_raises_error - Verify can_transition_to() returns False for invalid transitions (e.g., COMPLETED to IN_PROGRESS) and attempting transition raises ValueError</idea>
+      </category>
+      <category name="Factory Method Tests (3 tests)" ac="AC4">
+        <idea id="TEST-17">test_from_dict_reconstructs_task - Verify Task.from_dict() with full dict creates Task with all fields correctly, including converting strings to value objects</idea>
+        <idea id="TEST-18">test_to_dict_serializes_task - Verify to_dict() returns dict with all fields, value objects converted to strings</idea>
+        <idea id="TEST-19">test_from_dict_to_dict_round_trip - Verify Task.from_dict(task.to_dict()) produces identical task (data preservation)</idea>
+      </category>
+      <category name="Immutability Tests (4 tests)" ac="AC5">
+        <idea id="TEST-20">test_id_is_immutable - Verify attempting to reassign task.id raises AttributeError or is no-op</idea>
+        <idea id="TEST-21">test_created_date_is_immutable - Verify attempting to modify created_date after creation raises error or is no-op</idea>
+        <idea id="TEST-22">test_started_date_is_immutable_after_first_set - Verify calling mark_in_progress() twice does not change started_date</idea>
+        <idea id="TEST-23">test_completed_date_is_immutable_after_set - Verify completed_date cannot be changed once task is marked complete</idea>
+      </category>
+      <category name="Business Logic Tests (4 tests)" ac="AC6">
+        <idea id="TEST-24">test_is_overdue_returns_true_when_past_due - Verify is_overdue() returns True for task with due_date in past and status != COMPLETED</idea>
+        <idea id="TEST-25">test_is_overdue_returns_false_when_complete - Verify is_overdue() returns False for completed tasks even if due_date is past</idea>
+        <idea id="TEST-26">test_calculate_time_variance_with_actual_time - Verify calculate_time_variance() returns correct positive/negative variance when both estimated and actual time provided</idea>
+        <idea id="TEST-27">test_is_must_win_today_checks_priority - Verify is_must_win_today() returns True only for tasks with Priority.MUST_WIN_TODAY</idea>
+      </category>
+      <category name="Tag Management Tests (3 tests)" ac="AC6">
+        <idea id="TEST-28">test_add_tag_to_task - Verify add_tag() adds tag to tags list, prevents duplicates</idea>
+        <idea id="TEST-29">test_remove_tag_from_task - Verify remove_tag() removes tag if exists, returns True; returns False if tag not found</idea>
+        <idea id="TEST-30">test_has_tag_returns_correct_boolean - Verify has_tag() returns True if tag in list, False otherwise</idea>
+      </category>
+    </ideas>
+  </tests>
+</story-context>

@@ -1,0 +1,225 @@
+<story-context id="story-3.3-daily-planning-workflow" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3.3</storyId>
+    <title>Build Daily Planning Workflow</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-18</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-3.3-daily-planning-workflow.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a user</asA>
+    <iWant>a structured daily planning workflow with Omega</iWant>
+    <soThat>I can start each day with clear priorities, time-blocked focus sessions, and confidence in what I need to accomplish</soThat>
+    <tasks>
+      - Create mission-control/workflows/daily-planning.md (BMAD workflow format)
+      - Create src/workflows.py (workflow execution engine)
+      - Create src/prioritization.py (Eisenhower Matrix, MIT, time blocking)
+      - Create tests/test_workflows.py (15+ tests for workflow execution)
+      - Create tests/test_prioritization.py (10+ tests for frameworks)
+      - Create data/sessions/daily-plans/ directory for workflow outputs
+      - Manual testing with Mike (full workflow, multiple frameworks)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="AC1" priority="must">
+      <title>Workflow Structure Implemented</title>
+      <description>File: mission-control/workflows/daily-planning.md (BMAD workflow format). 6 workflow steps: calendar review, brain dump, prioritization, must-wins, time blocking, intention. Each step has clear prompts, user inputs, and outputs. Omega's energetic voice throughout.</description>
+      <verification>Workflow file exists, has 6 steps, uses Omega's voice (⚡ emoji, action-oriented language)</verification>
+    </ac>
+    <ac id="AC2" priority="must">
+      <title>Calendar Review Step</title>
+      <description>Display user's commitments (from memory or manual input). Identify available time blocks. Calculate total available hours for work. Highlight conflicts or tight schedules. Output: Calendar summary with available blocks.</description>
+      <verification>Step 1 prompts for calendar, calculates available hours, shows blocks</verification>
+    </ac>
+    <ac id="AC3" priority="must">
+      <title>Task Brain Dump Step</title>
+      <description>Prompt user to list everything on their mind. Capture tasks quickly (no judgment, no organization yet). Add new tasks to task system (Story 3.2 API). Pull in existing tasks from task list. Output: Complete task inventory (new + existing).</description>
+      <verification>Step 2 captures tasks, integrates with task API from Story 3.2</verification>
+    </ac>
+    <ac id="AC4" priority="must">
+      <title>Prioritization Framework Step</title>
+      <description>Default: Eisenhower Matrix (Important/Urgent quadrants). Alternative: MIT (Most Important Tasks - pick 3). Alternative: Custom (user defines their own system). Categorize tasks into priority levels. Identify must-win vs nice-to-have. Output: Tasks sorted by priority.</description>
+      <verification>Step 3 applies Eisenhower Matrix, supports MIT and Custom frameworks</verification>
+    </ac>
+    <ac id="AC5" priority="must">
+      <title>Must-Win Identification</title>
+      <description>Identify 1-3 "must win today" tasks. Validate with user ("If you only did these 3, successful day?"). Mark these tasks as priority: must_win_today in task system. Output: Top 3 must-win tasks with estimated times.</description>
+      <verification>Step 4 identifies 1-3 must-wins, validates with user, updates task system</verification>
+    </ac>
+    <ac id="AC6" priority="must">
+      <title>Time Blocking Recommendations</title>
+      <description>Match must-win tasks to best available time blocks. Consider task energy level (high energy → morning blocks). Suggest focus blocks for deep work. Protect time from interruptions. Output: Time-blocked schedule.</description>
+      <verification>Step 5 suggests time blocks matching task energy and duration</verification>
+    </ac>
+    <ac id="AC7" priority="must">
+      <title>Daily Intention Setting</title>
+      <description>Prompt: "Today will be a great day if I...". Capture user's daily north star. Store in memory for EOD reflection. Output: One-sentence daily intention.</description>
+      <verification>Step 6 prompts for intention, stores in memory</verification>
+    </ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/stories/story-3.1-operator-persona.md</path>
+        <title>Omega Operator Persona Definition</title>
+        <section>Persona and Communication Style</section>
+        <snippet>Omega is a former Navy SEAL turned productivity coach - action-oriented, energetic, focused on execution. Communication style: fast-paced, short sentences, uses ⚡ emoji, momentum language ("Let's execute!").</snippet>
+      </doc>
+      <doc>
+        <path>mission-control/.claude/output-styles/operator-omega.md</path>
+        <title>Omega Voice and Behavior Guide</title>
+        <section>Core Responsibilities - Daily Planning</section>
+        <snippet>Every morning: Review calendar and commitments, brain dump all tasks, apply prioritization framework, identify 1-3 "must win today" tasks, suggest time blocks for focused work, set daily intention. Workflow duration: 5-10 minutes.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-3.2-task-data-model.md</path>
+        <title>Task Data Model and Storage</title>
+        <section>Task API Functions</section>
+        <snippet>Task system provides create_task(), update_task(), get_tasks_by_priority(), mark_task_complete(). Tasks have priority levels: must_win_today, important, should_do, nice_to_have. Energy levels: high, medium, low.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Mission Control Product Requirements</title>
+        <section>User Journeys - Daily Operations</section>
+        <snippet>UJ-2: Daily Operations workflow includes morning briefing with task summary and priority recommendations, helping users start each day with clarity and structure.</snippet>
+      </doc>
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Solution Architecture</title>
+        <section>Data Storage Patterns</section>
+        <snippet>File-based storage using JSON for state. Workflow outputs stored in data/sessions/ directories. Memory system provides load/save functions for persistence.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>mission-control/src/tasks.py</path>
+        <kind>module</kind>
+        <symbol>create_task, update_task, get_tasks_by_priority, get_must_win_tasks</symbol>
+        <lines>1-590</lines>
+        <reason>Task management API from Story 3.2 - needed for brain dump step (AC3), must-win identification (AC5)</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/memory.py</path>
+        <kind>module</kind>
+        <symbol>save_business_context, load_business_context</symbol>
+        <lines>1-500</lines>
+        <reason>Memory persistence for daily intentions (AC7) and workflow outputs</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/agent_definitions.py</path>
+        <kind>module</kind>
+        <symbol>omega</symbol>
+        <lines>48-116</lines>
+        <reason>Omega agent definition with personality and voice - needed for workflow tone (AC1)</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/tests/test_tasks.py</path>
+        <kind>test</kind>
+        <symbol>test patterns for task operations</symbol>
+        <lines>1-644</lines>
+        <reason>Test patterns to follow for workflow tests - 34 tests covering task API integration</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="python" version="3.13+"/>
+        <package name="rich" version="*" reason="CLI formatting"/>
+        <package name="pytest" version="*" reason="Testing framework"/>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Follow BMAD Method workflow patterns (markdown format with XML tags for steps)</constraint>
+    <constraint>Use Omega's energetic, action-oriented voice throughout workflow (⚡ emoji, momentum language)</constraint>
+    <constraint>Workflow must complete in 5-10 minutes target duration</constraint>
+    <constraint>Default to Eisenhower Matrix, support MIT and Custom frameworks</constraint>
+    <constraint>Limit must-wins to 1-3 tasks (research shows 1-3 is achievable)</constraint>
+    <constraint>Match tasks to time blocks based on energy_required field and time of day</constraint>
+    <constraint>Store daily intentions in memory for EOD wrap-up reference (Story 3.5)</constraint>
+    <constraint>Use task API from Story 3.2 for all task operations (create, update, query)</constraint>
+    <constraint>Follow existing storage patterns: data/sessions/daily-plans/ for outputs</constraint>
+    <constraint>Workflow execution engine (src/workflows.py) should handle step-by-step execution</constraint>
+    <constraint>Test coverage minimum 80% (15+ workflow tests, 10+ prioritization tests)</constraint>
+    <constraint>Manual testing with Mike required before Done status</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>eisenhower_matrix</name>
+      <kind>function</kind>
+      <signature>def eisenhower_matrix(tasks: List[Dict]) -> Dict[str, List[Dict]]</signature>
+      <path>src/prioritization.py</path>
+      <description>Categorize tasks using Eisenhower Matrix (Important/Urgent). Returns dict with quadrants: must_win_today, important_not_urgent, urgent_not_important, defer_delete.</description>
+    </interface>
+    <interface>
+      <name>mit_framework</name>
+      <kind>function</kind>
+      <signature>def mit_framework(tasks: List[Dict], max_tasks: int = 3) -> List[Dict]</signature>
+      <path>src/prioritization.py</path>
+      <description>Most Important Tasks - pick top N tasks for the day. Default is 3 (MITs).</description>
+    </interface>
+    <interface>
+      <name>time_blocking_suggestions</name>
+      <kind>function</kind>
+      <signature>def time_blocking_suggestions(tasks: List[Dict], available_blocks: List[Dict]) -> List[Dict]</signature>
+      <path>src/prioritization.py</path>
+      <description>Match tasks to time blocks based on: task energy_required vs block time of day, task estimated_time_minutes vs block duration, task priority. Returns suggested schedule.</description>
+    </interface>
+    <interface>
+      <name>execute_workflow</name>
+      <kind>function</kind>
+      <signature>def execute_workflow(workflow_path: str, context: Dict) -> Dict</signature>
+      <path>src/workflows.py</path>
+      <description>Execute a BMAD workflow file step-by-step. Load workflow, process steps, capture outputs, handle user inputs.</description>
+    </interface>
+    <interface>
+      <name>save_daily_plan</name>
+      <kind>function</kind>
+      <signature>def save_daily_plan(plan_data: Dict) -> bool</signature>
+      <path>src/workflows.py</path>
+      <description>Save daily plan outputs to data/sessions/daily-plans/{date}.json for reference.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use pytest framework. Test files in mission-control/tests/ directory. Follow existing patterns from test_tasks.py (34 tests, 100% passing). Use fixtures for common setup. Test both happy paths and edge cases. Integration tests verify end-to-end workflows.</standards>
+    <locations>mission-control/tests/test_workflows.py, mission-control/tests/test_prioritization.py</locations>
+    <ideas>
+      <idea ac="AC1">Load daily-planning.md workflow file and verify 6 steps exist</idea>
+      <idea ac="AC1">Verify workflow uses Omega's voice (check for ⚡ emoji and action-oriented language)</idea>
+      <idea ac="AC1">Test workflow structure validation (each step has goal, prompts, outputs)</idea>
+      <idea ac="AC2">Test calendar review step with manual input</idea>
+      <idea ac="AC2">Test available time block calculation (24 hours minus commitments)</idea>
+      <idea ac="AC2">Test conflict detection in tight schedules</idea>
+      <idea ac="AC3">Test task brain dump capture (new tasks)</idea>
+      <idea ac="AC3">Test integration with task API (create_task called)</idea>
+      <idea ac="AC3">Test pulling existing tasks from task list</idea>
+      <idea ac="AC4">Test Eisenhower Matrix with mixed Important/Urgent tasks</idea>
+      <idea ac="AC4">Test Eisenhower Matrix with all urgent tasks (prevent firefighting)</idea>
+      <idea ac="AC4">Test MIT framework picks top 3 tasks</idea>
+      <idea ac="AC4">Test MIT framework with fewer than 3 tasks (edge case)</idea>
+      <idea ac="AC4">Test custom framework user override</idea>
+      <idea ac="AC5">Test must-win identification (1-3 tasks)</idea>
+      <idea ac="AC5">Test must-win validation prompt ("If you only did these 3...")</idea>
+      <idea ac="AC5">Test task priority update to must_win_today</idea>
+      <idea ac="AC6">Test time blocking with high-energy morning task</idea>
+      <idea ac="AC6">Test time blocking with multiple available blocks</idea>
+      <idea ac="AC6">Test time blocking with no available blocks (edge case)</idea>
+      <idea ac="AC6">Test time blocking respects task duration estimates</idea>
+      <idea ac="AC6">Test time blocking handles scheduling conflicts</idea>
+      <idea ac="AC7">Test daily intention prompt and capture</idea>
+      <idea ac="AC7">Test intention storage in memory system</idea>
+      <idea ac="AC7">Test intention retrieval for EOD reference</idea>
+      <idea>Integration: Full workflow execution (all 6 steps)</idea>
+      <idea>Integration: Task creation during brain dump persists to task system</idea>
+      <idea>Integration: Workflow completes in 5-10 minute target (manual test)</idea>
+      <idea>Integration: Workflow interruption and resume handling</idea>
+    </ideas>
+  </tests>
+</story-context>

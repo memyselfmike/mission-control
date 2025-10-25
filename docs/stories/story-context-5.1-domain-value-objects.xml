@@ -1,0 +1,336 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/story-5.1" v="1.0">
+  <metadata>
+    <epicId>5</epicId>
+    <storyId>5.1</storyId>
+    <title>Create Domain Value Objects</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-22</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-5.1-domain-value-objects.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>foundational domain value objects (Priority, Status, EnergyLevel, Context, TimeBlock) created with proper immutability and validation</iWant>
+    <soThat>the refactored codebase has type-safe, well-defined domain primitives instead of Dict[str, Any] and string literals</soThat>
+    <tasks>
+      1. Create domain layer structure (src/domain/, src/domain/value_objects/)
+      2. Implement Priority enum (P0_CRITICAL, P1_HIGH, P2_MEDIUM, P3_LOW with comparison operators)
+      3. Implement Status enum (NOT_STARTED, IN_PROGRESS, BLOCKED, COMPLETED, CANCELLED with transition validation)
+      4. Implement EnergyLevel enum (HIGH, MEDIUM, LOW with comparison)
+      5. Implement Context value object (immutable dataclass with validation)
+      6. Implement TimeBlock value object (immutable dataclass with time validation)
+      7. Write comprehensive tests (20+ tests, 100% coverage for value_objects module)
+      8. Add documentation (docstrings, type hints, README.md)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <title>Priority Enum Created</title>
+      <description>Enum class `Priority` with values: P0_CRITICAL, P1_HIGH, P2_MEDIUM, P3_LOW. String representation matches current system ("P0", "P1", "P2", "P3"). Comparison operators supported (P0 > P1 > P2 > P3). From-string factory method for parsing.</description>
+    </criterion>
+    <criterion id="AC2">
+      <title>Status Enum Created</title>
+      <description>Enum class `Status` with values: NOT_STARTED, IN_PROGRESS, BLOCKED, COMPLETED, CANCELLED. String representation matches current system. State transition validation (can't go from COMPLETED to IN_PROGRESS). Terminal states identified (COMPLETED, CANCELLED).</description>
+    </criterion>
+    <criterion id="AC3">
+      <title>EnergyLevel Enum Created</title>
+      <description>Enum class `EnergyLevel` with values: HIGH, MEDIUM, LOW. Used for task-energy matching in Omega workflows. Ordinal comparison supported. String representation lowercase ("high", "medium", "low").</description>
+    </criterion>
+    <criterion id="AC4">
+      <title>Context Value Object Created</title>
+      <description>Immutable dataclass `Context` with fields: category, content, tags, timestamp, source. Factory methods: from_dict(), to_dict(). Validation: category required, content non-empty. Used for business context storage.</description>
+    </criterion>
+    <criterion id="AC5">
+      <title>TimeBlock Value Object Created</title>
+      <description>Immutable dataclass `TimeBlock` with fields: start_time, end_time, duration_minutes, label. Validation: end_time > start_time, duration matches calculated difference. Factory method: from_duration(start_time, duration_minutes). String representation: "09:00-10:30 (90 min): Deep Work".</description>
+    </criterion>
+    <criterion id="AC6">
+      <title>All Value Objects Properly Tested</title>
+      <description>20+ unit tests covering construction, validation, immutability, edge cases. Test file: mission-control/tests/test_value_objects.py. 100% test coverage for value_objects module. All edge cases handled (None values, invalid states, boundary conditions).</description>
+    </criterion>
+    <criterion id="AC7">
+      <title>Documentation and Type Safety Complete</title>
+      <description>All value objects have comprehensive docstrings. Type hints throughout (Python 3.13+ style). README.md in src/domain/value_objects/ explaining purpose. Value objects exported from __init__.py for clean imports.</description>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Solution Architecture - ADR-009</title>
+        <section>ADR-009: Hexagonal/Clean Architecture Adoption</section>
+        <snippet>Mission Control will adopt Hexagonal/Clean Architecture pattern with strict layering: src/domain/ (pure business logic, NO external dependencies), src/domain/value_objects/ (immutable values like Priority, Status, EnergyLevel), src/application/ (use cases), src/infrastructure/ (storage implementations), src/presentation/ (UI/CLI).</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>EPIC-5R: Architectural Refactoring</title>
+        <section>Phase 1: Foundation (10 pts, Week 1)</section>
+        <snippet>Story 5.1: Create Domain Value Objects (3 pts) - First step in EPIC-5R Phase 1. Creates foundational domain value objects: Priority enum (P0-P3), Status enum, EnergyLevel enum, Context value object, TimeBlock value object. Part of Hexagonal/Clean Architecture migration.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Engineering Rules - Value Objects Pattern</title>
+        <section>Section 2.4: No Primitive Obsession</section>
+        <snippet>Use value objects for concepts that have identity. Priority(Enum) instead of str. Use @dataclass(frozen=True) for immutability. Value objects are immutable objects defined by their attributes (not identity). Two value objects with same attributes are considered equal.</snippet>
+      </doc>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Engineering Rules - Type Safety</title>
+        <section>Section 4: TYPE SAFETY & TYPING (MANDATORY)</section>
+        <snippet>ALL functions/methods MUST have type hints. Use specific types, not Any. Use Optional for nullable values. No Dict[str, Any] for domain models. Enum for fixed values (status: Status not status: str).</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Project Description</section>
+        <snippet>Mission Control is an autonomous AI-powered executive team. Priority levels, task statuses, and energy-based task matching are core features. System must maintain persistent context and learn preferences.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-3.2-task-data-model.md</path>
+        <title>Story 3.2: Task Data Model</title>
+        <section>Current Implementation</section>
+        <snippet>Current task system uses string literals for priority ("must_win_today", "important"), status ("todo", "in_progress", "done"), and energy ("high", "medium", "low"). Story 5.1 will replace these with proper enums.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>mission-control/src/tasks.py</path>
+        <kind>module</kind>
+        <symbol>STATUS_TODO, STATUS_IN_PROGRESS, STATUS_DONE, STATUS_BLOCKED, STATUS_DEFERRED</symbol>
+        <lines>22-26</lines>
+        <reason>Current status constants as strings. Story 5.1 creates Status enum to replace these magic strings with type-safe values.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/tasks.py</path>
+        <kind>module</kind>
+        <symbol>PRIORITY_MUST_WIN_TODAY, PRIORITY_IMPORTANT, PRIORITY_SHOULD_DO, PRIORITY_NICE_TO_HAVE</symbol>
+        <lines>28-32</lines>
+        <reason>Current priority constants as strings. Story 5.1 creates Priority enum (P0-P3 naming) to replace these with comparable enum values.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/tasks.py</path>
+        <kind>module</kind>
+        <symbol>ENERGY_HIGH, ENERGY_MEDIUM, ENERGY_LOW</symbol>
+        <lines>34-36</lines>
+        <reason>Current energy level constants as strings. Story 5.1 creates EnergyLevel enum with ordinal comparison support for task-energy matching.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/tasks.py</path>
+        <kind>module</kind>
+        <symbol>CONTEXT_DEEP_WORK, CONTEXT_ADMIN, CONTEXT_COMMUNICATION, CONTEXT_CREATIVE</symbol>
+        <lines>38-41</lines>
+        <reason>Current context types as strings. Story 5.1 Context value object may incorporate these categories with proper structure and validation.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/prioritization.py</path>
+        <kind>module</kind>
+        <symbol>_is_task_important, _is_task_urgent</symbol>
+        <lines>77-100</lines>
+        <reason>Functions check task priority strings. Future Task entity (Story 5.2) will use Priority enum, making these checks type-safe (task.priority.is_high_priority()).</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/memory.py</path>
+        <kind>module</kind>
+        <symbol>load_business_context, save_business_context</symbol>
+        <lines>1-100</lines>
+        <reason>Business context currently stored as Dict[str, Any]. Context value object (AC4) will provide structured, validated context storage to replace dicts.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="pytest" version=">=8.4.2">Test framework for unit tests</package>
+        <package name="pydantic" version=">=2.12.2">Potential use for value object validation (optional, dataclasses preferred)</package>
+        <package name="python-dotenv" version=">=1.1.1">Environment configuration</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="C1">
+      <title>Hexagonal Architecture - Domain Layer Purity</title>
+      <description>Value objects MUST have ZERO dependencies on infrastructure, application, or presentation layers. Domain layer is pure business logic. NO file I/O, NO database calls, NO external libraries (except standard library).</description>
+      <source>CLAUDE.md Section 1.1, ADR-009</source>
+    </constraint>
+    <constraint id="C2">
+      <title>Immutability Requirement</title>
+      <description>All value objects MUST be immutable. Use @dataclass(frozen=True) for dataclasses or Enum for enums. Objects cannot be modified after construction. Fail fast with ValueError on invalid construction.</description>
+      <source>CLAUDE.md Section 2.3.2, Section 7.1</source>
+    </constraint>
+    <constraint id="C3">
+      <title>Type Safety Mandatory</title>
+      <description>ALL functions/methods MUST have type hints (Python 3.13+ style). Use specific types, not Any. Use Optional for nullable values. No Dict[str, Any] in public interfaces.</description>
+      <source>CLAUDE.md Section 4.1</source>
+    </constraint>
+    <constraint id="C4">
+      <title>Self-Validation</title>
+      <description>Value objects MUST validate themselves on construction using __post_init__ (for dataclasses) or __init__. Raise ValueError for invalid states. Invalid objects must not exist.</description>
+      <source>CLAUDE.md Section 2.3.2</source>
+    </constraint>
+    <constraint id="C5">
+      <title>File Organization</title>
+      <description>Create src/domain/ and src/domain/value_objects/ directories. One value object per file (priority.py, status.py, etc.). Related value objects can share file if < 100 lines. Export all from __init__.py.</description>
+      <source>CLAUDE.md Section 5.1, Section 5.2</source>
+    </constraint>
+    <constraint id="C6">
+      <title>Test Coverage</title>
+      <description>Domain layer requires 90%+ test coverage. All value objects must have comprehensive unit tests. Test construction, validation, immutability, edge cases, comparison operators.</description>
+      <source>CLAUDE.md Section 6.1</source>
+    </constraint>
+    <constraint id="C7">
+      <title>Strangler Fig Migration</title>
+      <description>Create NEW code only. Do NOT modify existing src/tasks.py, src/prioritization.py, src/memory.py. Value objects will coexist with old string constants. Migration happens in later stories (5.2+).</description>
+      <source>CLAUDE.md Section 12.1, epics.md EPIC-5R Migration Strategy</source>
+    </constraint>
+    <constraint id="C8">
+      <title>No Breaking Changes</title>
+      <description>Existing tests MUST continue passing. Do not modify existing functions or imports. New domain layer is isolated from current implementation.</description>
+      <source>EPIC-5R Success Criteria</source>
+    </constraint>
+    <constraint id="C9">
+      <title>Naming Conventions</title>
+      <description>Enum values: UPPERCASE_WITH_UNDERSCORES (Priority.P0_CRITICAL). Dataclass fields: lowercase_with_underscores. Class names: PascalCase (Priority, TimeBlock). Methods: lowercase_with_underscores.</description>
+      <source>CLAUDE.md Section 8</source>
+    </constraint>
+    <constraint id="C10">
+      <title>Documentation Requirements</title>
+      <description>All classes/methods require docstrings (Google style). Include purpose, arguments, returns, raises, examples. Create README.md in src/domain/value_objects/ explaining value objects pattern.</description>
+      <source>CLAUDE.md Section 9.2, Section 6.1.1</source>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Priority</name>
+      <kind>Enum</kind>
+      <signature>class Priority(Enum):
+    P0_CRITICAL = "P0"
+    P1_HIGH = "P1"
+    P2_MEDIUM = "P2"
+    P3_LOW = "P3"
+
+    def __str__(self) -> str: ...
+    def __lt__(self, other: Priority) -> bool: ...
+    def __le__(self, other: Priority) -> bool: ...
+    def __gt__(self, other: Priority) -> bool: ...
+    def __ge__(self, other: Priority) -> bool: ...
+
+    @classmethod
+    def from_string(cls, value: str) -> Priority: ...</signature>
+      <path>mission-control/src/domain/value_objects/priority.py</path>
+    </interface>
+    <interface>
+      <name>Status</name>
+      <kind>Enum</kind>
+      <signature>class Status(Enum):
+    NOT_STARTED = "not_started"
+    IN_PROGRESS = "in_progress"
+    BLOCKED = "blocked"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+    def can_transition_to(self, new_status: Status) -> bool: ...
+    def is_terminal(self) -> bool: ...
+
+    @classmethod
+    def from_string(cls, value: str) -> Status: ...</signature>
+      <path>mission-control/src/domain/value_objects/status.py</path>
+    </interface>
+    <interface>
+      <name>EnergyLevel</name>
+      <kind>Enum</kind>
+      <signature>class EnergyLevel(Enum):
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+    def __lt__(self, other: EnergyLevel) -> bool: ...
+    def __le__(self, other: EnergyLevel) -> bool: ...
+    def __gt__(self, other: EnergyLevel) -> bool: ...
+    def __ge__(self, other: EnergyLevel) -> bool: ...
+
+    @classmethod
+    def from_string(cls, value: str) -> EnergyLevel: ...</signature>
+      <path>mission-control/src/domain/value_objects/energy_level.py</path>
+    </interface>
+    <interface>
+      <name>Context</name>
+      <kind>ValueObject (Immutable Dataclass)</kind>
+      <signature>@dataclass(frozen=True)
+class Context:
+    category: str
+    content: str
+    tags: List[str]
+    timestamp: datetime
+    source: str
+
+    def __post_init__(self) -> None: ...  # Validation
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> Context: ...
+
+    def to_dict(self) -> Dict[str, Any]: ...</signature>
+      <path>mission-control/src/domain/value_objects/context.py</path>
+    </interface>
+    <interface>
+      <name>TimeBlock</name>
+      <kind>ValueObject (Immutable Dataclass)</kind>
+      <signature>@dataclass(frozen=True)
+class TimeBlock:
+    start_time: time
+    end_time: time
+    duration_minutes: int
+    label: str
+
+    def __post_init__(self) -> None: ...  # Validation
+    def __str__(self) -> str: ...  # "09:00-10:30 (90 min): Deep Work"
+
+    @classmethod
+    def from_duration(cls, start_time: time, duration_minutes: int, label: str) -> TimeBlock: ...</signature>
+      <path>mission-control/src/domain/value_objects/time_block.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Mission Control uses pytest for unit testing. Domain layer requires 90%+ coverage. Tests must follow Arrange-Act-Assert pattern. Use descriptive test names: test_{feature}_{scenario}__{expected}. Domain tests NEVER touch file system. All value objects must test: construction with valid data, validation with invalid data, immutability (frozen dataclasses), comparison operators (for enums), factory methods, edge cases (None, empty strings, boundary values). Test file: mission-control/tests/test_value_objects.py.
+    </standards>
+    <locations>
+      mission-control/tests/test_value_objects.py (NEW - create this file)
+    </locations>
+    <ideas>
+      <test id="T1" ac="AC1">Priority enum construction - test all 4 values exist (P0_CRITICAL, P1_HIGH, P2_MEDIUM, P3_LOW)</test>
+      <test id="T2" ac="AC1">Priority string representation - assert str(Priority.P0_CRITICAL) == "P0"</test>
+      <test id="T3" ac="AC1">Priority comparison operators - assert Priority.P0_CRITICAL > Priority.P1_HIGH > Priority.P2_MEDIUM > Priority.P3_LOW</test>
+      <test id="T4" ac="AC1">Priority.from_string() valid - test "P0" → Priority.P0_CRITICAL, "P1" → Priority.P1_HIGH</test>
+      <test id="T5" ac="AC1">Priority.from_string() invalid - test "P99" raises ValueError</test>
+
+      <test id="T6" ac="AC2">Status enum construction - test all 5 values exist</test>
+      <test id="T7" ac="AC2">Status transition validation - test can_transition_to(COMPLETED) from IN_PROGRESS is True</test>
+      <test id="T8" ac="AC2">Status transition validation - test can_transition_to(IN_PROGRESS) from COMPLETED is False</test>
+      <test id="T9" ac="AC2">Status is_terminal() - test COMPLETED.is_terminal() == True, IN_PROGRESS.is_terminal() == False</test>
+      <test id="T10" ac="AC2">Status.from_string() - test "in_progress" → Status.IN_PROGRESS</test>
+
+      <test id="T11" ac="AC3">EnergyLevel enum construction - test all 3 values exist (HIGH, MEDIUM, LOW)</test>
+      <test id="T12" ac="AC3">EnergyLevel comparison - assert EnergyLevel.HIGH > EnergyLevel.MEDIUM > EnergyLevel.LOW</test>
+      <test id="T13" ac="AC3">EnergyLevel string representation - assert str(EnergyLevel.HIGH) == "high" (lowercase)</test>
+
+      <test id="T14" ac="AC4">Context construction valid - test Context(category="test", content="data", tags=[], timestamp=now, source="user")</test>
+      <test id="T15" ac="AC4">Context validation - test Context(category="", content="data", ...) raises ValueError</test>
+      <test id="T16" ac="AC4">Context validation - test Context(category="test", content="", ...) raises ValueError</test>
+      <test id="T17" ac="AC4">Context from_dict/to_dict roundtrip - test Context.from_dict(d).to_dict() == d</test>
+      <test id="T18" ac="AC4">Context immutability - test cannot modify context.category after construction (frozen dataclass)</test>
+
+      <test id="T19" ac="AC5">TimeBlock construction valid - test TimeBlock(start_time=09:00, end_time=10:30, duration_minutes=90, label="Deep")</test>
+      <test id="T20" ac="AC5">TimeBlock validation - test end_time <= start_time raises ValueError</test>
+      <test id="T21" ac="AC5">TimeBlock validation - test duration mismatch raises ValueError</test>
+      <test id="T22" ac="AC5">TimeBlock.from_duration() - test creates correct end_time from start + duration</test>
+      <test id="T23" ac="AC5">TimeBlock string representation - test str(TimeBlock) == "09:00-10:30 (90 min): Deep Work"</test>
+
+      <test id="T24" ac="AC6">Test coverage - run pytest --cov=src/domain/value_objects --cov-report=term-missing, verify 100%</test>
+      <test id="T25" ac="AC7">Type checking - run mypy src/domain/value_objects/, verify no errors</test>
+    </ideas>
+  </tests>
+</story-context>

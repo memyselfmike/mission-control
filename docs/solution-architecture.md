@@ -1995,18 +1995,92 @@ mission-control-system/
 │       ├── analyst.md
 │       └── researcher.md
 │
-├── src/                                # Source code
+├── src/                                # Source code (Hexagonal/Clean Architecture - Post-EPIC-5R)
 │   ├── __init__.py
-│   ├── main.py                        # Main entry point (Chief of Staff)
-│   ├── agent_registry.py              # Agent lifecycle management
-│   ├── agent_definitions.py           # Agent configs (5 core + dynamic)
-│   ├── memory_manager.py              # Business context persistence
-│   ├── workflow_engine.py             # BMAD workflow execution
-│   ├── observability.py               # Event streaming
-│   ├── models.py                      # Pydantic data models
-│   ├── ui/
+│   │
+│   ├── domain/                        # Pure business logic (NO external dependencies)
 │   │   ├── __init__.py
-│   │   └── rich_ui.py                 # Rich CLI components
+│   │   ├── entities/                  # Business objects with behavior
+│   │   │   ├── __init__.py
+│   │   │   ├── task.py               # Task entity (id, title, status, priority, methods)
+│   │   │   ├── goal.py               # Goal entity (Rocks framework)
+│   │   │   ├── workflow.py           # Workflow entity
+│   │   │   └── metric.py             # Metric entity
+│   │   ├── value_objects/            # Immutable values
+│   │   │   ├── __init__.py
+│   │   │   ├── priority.py           # Priority enum (must_win_today, high, medium, low)
+│   │   │   ├── status.py             # Status enum (todo, in_progress, done, deferred)
+│   │   │   ├── energy_level.py       # EnergyLevel enum (high, medium, low)
+│   │   │   ├── context.py            # Context enum (work, personal, strategic)
+│   │   │   └── time_block.py         # TimeBlock value object
+│   │   ├── services/                 # Domain services (business logic operations)
+│   │   │   ├── __init__.py
+│   │   │   ├── task_prioritizer.py   # Eisenhower Matrix logic
+│   │   │   └── workflow_engine.py    # Workflow execution logic
+│   │   └── repositories/             # Repository INTERFACES (abstract classes)
+│   │       ├── __init__.py
+│   │       ├── task_repository.py    # ITaskRepository interface
+│   │       ├── memory_repository.py  # IMemoryRepository interfaces
+│   │       └── goal_repository.py    # IGoalRepository interface
+│   │
+│   ├── application/                   # Use cases & orchestration
+│   │   ├── __init__.py
+│   │   ├── task_management/          # Task-related use cases
+│   │   │   ├── __init__.py
+│   │   │   ├── create_task.py        # CreateTaskUseCase
+│   │   │   ├── update_task.py        # UpdateTaskUseCase
+│   │   │   └── complete_task.py      # CompleteTaskUseCase
+│   │   ├── planning/                 # Planning-related services
+│   │   │   ├── __init__.py
+│   │   │   ├── daily_planning.py     # DailyPlanningService
+│   │   │   ├── morning_briefing.py   # MorningBriefingService
+│   │   │   └── eod_wrapup.py         # EODWrapUpService
+│   │   ├── memory/                   # Memory management use cases
+│   │   │   ├── __init__.py
+│   │   │   ├── context_manager.py    # Business context operations
+│   │   │   └── preference_manager.py # Preference learning operations
+│   │   └── coordination/             # Agent coordination
+│   │       ├── __init__.py
+│   │       └── agent_coordinator.py  # Agent handoff and delegation
+│   │
+│   ├── infrastructure/                # External concerns (I/O, events, notifications)
+│   │   ├── __init__.py
+│   │   ├── persistence/              # Storage implementations
+│   │   │   ├── __init__.py
+│   │   │   ├── json/                 # JSON storage utilities
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── json_storage.py   # Common JSON operations
+│   │   │   └── repositories/         # Repository implementations
+│   │   │       ├── __init__.py
+│   │   │       ├── json_task_repository.py        # JsonTaskRepository
+│   │   │       ├── json_business_context_repository.py
+│   │   │       ├── json_conversation_repository.py
+│   │   │       └── json_preference_repository.py
+│   │   ├── events/                   # Event system implementation
+│   │   │   ├── __init__.py
+│   │   │   ├── event_dispatcher.py   # Event dispatching
+│   │   │   └── event_handlers.py     # Event handler implementations
+│   │   └── notifications/            # Notification system
+│   │       ├── __init__.py
+│   │       └── notification_service.py
+│   │
+│   ├── presentation/                  # UI/CLI layer
+│   │   ├── __init__.py
+│   │   ├── cli/                      # CLI entry point and commands
+│   │   │   ├── __init__.py
+│   │   │   └── main.py               # Main entry point (Chief of Staff)
+│   │   └── formatters/               # Output formatting
+│   │       ├── __init__.py
+│   │       ├── task_formatter.py     # Task display formatting
+│   │       ├── workflow_formatter.py # Workflow output formatting
+│   │       └── briefing_formatter.py # Briefing display formatting
+│   │
+│   ├── shared/                        # Shared utilities (use sparingly)
+│   │   ├── __init__.py
+│   │   └── utils/
+│   │       ├── __init__.py
+│   │       └── date_utils.py         # Date/time utilities
+│   │
 │   └── mcp_servers/                   # Custom MCP servers
 │       ├── __init__.py
 │       └── browser_server.py          # Gemini browser integration
@@ -2357,6 +2431,108 @@ outputs:
   - name: output_name
     location: "output/path/file.md"
 ```
+
+---
+
+### ADR-009: Hexagonal/Clean Architecture Adoption
+
+**Status:** APPROVED
+**Date:** 2025-10-20
+**Decision Maker:** Mike (Product Owner) + Architecture Review
+
+**Context:**
+
+During Sprint 4 completion and Sprint 5 planning, architectural debt was identified that threatens long-term maintainability:
+- God object: memory.py (1,500 lines handling 4 concerns)
+- Anemic domain model: Tasks/workflows as Dict[str, Any] without behavior
+- Flat structure: No domain/application/infrastructure separation
+- Tight coupling: Direct file I/O throughout, no repository pattern
+- Type safety gaps: Excessive use of Dict[str, Any]
+
+Current architecture (flat src/ structure) was appropriate for rapid prototyping but does not scale to enterprise-level system. Architect review identified 83 story points of refactoring needed across 6 phases.
+
+**Decision:**
+
+Mission Control will adopt **Hexagonal/Clean Architecture** pattern with strict layering:
+
+```
+src/
+├── domain/              # Pure business logic (NO external dependencies)
+│   ├── entities/        # Business objects with behavior (Task, Goal, Workflow)
+│   ├── value_objects/   # Immutable values (Priority, Status, EnergyLevel)
+│   ├── services/        # Domain services (TaskPrioritizer, WorkflowEngine)
+│   └── repositories/    # Repository INTERFACES (ITaskRepository, IMemoryRepository)
+│
+├── application/         # Use cases & orchestration
+│   ├── task_management/ # CreateTaskUseCase, CompleteTaskUseCase
+│   ├── planning/        # DailyPlanningService, MorningBriefingService
+│   ├── memory/          # Memory management use cases
+│   └── coordination/    # Agent coordination use cases
+│
+├── infrastructure/      # External concerns (storage, events, notifications)
+│   ├── persistence/
+│   │   ├── json/        # JSON storage implementation
+│   │   └── repositories/ # JsonTaskRepository, JsonMemoryRepository
+│   ├── events/          # Event system implementation
+│   └── notifications/   # Notification system implementation
+│
+└── presentation/        # UI/CLI layer
+    ├── cli/             # CLI entry point, command handlers
+    └── formatters/      # TaskFormatter, WorkflowFormatter, BriefingFormatter
+```
+
+**Rationale:**
+
+1. **Maintainability:** Clear separation of concerns makes code easier to understand and modify
+2. **Testability:** Domain layer has zero dependencies, easy to unit test (90%+ coverage target)
+3. **Flexibility:** Repository pattern allows swapping storage (JSON → SQLite → PostgreSQL) without changing domain
+4. **Extensibility:** Clean boundaries enable adding features without ripple effects
+5. **SOLID Principles:** Architecture enforces Single Responsibility, Dependency Inversion
+6. **Future Self-Coding:** Clean patterns enable Mission Control to code itself (EPIC-7)
+
+**Consequences:**
+
+✅ **Positive:**
+- Faster future development (EPIC-4, 5, 6, 7 easier to implement)
+- Fewer bugs (clear boundaries prevent coupling)
+- Easier testing (domain isolated from infrastructure)
+- Better onboarding (standard patterns, clear structure)
+- Enables self-coding (CLAUDE.md standards for AI agents)
+
+⚠️ **Negative:**
+- +6 weeks to MVP timeline (4-6 weeks → 10-12 weeks)
+- 83 story points of refactoring effort (Phases 1-6)
+- Learning curve for contributors (Hexagonal Architecture pattern)
+
+❌ **Mitigated:**
+- Strangler Fig pattern reduces migration risk (new alongside old)
+- Feature flags enable gradual rollout
+- Comprehensive tests protect against regressions
+- Checkpoint after Phase 2 (3 weeks) allows course correction
+
+**Implementation:**
+
+- **EPIC-5R:** Architectural Refactoring (83 points, 6 weeks)
+- **Engineering Standards:** CLAUDE.md (1,006 lines) defines mandatory patterns
+- **Migration Strategy:** Strangler Fig (build new alongside old)
+- **Testing Requirements:** 90%+ domain coverage, 80%+ integration coverage
+
+**Alternatives Considered:**
+
+- **Continue with flat structure:** REJECTED - Technical debt compounds, future development slows
+- **Big-bang rewrite:** REJECTED - Too risky, Strangler Fig is safer
+- **Microservices architecture:** REJECTED - Overkill for single-developer MVP, can evolve later
+
+**Related Decisions:**
+
+- ADR-001: Standalone Python App (reinforces need for clean architecture)
+- ADR-002: Python 3.13+ (enables modern type hints for type safety)
+
+**References:**
+
+- CLAUDE.md: Engineering standards document
+- EPIC-5R: Architectural Refactoring plan (6 phases)
+- Sprint Change Proposal: Course correction decision (2025-10-20)
 
 ---
 

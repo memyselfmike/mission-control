@@ -1,15 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python:*)",
-      "Bash(cat:*)",
-      "Bash(uv run:*)",
-      "WebSearch",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(timeout 5 uv run:*)",
-      "Bash(uv add:*)",
-      "Bash(uv remove:*)"
+      "Bash(git add CLAUDE.md)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nEngineering Rules: Add CLAUDE.md for code standards\n\nCreated comprehensive engineering standards document to prevent\narchitectural issues from recurring.\n\nDocument Contents:\n- Hexagonal/Clean Architecture requirements\n- OOP principles (SOLID, entities with behavior)\n- Repository pattern (mandatory for all storage)\n- Type safety requirements (no Dict[str, Any])\n- File organization rules (max 400 lines/file)\n- Testing requirements (85%+ coverage)\n- Design patterns to use/avoid\n- Step-by-step guide for adding features\n- Code review checklist (30+ items)\n- Examples (good vs bad code)\n- Guidance for future AI agents\n\nThe Three Commandments:\n1. OOP, not procedural\n2. Layers matter (domain → application → infrastructure)\n3. Repository pattern for ALL storage\n\nThis document will guide the 6-week refactoring (Phases 1-6)\nand all future development, including when Mission Control\ncodes itself.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git add mission-control)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd engineering rules (CLAUDE.md) to mission-control\n\nUpdated mission-control submodule to include comprehensive\nengineering standards document.\n\nThis establishes the foundation for the 6-week refactoring\n(83 story points, Phases 1-6) to fix architectural issues:\n- God objects (memory.py 1,500 lines)\n- No OOP (procedural functions on dicts)\n- Flat structure (no domain boundaries)\n- Tight coupling (direct file I/O everywhere)\n\nCLAUDE.md provides:\n- Architecture patterns (Hexagonal/Clean)\n- OOP requirements (SOLID principles)\n- Repository pattern (mandatory)\n- Type safety standards\n- Code review checklist\n- Future AI agent guidance\n\nSubmodule commit: b8fa4ae\n\nNext: Begin Phase 1 refactoring (Foundation - 10 pts)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(if not exist \"src\\domain\" mkdir \"src\\domain\")",
+      "Bash(if not exist \"src\\domain\\value_objects\" mkdir \"src\\domain\\value_objects\")",
+      "Bash(if not exist \"D:\\Mission Control\\docs\\stories\" mkdir \"D:\\Mission Control\\docs\\stories\")",
+      "Bash(python -m pytest tests/test_value_objects.py -v)",
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(python -m pytest tests/ --ignore=tests/archived_v1 -v --tb=line)",
+      "Bash(python -m pytest tests/test_tasks.py tests/test_workflows.py tests/test_prioritization.py tests/test_morning_briefing.py tests/test_eod_wrapup.py tests/test_value_objects.py -v --tb=line)",
+      "SlashCommand(/bmad:bmm:workflows:dev-story)",
+      "Bash(if not exist \"src\\domain\\entities\" mkdir \"src\\domain\\entities\")",
+      "Bash(python -m pytest tests/domain/entities/test_task.py -v)",
+      "Bash(python -m pytest tests/domain/entities/test_task.py -v --tb=short)",
+      "Bash(python -m pytest tests/domain/ tests/test_value_objects.py -v --tb=short)"
     ],
     "deny": [],
     "ask": []
