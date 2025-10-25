@@ -1,0 +1,343 @@
+<story-context id="story-7.3-refactor-coordination" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>3</storyId>
+    <title>Refactor Coordination</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-7.3-refactor-coordination.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>coordination.py refactored to use Hexagonal Architecture with CoordinationService</iWant>
+    <soThat>agent handoff management is decoupled from infrastructure and easily testable</soThat>
+    <tasks>
+      <task id="1" ac="2">Create Domain Layer - ICoordinationRepository interface with 5 methods</task>
+      <task id="2" ac="3">Create Infrastructure Layer - JsonCoordinationRepository implementation</task>
+      <task id="3" ac="1">Create Application Service - CoordinationService with DI</task>
+      <task id="4" ac="4">Feature Flag System - USE_NEW_COORDINATION_SYSTEM defaults to False</task>
+      <task id="5" ac="5">Strangler Fig Preservation - src/coordination.py unchanged</task>
+      <task id="6" ac="6">Create Comprehensive Tests - 15+ tests in test_coordination_service.py</task>
+      <task id="7" ac="7">Regression Testing - All 42 existing coordination tests pass</task>
+      <task id="8">Integration & Documentation</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">CoordinationService Created - Application service in src/application/services/coordination_service.py manages agent handoff detection and management</criterion>
+    <criterion id="2">Repository Interface - ICoordinationRepository in src/domain/repositories/ with methods: save_handoff, find_by_id, find_all, find_by_agent, get_handoff_history</criterion>
+    <criterion id="3">JSON Implementation - JsonCoordinationRepository in src/infrastructure/persistence/repositories/ implements ICoordinationRepository</criterion>
+    <criterion id="4">Feature Flag System - USE_NEW_COORDINATION_SYSTEM in src/config.py defaults to False for gradual migration</criterion>
+    <criterion id="5">Strangler Fig Pattern - src/coordination.py unchanged, runs when feature flag is False</criterion>
+    <criterion id="6">Comprehensive Tests - 15+ tests in tests/application/services/test_coordination_service.py covering all ACs</criterion>
+    <criterion id="7">Zero Regressions - All 42 existing coordination tests still pass</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/solution-architecture.md" title="Solution Architecture" section="Component Architecture">
+        Defines Hexagonal Architecture layers: Domain (pure business logic), Application (use cases), Infrastructure (external concerns), Presentation (UI/CLI). Dependencies flow inward: Presentation → Application → Domain, Infrastructure → Domain (implements interfaces).
+      </doc>
+      <doc path="mission-control/CLAUDE.md" title="Engineering Rules" section="§1 Hexagonal Architecture">
+        MANDATORY architecture principles: Domain layer ZERO dependencies, Application depends ONLY on domain, Infrastructure implements domain interfaces, Presentation depends on application. Repository pattern REQUIRED for all storage.
+      </doc>
+      <doc path="mission-control/CLAUDE.md" title="Engineering Rules" section="§3 Repository Pattern">
+        ALL storage access MUST go through repositories. Define interface in domain layer (IRepository with ABC, abstractmethod). Implement in infrastructure layer. Application uses interface via DI.
+      </doc>
+      <doc path="mission-control/CLAUDE.md" title="Engineering Rules" section="§10 Logging Standards">
+        ALL operations MUST log to stdout for visibility. Format: [Component] Message: key=value. Log entry/exit for use cases and repositories. Log success with details, errors with full context before raising.
+      </doc>
+      <doc path="docs/epics.md" title="Epic Breakdown" section="EPIC-5R Phase 5: Events & Coordination">
+        Story 7.3 (5 pts): Refactor coordination.py (717 lines) to use Hexagonal Architecture. Create CoordinationService for agent handoff detection/management. Feature flag USE_NEW_COORDINATION_SYSTEM (defaults False). Strangler Fig pattern preserves old code. 15+ tests.
+      </doc>
+    </docs>
+
+    <code>
+      <artifact path="mission-control/src/coordination.py" kind="module" symbol="CoordinationManager" lines="1-717" reason="Existing coordination implementation to be refactored. Contains AgentHandoff dataclass and CoordinationManager class with detect_handoff, execute_handoff, log_handoff, get_handoff_history, get_handoff_analytics methods. This file MUST remain unchanged per Strangler Fig pattern."/>
+
+      <artifact path="mission-control/src/coordination.py" kind="dataclass" symbol="AgentHandoff" lines="18-49" reason="Domain model for agent handoffs. Contains: id (str), timestamp (str), from_agent (str), to_agent (str), reason (str), context_summary (str), confidence (float), user_requested (bool). Has to_dict() and from_dict() methods for serialization."/>
+
+      <artifact path="mission-control/src/domain/repositories/task_repository.py" kind="interface" symbol="ITaskRepository" lines="26-178" reason="Example repository interface pattern to follow. Uses ABC and @abstractmethod. Methods: save, find_by_id, find_all, find_by_status, find_by_priority, delete, exists. Comprehensive docstrings with examples."/>
+
+      <artifact path="mission-control/src/infrastructure/persistence/repositories/task_repository_json.py" kind="implementation" symbol="JsonTaskRepository" lines="24-250" reason="Example JSON repository implementation. Uses JsonStorage utility, implements ITaskRepository, includes comprehensive logging per CLAUDE.md §10. Pattern: Load existing data, modify, write with backup."/>
+
+      <artifact path="mission-control/src/infrastructure/persistence/json_storage.py" kind="utility" symbol="JsonStorage" lines="27-200" reason="Low-level JSON storage utility with atomic writes and backups. Static methods: read_json, write_json, append_jsonl. Thread-safe for JSONL operations. Raises InvalidJsonError, StoragePermissionError."/>
+
+      <artifact path="mission-control/src/application/services/daily_planning_service.py" kind="service" symbol="DailyPlanningService" lines="16-150" reason="Example application service pattern. Constructor uses DI for use cases. Methods orchestrate domain logic. Includes entry/exit logging. No business logic (delegates to domain/use cases)."/>
+
+      <artifact path="mission-control/src/domain/repositories/__init__.py" kind="module" symbol="__all__" lines="1-20" reason="Repository interface exports. Add ICoordinationRepository to this file's __all__ list."/>
+
+      <artifact path="mission-control/src/infrastructure/persistence/repositories/__init__.py" kind="module" symbol="__all__" lines="1-20" reason="Repository implementation exports. Add JsonCoordinationRepository to this file's __all__ list."/>
+
+      <artifact path="tests/test_coordination.py" kind="test" symbol="test_*" lines="1-800" reason="Existing 42 coordination tests. MUST continue to pass (regression requirement). Tests cover AgentHandoff creation, CoordinationManager methods, handoff detection, history, analytics."/>
+
+      <artifact path="mission-control/src/config.py" kind="config" symbol="Configuration" lines="1-50" reason="Feature flag location. Add USE_NEW_COORDINATION_SYSTEM boolean flag (defaults to False). Load from environment variable MISSION_CONTROL_NEW_COORDINATION if set."/>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="pytest" version=">=8.0.0" usage="Testing framework for 15+ new tests"/>
+        <package name="pytest-mock" version="*" usage="Mocking ICoordinationRepository in unit tests"/>
+        <stdlib name="abc" usage="ABC and abstractmethod for ICoordinationRepository"/>
+        <stdlib name="typing" usage="Type hints - List, Optional, Dict, Any"/>
+        <stdlib name="pathlib" usage="Path for file operations"/>
+        <stdlib name="json" usage="JSON serialization in JsonCoordinationRepository"/>
+        <stdlib name="datetime" usage="Timestamp handling for handoffs"/>
+        <stdlib name="logging" usage="Logger for service-level logging"/>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="1" priority="CRITICAL">Hexagonal Architecture - Domain layer (ICoordinationRepository) has ZERO external dependencies, only imports from domain layer. Application service depends ONLY on domain interfaces. Infrastructure implements interfaces.</constraint>
+
+    <constraint id="2" priority="CRITICAL">Repository Pattern - ALL coordination storage MUST go through ICoordinationRepository interface. NO direct file I/O in CoordinationService. Application layer uses interface via dependency injection.</constraint>
+
+    <constraint id="3" priority="CRITICAL">Strangler Fig Migration - src/coordination.py (717 lines) MUST remain completely unchanged. Zero modifications. Old system continues to work when feature flag is False.</constraint>
+
+    <constraint id="4" priority="CRITICAL">Feature Flag Defaults - USE_NEW_COORDINATION_SYSTEM MUST default to False. New system is opt-in during validation phase. Old system is default path.</constraint>
+
+    <constraint id="5" priority="HIGH">Logging Standards (CLAUDE.md §10) - ALL operations log to stdout. Format: [Component] Message: key=value. Entry/exit logging for CoordinationService methods and repository operations. Log success with details, errors with full context before raising.</constraint>
+
+    <constraint id="6" priority="HIGH">Type Safety - ALL functions have complete type hints. Use specific types (AgentHandoff, Optional[AgentHandoff], List[AgentHandoff]), not Dict[str, Any]. No primitive obsession.</constraint>
+
+    <constraint id="7" priority="HIGH">Repository Method Naming - Follow established pattern: save_handoff (not create/update), find_by_id, find_all, find_by_agent, get_handoff_history. Consistent with existing ITaskRepository, IMemoryRepository.</constraint>
+
+    <constraint id="8" priority="HIGH">SOLID Principles - Single Responsibility (CoordinationService focuses only on coordination logic), Open/Closed (repository pattern allows implementation swap), Liskov Substitution (any ICoordinationRepository works), Dependency Inversion (depend on interface not implementation).</constraint>
+
+    <constraint id="9" priority="MEDIUM">File Organization - One interface per file (coordination_repository.py), one implementation per file (json_coordination_repository.py), one service per file (coordination_service.py). Files < 400 lines.</constraint>
+
+    <constraint id="10" priority="MEDIUM">Error Handling - Repository methods raise InvalidJsonError for malformed data, StoragePermissionError for file permission issues. CoordinationService catches and logs errors before re-raising.</constraint>
+
+    <constraint id="11" priority="MEDIUM">Test Coverage - 90%+ coverage for CoordinationService (application layer), 85%+ for JsonCoordinationRepository (infrastructure layer). Use pytest-cov to verify.</constraint>
+
+    <constraint id="12" priority="LOW">Documentation - All classes and public methods have docstrings. Repository interface includes usage examples. README updated with feature flag migration guide.</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="ICoordinationRepository" kind="ABC" path="src/domain/repositories/coordination_repository.py">
+      <signature>
+class ICoordinationRepository(ABC):
+    @abstractmethod
+    def save_handoff(self, handoff: AgentHandoff) -> None:
+        """Save agent handoff to persistence layer."""
+        pass
+
+    @abstractmethod
+    def find_by_id(self, handoff_id: str) -> Optional[AgentHandoff]:
+        """Retrieve handoff by unique identifier."""
+        pass
+
+    @abstractmethod
+    def find_all(self) -> List[AgentHandoff]:
+        """Retrieve all handoffs."""
+        pass
+
+    @abstractmethod
+    def find_by_agent(self, agent_name: str) -> List[AgentHandoff]:
+        """Query handoffs involving specific agent (from or to)."""
+        pass
+
+    @abstractmethod
+    def get_handoff_history(self, limit: int = 10) -> List[AgentHandoff]:
+        """Retrieve recent handoff history, newest first."""
+        pass
+      </signature>
+    </interface>
+
+    <interface name="JsonCoordinationRepository" kind="class" path="src/infrastructure/persistence/repositories/json_coordination_repository.py">
+      <signature>
+class JsonCoordinationRepository(ICoordinationRepository):
+    def __init__(self, storage_path: Path):
+        """Initialize with JSON storage path."""
+        self.storage_path = storage_path
+
+    def save_handoff(self, handoff: AgentHandoff) -> None:
+        """Save handoff to JSONL file (append operation)."""
+        # Use JsonStorage.append_jsonl()
+        pass
+
+    def find_by_id(self, handoff_id: str) -> Optional[AgentHandoff]:
+        """Read JSONL, find matching handoff by id."""
+        pass
+
+    def find_all(self) -> List[AgentHandoff]:
+        """Read all handoffs from JSONL."""
+        pass
+
+    def find_by_agent(self, agent_name: str) -> List[AgentHandoff]:
+        """Filter handoffs where from_agent or to_agent matches."""
+        pass
+
+    def get_handoff_history(self, limit: int = 10) -> List[AgentHandoff]:
+        """Return last N handoffs, newest first."""
+        pass
+      </signature>
+    </interface>
+
+    <interface name="CoordinationService" kind="class" path="src/application/services/coordination_service.py">
+      <signature>
+class CoordinationService:
+    def __init__(self, coordination_repo: ICoordinationRepository):
+        """Initialize with repository dependency injection."""
+        self.coordination_repo = coordination_repo
+
+    def detect_handoff(
+        self,
+        conversation: str,
+        current_agent: str
+    ) -> Optional[AgentHandoff]:
+        """Analyze conversation for handoff triggers.
+
+        Business logic:
+        - Parse conversation for agent name mentions
+        - Calculate confidence score
+        - Create AgentHandoff if detected
+        - Return None if no handoff needed
+        """
+        pass
+
+    def create_handoff(
+        self,
+        from_agent: str,
+        to_agent: str,
+        reason: str,
+        context: str,
+        user_requested: bool = False
+    ) -> AgentHandoff:
+        """Create and persist agent handoff.
+
+        - Generate unique handoff ID
+        - Create AgentHandoff entity
+        - Save via repository
+        - Return created handoff
+        """
+        pass
+
+    def get_recent_handoffs(
+        self,
+        agent_name: Optional[str] = None,
+        limit: int = 10
+    ) -> List[AgentHandoff]:
+        """Retrieve recent handoff history.
+
+        - If agent_name provided: filter by agent
+        - Otherwise: return all recent handoffs
+        - Limit results to N most recent
+        """
+        pass
+
+    def get_handoff_analytics(self, days: int = 7) -> Dict[str, Any]:
+        """Calculate handoff statistics.
+
+        Returns:
+            - total_handoffs: int
+            - handoffs_per_agent: Dict[str, int]
+            - average_confidence: float
+            - user_requested_count: int
+        """
+        pass
+      </signature>
+    </interface>
+
+    <interface name="USE_NEW_COORDINATION_SYSTEM" kind="config" path="src/config.py">
+      <signature>
+# Feature flag for Strangler Fig migration
+USE_NEW_COORDINATION_SYSTEM: bool = os.getenv(
+    "MISSION_CONTROL_NEW_COORDINATION",
+    "false"
+).lower() == "true"
+
+# Routing logic (in appropriate module)
+if USE_NEW_COORDINATION_SYSTEM:
+    # Use new CoordinationService
+    coordination_repo = JsonCoordinationRepository(Path("data/memory/coordination.jsonl"))
+    coordination_service = CoordinationService(coordination_repo)
+    handoff = coordination_service.detect_handoff(conversation, current_agent)
+else:
+    # Use old CoordinationManager
+    manager = CoordinationManager()
+    handoff = manager.detect_handoff(current_agent, conversation_context)
+      </signature>
+    </interface>
+
+    <interface name="AgentHandoff" kind="dataclass" path="mission-control/src/coordination.py">
+      <signature>
+@dataclass
+class AgentHandoff:
+    """Domain model for agent handoffs (existing, reuse)."""
+    id: str
+    timestamp: str
+    from_agent: str
+    to_agent: str
+    reason: str
+    context_summary: str
+    confidence: float = 1.0
+    user_requested: bool = False
+
+    def to_dict(self) -> dict:
+        """Serialize to dictionary."""
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'AgentHandoff':
+        """Deserialize from dictionary."""
+        return cls(**data)
+      </signature>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing framework: pytest (>=8.0.0). Unit tests for CoordinationService with mocked ICoordinationRepository (pytest-mock). Integration tests for JsonCoordinationRepository with tmp_path fixture. Regression tests: all 42 existing coordination tests MUST pass. Use capsys fixture to verify logging output per CLAUDE.md §10. Coverage targets: 90%+ application service, 85%+ repository implementation. Test naming: test_{method}_{scenario}_{expected}.
+    </standards>
+
+    <locations>
+      tests/application/services/test_coordination_service.py (new - 15+ tests)
+      tests/infrastructure/persistence/repositories/test_json_coordination_repository.py (new - integration tests)
+      tests/test_coordination.py (existing - 42 regression tests)
+    </locations>
+
+    <ideas>
+      <test ac="1" id="test_coordination_service_init">CoordinationService.__init__ accepts ICoordinationRepository via DI</test>
+      <test ac="1" id="test_detect_handoff_success">detect_handoff returns AgentHandoff when conversation contains target agent mention</test>
+      <test ac="1" id="test_detect_handoff_no_mention">detect_handoff returns None when no agent mentioned</test>
+      <test ac="1" id="test_detect_handoff_same_agent">detect_handoff returns None when target agent equals current agent</test>
+
+      <test ac="1" id="test_create_handoff_success">create_handoff creates AgentHandoff, calls repository.save_handoff, returns handoff</test>
+      <test ac="1" id="test_create_handoff_generates_unique_id">create_handoff generates unique handoff ID (format: ho_timestamp_random)</test>
+      <test ac="1" id="test_create_handoff_user_requested">create_handoff sets user_requested=True when specified</test>
+
+      <test ac="1" id="test_get_recent_handoffs_all">get_recent_handoffs with no agent_name returns all handoffs via repository.get_handoff_history</test>
+      <test ac="1" id="test_get_recent_handoffs_filtered">get_recent_handoffs with agent_name filters via repository.find_by_agent</test>
+      <test ac="1" id="test_get_recent_handoffs_limit">get_recent_handoffs respects limit parameter</test>
+
+      <test ac="1" id="test_get_handoff_analytics_calculations">get_handoff_analytics calculates total, per_agent counts, average confidence, user_requested count</test>
+      <test ac="1" id="test_get_handoff_analytics_empty">get_handoff_analytics returns zero counts when no handoffs exist</test>
+
+      <test ac="2" id="test_icoordination_repository_interface">ICoordinationRepository is abstract (ABC), has 5 abstractmethod signatures</test>
+
+      <test ac="3" id="test_json_coordination_repository_implements_interface">JsonCoordinationRepository implements ICoordinationRepository (isinstance check)</test>
+      <test ac="3" id="test_save_handoff_appends_jsonl">JsonCoordinationRepository.save_handoff appends to JSONL file using JsonStorage</test>
+      <test ac="3" id="test_find_by_id_success">find_by_id returns matching AgentHandoff when id exists</test>
+      <test ac="3" id="test_find_by_id_not_found">find_by_id returns None when id not found</test>
+      <test ac="3" id="test_find_all_returns_list">find_all returns list of all AgentHandoff entities</test>
+      <test ac="3" id="test_find_by_agent_filters_from">find_by_agent returns handoffs where from_agent matches</test>
+      <test ac="3" id="test_find_by_agent_filters_to">find_by_agent returns handoffs where to_agent matches</test>
+      <test ac="3" id="test_get_handoff_history_limit">get_handoff_history returns last N handoffs, newest first</test>
+
+      <test ac="4" id="test_feature_flag_defaults_false">USE_NEW_COORDINATION_SYSTEM defaults to False when env var not set</test>
+      <test ac="4" id="test_feature_flag_env_override">USE_NEW_COORDINATION_SYSTEM=true when MISSION_CONTROL_NEW_COORDINATION=true</test>
+
+      <test ac="5" id="test_old_coordination_unchanged">src/coordination.py file checksum matches original (717 lines, no modifications)</test>
+      <test ac="5" id="test_old_coordination_still_works">CoordinationManager (old system) still functional when flag=False</test>
+
+      <test ac="6" id="test_logging_coordination_service">CoordinationService logs entry/exit for all methods (verify with capsys)</test>
+      <test ac="6" id="test_logging_repository">JsonCoordinationRepository logs save/find operations (verify with capsys)</test>
+
+      <test ac="7" id="test_regression_suite">All 42 tests in tests/test_coordination.py pass (pytest tests/test_coordination.py)</test>
+    </ideas>
+  </tests>
+</story-context>
