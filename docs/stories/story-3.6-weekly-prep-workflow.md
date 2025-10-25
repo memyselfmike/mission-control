@@ -4,26 +4,25 @@
 **Story Points:** 5
 **Priority:** P1
 **Type:** Workflow Implementation
-**Status:** Deferred (pending EPIC-5R architectural refactoring completion)
+**Status:** In Progress
 **Created:** 2025-10-20
-**Sprint:** Sprint 5
+**Sprint:** Sprint 6 (post-EPIC-5R)
+**Started:** 2025-10-25
 
 ---
 
-## Deferral Notice
+## Implementation Note
 
-**Deferred Date:** 2025-10-20
-**Reason:** Architectural refactoring (EPIC-5R) prioritized
-**Resume After:** EPIC-5R Phase 6 complete (Week 10)
+**EPIC-5R Complete:** 2025-10-25
+**Architecture Available:** Clean architecture with domain entities, repositories, use cases
 
-This story was drafted during Sprint 5 planning but deferred when architectural debt was identified. The weekly prep workflow (pattern analysis, velocity calculation, weekly priorities) will be significantly easier to implement after the refactoring establishes:
-- Clean domain entities (Task, Goal with behavior)
-- Repository pattern (easy data aggregation)
-- Domain services (pattern detection logic)
-- Proper separation of concerns
+This story will be implemented using the new Hexagonal Architecture:
+- Domain layer: WeeklySummary entity, pattern detection services
+- Application layer: Weekly prep use cases (GetWeekCompletionSummaryUseCase, etc.)
+- Infrastructure layer: Existing repositories (JsonTaskRepository, memory repositories)
+- Presentation layer: WeeklySummaryFormatter, BMAD workflow
 
-**Expected Implementation:** Sprint 11-12 (post-refactoring)
-**Story remains fully defined and ready for implementation.**
+Implementation will follow CLAUDE.md engineering standards (Section 11: When Adding New Features).
 
 ---
 
