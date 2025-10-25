@@ -1,0 +1,299 @@
+<story-context id="story-6.4-create-formatters" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6.4</storyId>
+    <title>Create Formatters</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-6.4-create-formatters.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>presentation layer formatters that convert domain entities to Rich-formatted strings</iWant>
+    <soThat>CLI commands can display beautiful output without any business logic, following Hexagonal Architecture principles with pure presentation functions</soThat>
+    <tasks>
+      <task n="1">Create module structure (AC: #1)</task>
+      <task n="2">Create TaskFormatter (AC: #2)</task>
+      <task n="3">Create PlanningFormatter (AC: #3)</task>
+      <task n="4">Create BriefingFormatter (AC: #4)</task>
+      <task n="5">Create StatusFormatter (AC: #5)</task>
+      <task n="6">Update module exports (AC: #1, #6)</task>
+      <task n="7">Create comprehensive tests (AC: #7)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <title>Formatter Module Structure Created</title>
+      <description>All formatters in src/presentation/formatters/ module with proper exports and zero business logic</description>
+    </criterion>
+    <criterion id="AC2">
+      <title>TaskFormatter Created</title>
+      <description>Functions: format_task(), format_task_list(), format_task_summary() using Rich panels and tables</description>
+    </criterion>
+    <criterion id="AC3">
+      <title>PlanningFormatter Created</title>
+      <description>Functions: format_daily_plan(), format_priority_matrix(), format_time_blocks(), format_must_wins() with Omega voice</description>
+    </criterion>
+    <criterion id="AC4">
+      <title>BriefingFormatter Created</title>
+      <description>Functions: format_morning_briefing(), format_briefing_section(), format_task_priorities() with time-aware greeting</description>
+    </criterion>
+    <criterion id="AC5">
+      <title>StatusFormatter Created</title>
+      <description>Functions: format_task_status(), format_progress_summary(), format_completion_report() with color coding</description>
+    </criterion>
+    <criterion id="AC6">
+      <title>Type Safety and Documentation</title>
+      <description>Complete type hints, comprehensive docstrings with examples, no Any types (except briefing_data)</description>
+    </criterion>
+    <criterion id="AC7">
+      <title>Comprehensive Unit Tests</title>
+      <description>15+ tests in tests/presentation/formatters/test_formatters.py, >= 80% coverage, zero regressions</description>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>CLAUDE.md</path>
+        <title>Engineering Standards and Rules</title>
+        <section>ADR-009: Hexagonal/Clean Architecture</section>
+        <snippet>Presentation layer is the OUTERMOST layer. Depends ONLY on domain layer. Zero business logic. Pure functions that format domain entities for display.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>EPIC-5R Phase 4: Presentation Layer</section>
+        <snippet>Story 6.4: Create Formatters (3 pts). Story 6.5: Refactor CLI Entry Point (5 pts). Total Phase 4: 8 points.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-5.1-domain-value-objects.md</path>
+        <title>Domain Value Objects</title>
+        <section>Value Objects Created</section>
+        <snippet>Priority enum (P0-P3), Status enum (NOT_STARTED, IN_PROGRESS, COMPLETED, BLOCKED, DEFERRED), EnergyLevel enum (HIGH, MEDIUM, LOW), Context, TimeBlock.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-5.2-task-entity.md</path>
+        <title>Task Entity</title>
+        <section>Task Entity Structure</section>
+        <snippet>Task entity with 18 fields including task_id, title, priority, status, energy_level, due_date, tags. 9 behavior methods, 3 factory methods. Enforces immutability.</snippet>
+      </doc>
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Solution Architecture</title>
+        <section>Rich CLI Formatting</section>
+        <snippet>Uses Rich library for beautiful CLI output. Components: Panel, Table, Text, Progress. Color scheme: Priority (P0=red, P1=yellow, P2=blue, P3=green), Status (COMPLETED=green, IN_PROGRESS=yellow, BLOCKED=red).</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>mission-control/src/domain/entities/task.py</path>
+        <kind>domain entity</kind>
+        <symbol>Task</symbol>
+        <lines>1-300</lines>
+        <reason>Task entity that formatters will convert to Rich-formatted strings. Contains all task data fields.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/priority.py</path>
+        <kind>value object</kind>
+        <symbol>Priority</symbol>
+        <lines>1-50</lines>
+        <reason>Priority enum (P0-P3) used for color-coded priority display in formatters.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/status.py</path>
+        <kind>value object</kind>
+        <symbol>Status</symbol>
+        <lines>1-50</lines>
+        <reason>Status enum used for status badges and color coding in formatters.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/energy_level.py</path>
+        <kind>value object</kind>
+        <symbol>EnergyLevel</symbol>
+        <lines>1-40</lines>
+        <reason>EnergyLevel enum (HIGH, MEDIUM, LOW) for task energy display.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/time_block.py</path>
+        <kind>value object</kind>
+        <symbol>TimeBlock</symbol>
+        <lines>1-60</lines>
+        <reason>TimeBlock value object for time blocking schedule formatting.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/morning_briefing.py</path>
+        <kind>existing workflow</kind>
+        <symbol>generate_morning_briefing</symbol>
+        <lines>1-331</lines>
+        <reason>Existing morning briefing generator that will use new BriefingFormatter.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/workflows.py</path>
+        <kind>existing workflow</kind>
+        <symbol>daily_planning_workflow</symbol>
+        <lines>1-500</lines>
+        <reason>Existing daily planning workflow that will use new PlanningFormatter.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <python>
+        <package name="rich" version=">=14.2.0">Rich library for beautiful CLI formatting (Panel, Table, Text, Progress)</package>
+        <package name="typing" version="stdlib">Type hints (List, Dict, Any, Optional)</package>
+        <package name="datetime" version="stdlib">datetime for time-aware greetings in BriefingFormatter</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Hexagonal/Clean Architecture: Presentation layer depends ONLY on domain layer (no application or infrastructure dependencies)</constraint>
+    <constraint>SOLID Principles: Single Responsibility (each formatter handles one concern), Open/Closed (formatters are pure functions, no state)</constraint>
+    <constraint>Zero Business Logic: Formatters are pure presentation - no calculations, no decisions, just formatting</constraint>
+    <constraint>Type Safety: Complete type hints on all functions (Task, List[Task], str, datetime, Dict[str, Any])</constraint>
+    <constraint>Rich Formatting: Use Panel for single items, Table for lists, Text for formatted strings, Progress for percentages</constraint>
+    <constraint>Color Scheme: Priority (P0=red, P1=yellow, P2=blue, P3=green), Status (COMPLETED=green, IN_PROGRESS=yellow, BLOCKED=red), Energy (HIGH=green, MEDIUM=yellow, LOW=blue)</constraint>
+    <constraint>Omega Voice: PlanningFormatter uses energetic, action-oriented language (e.g., "Let's crush these tasks!", "Time to make it happen!")</constraint>
+    <constraint>Time-Aware: BriefingFormatter adjusts greeting based on time of day (morning vs afternoon)</constraint>
+    <constraint>Module Structure: src/presentation/formatters/ with __init__.py exports, tests/presentation/formatters/test_formatters.py</constraint>
+    <constraint>Documentation: Comprehensive docstrings with usage examples and sample Rich output</constraint>
+    <constraint>Testing: 15+ unit tests, >= 80% coverage, verify Rich markup presence ([bold], [green], etc.)</constraint>
+    <constraint>No Regressions: Run full test suite to ensure zero existing test failures</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>TaskFormatter.format_task</name>
+      <kind>function signature</kind>
+      <signature>def format_task(task: Task) -> str</signature>
+      <path>src/presentation/formatters/task_formatter.py</path>
+      <description>Formats a single task as a Rich panel with title, priority, status, energy_level, due_date, tags</description>
+    </interface>
+    <interface>
+      <name>TaskFormatter.format_task_list</name>
+      <kind>function signature</kind>
+      <signature>def format_task_list(tasks: List[Task]) -> str</signature>
+      <path>src/presentation/formatters/task_formatter.py</path>
+      <description>Formats a list of tasks as a Rich table with columns for all task attributes</description>
+    </interface>
+    <interface>
+      <name>TaskFormatter.format_task_summary</name>
+      <kind>function signature</kind>
+      <signature>def format_task_summary(task: Task) -> str</signature>
+      <path>src/presentation/formatters/task_formatter.py</path>
+      <description>Formats a one-line task summary (title, priority, status)</description>
+    </interface>
+    <interface>
+      <name>PlanningFormatter.format_daily_plan</name>
+      <kind>function signature</kind>
+      <signature>def format_daily_plan(tasks: List[Task], date: datetime) -> str</signature>
+      <path>src/presentation/formatters/planning_formatter.py</path>
+      <description>Formats complete daily plan with date header, task list, priorities, energy levels</description>
+    </interface>
+    <interface>
+      <name>PlanningFormatter.format_priority_matrix</name>
+      <kind>function signature</kind>
+      <signature>def format_priority_matrix(tasks: List[Task]) -> str</signature>
+      <path>src/presentation/formatters/planning_formatter.py</path>
+      <description>Formats Eisenhower Matrix visualization with 4 quadrants (Urgent/Important, Urgent/Not Important, Not Urgent/Important, Not Urgent/Not Important)</description>
+    </interface>
+    <interface>
+      <name>PlanningFormatter.format_time_blocks</name>
+      <kind>function signature</kind>
+      <signature>def format_time_blocks(time_blocks: List[TimeBlock]) -> str</signature>
+      <path>src/presentation/formatters/planning_formatter.py</path>
+      <description>Formats time blocking schedule as a Rich table with start time, end time, activity</description>
+    </interface>
+    <interface>
+      <name>PlanningFormatter.format_must_wins</name>
+      <kind>function signature</kind>
+      <signature>def format_must_wins(tasks: List[Task]) -> str</signature>
+      <path>src/presentation/formatters/planning_formatter.py</path>
+      <description>Formats MIT (Most Important Tasks) with energetic Omega voice and priority highlighting</description>
+    </interface>
+    <interface>
+      <name>BriefingFormatter.format_morning_briefing</name>
+      <kind>function signature</kind>
+      <signature>def format_morning_briefing(briefing_data: Dict[str, Any]) -> str</signature>
+      <path>src/presentation/formatters/briefing_formatter.py</path>
+      <description>Formats complete morning briefing with greeting, date, tasks, priorities, reminders</description>
+    </interface>
+    <interface>
+      <name>BriefingFormatter.format_briefing_section</name>
+      <kind>function signature</kind>
+      <signature>def format_briefing_section(title: str, content: str) -> str</signature>
+      <path>src/presentation/formatters/briefing_formatter.py</path>
+      <description>Formats individual briefing section as a Rich panel</description>
+    </interface>
+    <interface>
+      <name>BriefingFormatter.format_task_priorities</name>
+      <kind>function signature</kind>
+      <signature>def format_task_priorities(tasks: List[Task]) -> str</signature>
+      <path>src/presentation/formatters/briefing_formatter.py</path>
+      <description>Formats priority task list for briefing display</description>
+    </interface>
+    <interface>
+      <name>StatusFormatter.format_task_status</name>
+      <kind>function signature</kind>
+      <signature>def format_task_status(task: Task) -> str</signature>
+      <path>src/presentation/formatters/status_formatter.py</path>
+      <description>Formats task status badge/indicator with emoji or symbol and color</description>
+    </interface>
+    <interface>
+      <name>StatusFormatter.format_progress_summary</name>
+      <kind>function signature</kind>
+      <signature>def format_progress_summary(completed: int, total: int) -> str</signature>
+      <path>src/presentation/formatters/status_formatter.py</path>
+      <description>Formats progress bar/percentage using Rich Progress component</description>
+    </interface>
+    <interface>
+      <name>StatusFormatter.format_completion_report</name>
+      <kind>function signature</kind>
+      <signature>def format_completion_report(tasks: List[Task]) -> str</signature>
+      <path>src/presentation/formatters/status_formatter.py</path>
+      <description>Formats EOD completion summary with completed tasks, stats, celebration message</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest for all tests. Test file: tests/presentation/formatters/test_formatters.py. Create mock Task and TimeBlock objects using domain entity constructors. Verify Rich markup is present in output strings (e.g., assert "[bold]" in result). Test edge cases (empty lists, None values). Minimum 80% coverage for presentation layer per CLAUDE.md Rule 6.1.1. Run full test suite to ensure zero regressions.
+    </standards>
+
+    <locations>
+      <location>tests/presentation/formatters/test_formatters.py</location>
+      <location>tests/presentation/formatters/__init__.py</location>
+    </locations>
+
+    <ideas>
+      <idea ac="AC2">Test format_task() with full task data - verify panel structure, color-coded priority, status emoji</idea>
+      <idea ac="AC2">Test format_task_list() with 3 tasks - verify table has all columns (title, priority, status, energy, due_date)</idea>
+      <idea ac="AC2">Test format_task_summary() - verify one-line format with essential info only</idea>
+      <idea ac="AC2">Test format_task_list() with empty list - verify graceful handling with "No tasks" message</idea>
+
+      <idea ac="AC3">Test format_daily_plan() with 5 tasks - verify date header, task sections, Omega voice</idea>
+      <idea ac="AC3">Test format_priority_matrix() with tasks in all 4 quadrants - verify Eisenhower Matrix structure</idea>
+      <idea ac="AC3">Test format_time_blocks() with 3 time blocks - verify table with start/end times</idea>
+      <idea ac="AC3">Test format_must_wins() with 3 MIT tasks - verify energetic language and priority highlighting</idea>
+
+      <idea ac="AC4">Test format_morning_briefing() with full data dict - verify all sections present (greeting, date, tasks, priorities)</idea>
+      <idea ac="AC4">Test format_briefing_section() - verify panel formatting with title and content</idea>
+      <idea ac="AC4">Test format_task_priorities() with 5 tasks - verify priority ordering</idea>
+
+      <idea ac="AC5">Test format_task_status() for each Status enum value - verify correct color/emoji for each</idea>
+      <idea ac="AC5">Test format_progress_summary() with 7/10 completion - verify progress bar and percentage display</idea>
+      <idea ac="AC5">Test format_completion_report() with completed tasks - verify summary stats and celebration</idea>
+      <idea ac="AC5">Test format_progress_summary() with 0/0 tasks - verify graceful handling (avoid division by zero)</idea>
+
+      <idea ac="AC6">Verify all functions have type hints - parse source code for missing annotations</idea>
+      <idea ac="AC6">Verify all functions have docstrings - check for missing or incomplete docs</idea>
+
+      <idea ac="AC7">Run full test suite to verify zero regressions in existing tests (556 current tests)</idea>
+      <idea ac="AC7">Verify coverage >= 80% for presentation layer using pytest --cov</idea>
+    </ideas>
+  </tests>
+</story-context>

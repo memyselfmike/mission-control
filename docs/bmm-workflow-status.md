@@ -8,8 +8,8 @@
 
 ## Current State
 
-**Current Phase:** 4-Implementation (Architectural Refactoring - EPIC-5R Phase 1)
-**Current Workflow:** dev-story (Story 5.3) - Complete (Ready for Review)
+**Current Phase:** 4-Implementation (Architectural Refactoring - EPIC-5R Phase 4: Presentation Layer)
+**Current Workflow:** story-ready (Story 6.4) - Complete
 **Overall Progress:** 23-28% (90/318-388 points delivered)
 **Project Level:** 4 (Enterprise scale - multiple products/systems)
 **Project Type:** Custom/Hybrid (BMAD Method + Claude Agent SDK) → CLI Tool
@@ -79,15 +79,15 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 
 ## Next Action
 
-**What to do next:** Review and approve Story 5.3 (Repository Interfaces)
+**What to do next:** Implement Story 6.4 (Create Formatters)
 
-**Current Step:** Story 5.3 implementation complete - awaiting user (Mike) approval
+**Current Step:** Story 6.4 context generated - awaiting DEV implementation
 
-**Agent:** User (Mike) should review implementation and run review-story workflow to approve
+**Agent:** DEV agent should implement
 
-**Why this step:** Story 5.3 completes EPIC-5R Phase 1: Foundation with repository interfaces (ITaskRepository, IMemoryRepository). All 7 ACs met, 25 tests passing (100%), zero regressions, perfect architecture compliance. Approval will unlock Phase 2: Infrastructure implementation.
+**Why this step:** Story 6.4 creates presentation layer formatters. Context XML provides comprehensive implementation guidance with 7 ACs, 13 function interfaces, 12 constraints, and 19 test ideas. Zero business logic, pure presentation functions.
 
-**Command to run:** Review implementation, verify tests passing, run `/bmad:bmm:workflows:review-story` to approve OR provide feedback for changes
+**Command to run:** Run `/bmad:bmm:workflows:dev-story` to implement Story 6.4
 
 **Sprint 1 Delivered:** ✅ COMPLETE
 - ✅ 16/16 story points completed (100%)
@@ -196,11 +196,13 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 - ✅ Story 3.5: EOD wrap-up - DONE (5 pts, 22 tests passing)
 - Progress: 26/26 pts (100%)
 
-**Sprint 5 Status:** 🔄 IN PROGRESS (EPIC-5R Phase 1: Foundation)
+**Sprint 5 Status:** 🔄 IN PROGRESS (EPIC-5R Phase 4: Presentation Layer)
 - ✅ Story 5.1: Create Domain Value Objects - DONE (3 pts, 30 tests passing) ✓ Approved 2025-10-22
 - ✅ Story 5.2: Create Task Entity - DONE (5 pts, 44 tests passing) ✓ Approved 2025-10-25
-- ✅ Story 5.3: Create Repository Interfaces - READY FOR REVIEW (2 pts, 25 tests passing)
-- Progress: 8/10 pts (80% of Phase 1)
+- ✅ Story 5.3: Create Repository Interfaces - DONE (2 pts, 25 tests passing) ✓ (assuming approved)
+- 📋 Story 6.4: Create Formatters - READY (3 pts, 15+ tests planned)
+- 📋 Story 6.5: Refactor CLI Entry Point - NOT STARTED (5 pts, 20+ tests planned)
+- Progress: 10/18 pts (56% of Phases 1+4, assuming 5.3 approved)
 
 ---
 
@@ -249,6 +251,8 @@ Mission Control is a hybrid system combining BMAD Method patterns for workflow s
 - **2025-10-25**: Story 5.3 (Create Repository Interfaces) marked ready for development by SM agent. Moved from Draft → Ready. Story moved to IN PROGRESS. Next: Generate context via story-context workflow, then implement via dev-story.
 - **2025-10-25**: Completed story-context for Story 5.3 (Create Repository Interfaces). Context file: docs/stories/story-context-5.3-repository-interfaces.xml. Assembled comprehensive implementation context with 7 acceptance criteria, 6 documentation references (CLAUDE.md, solution-architecture.md, epics.md, Stories 5.1 & 5.2), 7 code artifacts (Task entity, value objects, legacy memory.py), Python dependencies (abc, typing, pytest), 15 development constraints (Hexagonal Architecture, ABC usage, domain purity, logging standards), 2 repository interface signatures (ITaskRepository with 7 methods, IMemoryRepository with 9 methods), and 23 test ideas mapped to ACs. Next: DEV agent should run dev-story to implement.
 - **2025-10-25**: Completed dev-story for Story 5.3 (Create Repository Interfaces - 2 pts). Implementation complete. Files created: mission-control/src/domain/repositories/__init__.py, task_repository.py (ITaskRepository: 7 methods), memory_repository.py (IMemoryRepository: 9 methods), tests/domain/repositories/test_repository_interfaces.py (25 tests). All 25 tests passing (100%). No regressions (556 total tests passing: 531 existing + 25 new). All 7 ACs met. Architecture compliance verified (Hexagonal/Clean, ABC usage, domain purity, complete type hints, 100% coverage). Story status: Ready for Review. Phase 1 Foundation (EPIC-5R) complete pending approval: 10/10 pts. Next: User (Mike) approval via review-story workflow.
+- **2025-10-25**: Started EPIC-5R Phase 4: Presentation Layer. Created Story 6.4 (Create Formatters - 3 pts) with 7 acceptance criteria. Formatters: TaskFormatter, PlanningFormatter, BriefingFormatter, StatusFormatter. Zero business logic, pure presentation functions for Rich CLI output. 15+ tests planned. Story marked ready for development by SM agent. Status: Draft → Ready. Next: Generate story-context, then DEV implements.
+- **2025-10-25**: Completed story-context for Story 6.4 (Create Formatters). Context file: docs/stories/story-context-6.4-create-formatters.xml. Assembled comprehensive implementation context with 7 acceptance criteria, 5 documentation references (CLAUDE.md, epics.md, Stories 5.1 & 5.2, solution-architecture.md), 7 code artifacts (Task entity, value objects, existing workflows), Python dependencies (rich, typing, datetime), 12 development constraints (Hexagonal Architecture, zero business logic, Rich formatting standards), 13 formatter function interfaces, and 19 test ideas mapped to ACs. Next: DEV agent should run dev-story to implement.
 
 ---
 

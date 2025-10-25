@@ -1,0 +1,356 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6.2</storyId>
+    <title>Planning Services</title>
+    <status>Ready</status>
+    <generatedAt>2025-10-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/story-6.2-planning-services.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a developer</asA>
+    <iWant>application services that orchestrate multiple use cases for daily planning workflows</iWant>
+    <soThat>Omega workflows (daily planning, morning briefing, EOD wrap-up) can be implemented cleanly without business logic duplication, following the Service Pattern and integrating with existing workflows from Stories 3.3, 3.4, 3.5</soThat>
+    <tasks>
+      - Task 1: Create services module structure (AC: #1)
+      - Task 2: Create DailyPlanningService (AC: #2)
+      - Task 3: Create MorningBriefingService (AC: #3)
+      - Task 4: Create EODWrapUpService (AC: #4)
+      - Task 5: Create PrioritizationService (AC: #5)
+      - Task 6: Configure module exports (AC: #1)
+      - Task 7: Write comprehensive unit tests (AC: #7)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1" priority="high">
+      <title>Service Classes Created</title>
+      <description>All services in src/application/services/ module. Services: DailyPlanningService, MorningBriefingService, EODWrapUpService, PrioritizationService. Each service &lt; 200 lines. Proper module structure with __init__.py exports. Services use dependency injection for use cases.</description>
+    </criterion>
+    <criterion id="2" priority="high">
+      <title>DailyPlanningService</title>
+      <description>Implements 6-step daily planning workflow from Story 3.3. Steps: calendar_review(), brain_dump(), prioritize_tasks(), set_must_wins(), time_blocking(), set_daily_intention(). Uses CreateTaskUseCase, ListTasksUseCase, UpdateTaskUseCase. Returns structured data for CLI display. Follows Omega's energetic voice patterns.</description>
+    </criterion>
+    <criterion id="3" priority="high">
+      <title>MorningBriefingService</title>
+      <description>Implements morning briefing logic from Story 3.4. Sections: greeting(), calendar_preview(), must_wins(), blockers(), energy_check(), momentum_message(). Uses ListTasksUseCase, FindTasksByPriorityUseCase. Returns formatted briefing text with Rich markup. Time-aware greetings (morning/afternoon/evening).</description>
+    </criterion>
+    <criterion id="4" priority="high">
+      <title>EODWrapUpService</title>
+      <description>Implements EOD wrap-up workflow from Story 3.5. Steps: celebrate_wins(), reflect_on_challenges(), capture_learnings(), prep_tomorrow(), closure_ritual(). Uses CompleteTaskUseCase, ListTasksUseCase, CreateTaskUseCase. Returns structured reflection data. No judgment, forward-looking tone.</description>
+    </criterion>
+    <criterion id="5" priority="high">
+      <title>PrioritizationService</title>
+      <description>Implements Eisenhower Matrix prioritization logic. Methods: analyze_task(), categorize_tasks(), suggest_next_action(). Uses FindTasksByStatusUseCase, FindTasksByPriorityUseCase. Returns prioritized task lists (urgent+important, important not urgent, etc.). Integrates energy level matching.</description>
+    </criterion>
+    <criterion id="6" priority="critical">
+      <title>Clean Architecture Compliance</title>
+      <description>Services depend ONLY on application layer (use cases) and domain layer. Zero infrastructure dependencies (no file I/O, no direct JSON access). Services orchestrate use cases, not domain objects directly. Proper dependency injection throughout. Type safety with domain types (Priority, Status, EnergyLevel).</description>
+    </criterion>
+    <criterion id="7" priority="high">
+      <title>Comprehensive Unit Tests</title>
+      <description>25+ unit tests in tests/application/services/test_planning_service.py. Each service has 5-8 tests covering all methods. Tests use mock use cases (stub implementations). Test coverage &gt;= 90% for services. Tests verify workflow orchestration logic. Integration with existing Omega workflows validated.</description>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>mission-control/CLAUDE.md</path>
+        <title>Mission Control Engineering Rules</title>
+        <section>Service Pattern (Rule 7), Clean Architecture (Rule 1), Testing Standards (Rule 6)</section>
+        <snippet>Services sit in application layer and orchestrate use cases. Services depend on use cases via dependency injection. Each service &lt; 200 lines. Test coverage >= 90%.</snippet>
+      </doc>
+      <doc>
+        <path>docs/solution-architecture.md</path>
+        <title>Solution Architecture</title>
+        <section>Hexagonal Architecture, Application Layer, Service Pattern</section>
+        <snippet>Application services orchestrate domain logic and use cases. Services are stateless, use dependency injection, and return DTOs for presentation layer.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>EPIC-5R: Architectural Refactoring</title>
+        <section>Phase 3: Application Services (18 pts)</section>
+        <snippet>Story 6.1: Task Management Use Cases (5 pts), Story 6.2: Planning Services (8 pts), Story 6.3: Domain Services (5 pts). Application layer orchestrates domain logic.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-6.1-task-management-use-cases.md</path>
+        <title>Story 6.1: Task Management Use Cases</title>
+        <section>Acceptance Criteria, Implementation</section>
+        <snippet>8 use cases created: CreateTask, UpdateTask, CompleteTask, DeleteTask, GetTaskById, ListTasks, FindTasksByStatus, FindTasksByPriority. All follow Clean Architecture with dependency injection.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-6.3-domain-services.md</path>
+        <title>Story 6.3: Domain Services</title>
+        <section>Acceptance Criteria, Implementation</section>
+        <snippet>3 domain services: TaskPrioritizationService (Eisenhower Matrix), EnergyMatchingService (task-energy matching), TimeBlockingService (schedule optimization). Pure domain logic, stateless, zero external dependencies.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-3.3-daily-planning-workflow.md</path>
+        <title>Story 3.3: Daily Planning Workflow</title>
+        <section>6-Step Workflow</section>
+        <snippet>Omega's energetic daily planning: calendar review, brain dump, prioritization (Eisenhower Matrix), must-wins selection, time blocking, daily intention. Implemented in workflows.py.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-3.4-morning-briefing.md</path>
+        <title>Story 3.4: Morning Briefing Generator</title>
+        <section>7 Sections with Omega Voice</section>
+        <snippet>Time-aware greeting, calendar preview, must-wins, blockers, energy check, momentum message, closing. Implemented in morning_briefing.py with Rich formatting.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/story-3.5-eod-wrapup.md</path>
+        <title>Story 3.5: EOD Wrap-Up Workflow</title>
+        <section>5-Step Reflection</section>
+        <snippet>Celebrate wins, reflect on challenges, capture learnings, prep tomorrow, closure ritual. No judgment, forward-looking tone. Implemented in eod_wrapup.py.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>mission-control/src/application/use_cases/task_management/create_task_use_case.py</path>
+        <kind>use_case</kind>
+        <symbol>CreateTaskUseCase</symbol>
+        <lines>1-50</lines>
+        <reason>DailyPlanningService uses this to create tasks during brain dump</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/application/use_cases/task_management/list_tasks_use_case.py</path>
+        <kind>use_case</kind>
+        <symbol>ListTasksUseCase</symbol>
+        <lines>1-40</lines>
+        <reason>All services use this to retrieve tasks for display and processing</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/application/use_cases/task_management/update_task_use_case.py</path>
+        <kind>use_case</kind>
+        <symbol>UpdateTaskUseCase</symbol>
+        <lines>1-50</lines>
+        <reason>DailyPlanningService uses this to update task priorities and must-win flags</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/application/use_cases/task_management/complete_task_use_case.py</path>
+        <kind>use_case</kind>
+        <symbol>CompleteTaskUseCase</symbol>
+        <lines>1-50</lines>
+        <reason>EODWrapUpService uses this to mark tasks complete during celebration</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/application/use_cases/task_management/find_tasks_by_status_use_case.py</path>
+        <kind>use_case</kind>
+        <symbol>FindTasksByStatusUseCase</symbol>
+        <lines>1-40</lines>
+        <reason>PrioritizationService uses this to filter pending tasks</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/application/use_cases/task_management/find_tasks_by_priority_use_case.py</path>
+        <kind>use_case</kind>
+        <symbol>FindTasksByPriorityUseCase</symbol>
+        <lines>1-40</lines>
+        <reason>MorningBriefingService uses this to show must-wins (P0/P1 tasks)</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/services/task_prioritization_service.py</path>
+        <kind>domain_service</kind>
+        <symbol>TaskPrioritizationService</symbol>
+        <lines>1-100</lines>
+        <reason>PrioritizationService wraps this for application layer, DailyPlanningService uses for Eisenhower Matrix</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/services/energy_matching_service.py</path>
+        <kind>domain_service</kind>
+        <symbol>EnergyMatchingService</symbol>
+        <lines>1-80</lines>
+        <reason>PrioritizationService uses this to suggest tasks matching current energy level</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/services/time_blocking_service.py</path>
+        <kind>domain_service</kind>
+        <symbol>TimeBlockingService</symbol>
+        <lines>1-90</lines>
+        <reason>DailyPlanningService uses this for time blocking workflow step</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/priority.py</path>
+        <kind>value_object</kind>
+        <symbol>Priority</symbol>
+        <lines>1-50</lines>
+        <reason>All services use Priority enum (P0, P1, P2, P3) for task categorization</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/status.py</path>
+        <kind>value_object</kind>
+        <symbol>Status</symbol>
+        <lines>1-40</lines>
+        <reason>All services use Status enum (NOT_STARTED, IN_PROGRESS, DONE, etc.) for task filtering</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/domain/value_objects/energy_level.py</path>
+        <kind>value_object</kind>
+        <symbol>EnergyLevel</symbol>
+        <lines>1-40</lines>
+        <reason>MorningBriefingService and PrioritizationService use this for energy-aware task suggestions</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/morning_briefing.py</path>
+        <kind>legacy_service</kind>
+        <symbol>generate_morning_briefing, get_greeting, etc.</symbol>
+        <lines>1-331</lines>
+        <reason>Existing implementation to reference for MorningBriefingService. Strangler Fig pattern - new service coexists with this.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/eod_wrapup.py</path>
+        <kind>legacy_service</kind>
+        <symbol>generate_eod_wrapup, celebrate_wins, etc.</symbol>
+        <lines>1-250</lines>
+        <reason>Existing implementation to reference for EODWrapUpService. Strangler Fig pattern - new service coexists with this.</reason>
+      </artifact>
+      <artifact>
+        <path>mission-control/src/workflows.py</path>
+        <kind>legacy_workflow</kind>
+        <symbol>run_daily_planning_workflow</symbol>
+        <lines>1-200</lines>
+        <reason>Existing workflow to reference for DailyPlanningService logic</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <python>
+        <package name="typing" version="stdlib">For type hints (List, Dict, Any, Optional)</package>
+        <package name="logging" version="stdlib">For entry/exit logging in all services</package>
+        <package name="datetime" version="stdlib">For time-aware greetings in MorningBriefingService</package>
+        <package name="pytest" version="^7.0.0">For unit testing (dev dependency)</package>
+      </python>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="1">Services MUST be in src/application/services/ module (Hexagonal Architecture - Application Layer)</constraint>
+    <constraint id="2">Each service MUST be &lt; 200 lines (CLAUDE.md Rule 3.3.1 - Single Responsibility)</constraint>
+    <constraint id="3">Services MUST use dependency injection - accept use cases via constructor (CLAUDE.md Rule 3.1.4)</constraint>
+    <constraint id="4">Services MUST depend ONLY on application layer (use cases) and domain layer - ZERO infrastructure dependencies</constraint>
+    <constraint id="5">Services MUST NOT contain business logic - orchestration only (business logic stays in domain)</constraint>
+    <constraint id="6">Services MUST return structured data (Dict, List) for presentation layer - no direct CLI output</constraint>
+    <constraint id="7">Services MUST use domain types (Task, Priority, Status, EnergyLevel) from domain layer</constraint>
+    <constraint id="8">Services MUST have complete type hints on all methods and parameters (Python 3.13+)</constraint>
+    <constraint id="9">Services MUST log entry/exit for each method using standard logging module (CLAUDE.md Rule 10.5.1)</constraint>
+    <constraint id="10">Services MUST have comprehensive docstrings with examples (CLAUDE.md Rule 9.1.1)</constraint>
+    <constraint id="11">MorningBriefingService MUST preserve Omega's energetic voice patterns from Story 3.4</constraint>
+    <constraint id="12">EODWrapUpService MUST maintain no-judgment, forward-looking tone from Story 3.5</constraint>
+    <constraint id="13">DailyPlanningService MUST implement exact 6-step workflow from Story 3.3</constraint>
+    <constraint id="14">Strangler Fig pattern - new services coexist with existing morning_briefing.py, eod_wrapup.py, workflows.py (no deletions)</constraint>
+    <constraint id="15">All services MUST be testable with mock use cases (no direct repository access)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>DailyPlanningService</name>
+      <kind>application_service</kind>
+      <signature>
+class DailyPlanningService:
+    def __init__(self, create_task: CreateTaskUseCase, list_tasks: ListTasksUseCase,
+                 update_task: UpdateTaskUseCase, prioritization: PrioritizationService)
+    def calendar_review(self) -> Dict[str, Any]
+    def brain_dump(self, task_titles: List[str]) -> List[str]
+    def prioritize_tasks(self) -> Dict[str, List[str]]
+    def set_must_wins(self, task_ids: List[str]) -> bool
+    def time_blocking(self) -> Dict[str, Any]
+    def set_daily_intention(self, intention: str) -> str
+      </signature>
+      <path>mission-control/src/application/services/daily_planning_service.py</path>
+    </interface>
+    <interface>
+      <name>MorningBriefingService</name>
+      <kind>application_service</kind>
+      <signature>
+class MorningBriefingService:
+    def __init__(self, list_tasks: ListTasksUseCase, find_by_priority: FindTasksByPriorityUseCase)
+    def greeting(self) -> str
+    def calendar_preview(self) -> str
+    def must_wins(self) -> str
+    def blockers(self) -> str
+    def energy_check(self) -> str
+    def momentum_message(self) -> str
+    def generate_full_briefing(self) -> str
+      </signature>
+      <path>mission-control/src/application/services/morning_briefing_service.py</path>
+    </interface>
+    <interface>
+      <name>EODWrapUpService</name>
+      <kind>application_service</kind>
+      <signature>
+class EODWrapUpService:
+    def __init__(self, complete_task: CompleteTaskUseCase, list_tasks: ListTasksUseCase,
+                 create_task: CreateTaskUseCase)
+    def celebrate_wins(self) -> Dict[str, Any]
+    def reflect_on_challenges(self) -> Dict[str, Any]
+    def capture_learnings(self, learnings: List[str]) -> bool
+    def prep_tomorrow(self) -> Dict[str, Any]
+    def closure_ritual(self) -> str
+    def complete_wrap_up(self) -> Dict[str, Any]
+      </signature>
+      <path>mission-control/src/application/services/eod_wrapup_service.py</path>
+    </interface>
+    <interface>
+      <name>PrioritizationService</name>
+      <kind>application_service</kind>
+      <signature>
+class PrioritizationService:
+    def __init__(self, find_by_status: FindTasksByStatusUseCase,
+                 find_by_priority: FindTasksByPriorityUseCase,
+                 prioritization_service: TaskPrioritizationService,
+                 energy_service: EnergyMatchingService)
+    def analyze_task(self, task: Task) -> Dict[str, Any]
+    def categorize_tasks(self, tasks: List[Task]) -> Dict[str, List[Task]]
+    def suggest_next_action(self, energy: EnergyLevel) -> Optional[Task]
+      </signature>
+      <path>mission-control/src/application/services/prioritization_service.py</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      All tests use pytest framework. Tests are in tests/application/services/ directory mirroring src structure.
+      Use mock use cases (stub implementations) to test service orchestration without infrastructure dependencies.
+      Target: 90%+ coverage per CLAUDE.md Rule 6.1.1. Each service has 5-8 tests covering all methods.
+      Tests verify workflow orchestration logic, not business logic (that's in domain tests).
+      Integration tests verify services work together correctly.
+    </standards>
+    <locations>
+      tests/application/services/test_planning_service.py (all 4 services)
+      tests/application/services/__init__.py
+    </locations>
+    <ideas>
+      <idea ac="1">test_services_module_structure - verify all services importable from src.application.services</idea>
+      <idea ac="1">test_service_file_sizes - verify each service &lt; 200 lines</idea>
+      <idea ac="2">test_daily_planning_brain_dump_creates_tasks - brain_dump calls CreateTaskUseCase for each title</idea>
+      <idea ac="2">test_daily_planning_prioritize_tasks_uses_matrix - prioritize_tasks calls PrioritizationService.categorize_tasks</idea>
+      <idea ac="2">test_daily_planning_set_must_wins_updates_tasks - set_must_wins calls UpdateTaskUseCase for each task_id</idea>
+      <idea ac="2">test_daily_planning_time_blocking_returns_schedule - time_blocking returns structured time blocks</idea>
+      <idea ac="2">test_daily_planning_calendar_review_lists_tasks - calendar_review calls ListTasksUseCase</idea>
+      <idea ac="2">test_daily_planning_set_intention_stores_value - set_daily_intention returns intention string</idea>
+      <idea ac="3">test_morning_briefing_greeting_time_aware - greeting returns different messages for morning/afternoon/evening</idea>
+      <idea ac="3">test_morning_briefing_must_wins_shows_high_priority - must_wins calls FindTasksByPriorityUseCase for P0/P1</idea>
+      <idea ac="3">test_morning_briefing_blockers_identifies_issues - blockers returns tasks with blocker flag</idea>
+      <idea ac="3">test_morning_briefing_full_briefing_combines_all - generate_full_briefing combines all sections with Rich markup</idea>
+      <idea ac="3">test_morning_briefing_omega_voice_patterns - verify energetic language ("Let's crush it!")</idea>
+      <idea ac="3">test_morning_briefing_empty_task_list_graceful - handle no tasks gracefully</idea>
+      <idea ac="4">test_eod_wrapup_celebrate_wins_lists_completed - celebrate_wins calls ListTasksUseCase and filters DONE</idea>
+      <idea ac="4">test_eod_wrapup_reflect_challenges_no_judgment - reflect_on_challenges uses forward-looking tone</idea>
+      <idea ac="4">test_eod_wrapup_capture_learnings_stores_list - capture_learnings accepts list of strings</idea>
+      <idea ac="4">test_eod_wrapup_prep_tomorrow_creates_tasks - prep_tomorrow calls CreateTaskUseCase for tomorrow's tasks</idea>
+      <idea ac="4">test_eod_wrapup_closure_ritual_positive_message - closure_ritual returns encouraging message</idea>
+      <idea ac="4">test_eod_wrapup_complete_orchestrates_all - complete_wrap_up calls all 5 steps in order</idea>
+      <idea ac="5">test_prioritization_analyze_task_returns_metrics - analyze_task returns urgency/importance scores</idea>
+      <idea ac="5">test_prioritization_categorize_eisenhower_matrix - categorize_tasks returns 4 quadrants</idea>
+      <idea ac="5">test_prioritization_suggest_next_matches_energy - suggest_next_action uses EnergyMatchingService</idea>
+      <idea ac="5">test_prioritization_empty_list_returns_empty_categories - handle empty task list</idea>
+      <idea ac="6">test_clean_architecture_no_infrastructure_imports - verify no imports from infrastructure layer</idea>
+      <idea ac="6">test_dependency_injection_all_services - verify all services accept dependencies via constructor</idea>
+      <idea ac="6">test_type_safety_all_methods - verify all methods have type hints</idea>
+      <idea ac="7">test_coverage_exceeds_90_percent - run coverage report and assert >= 90%</idea>
+      <idea ac="7">test_integration_daily_planning_full_workflow - run all 6 steps in sequence</idea>
+      <idea ac="7">test_integration_morning_to_eod_cycle - morning briefing -> daily planning -> eod wrapup</idea>
+    </ideas>
+  </tests>
+</story-context>
+</story-context>
